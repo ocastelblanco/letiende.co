@@ -1,0 +1,17 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "/src/styles.scss" as estilos;
+
+$typography-config: mat.get-typography-config(estilos.$letiende-theme);
+$marron: map.get(estilos.$lt-basico, marron);
+$amarillo: map.get(estilos.$lt-basico, amarillo);
+
+.pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: map.get(estilos.$tamanos, alto-pie);
+  @include mat.typography-level($typography-config, "body-4");
+  background-color: $marron;
+  color: $amarillo;
+}

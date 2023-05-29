@@ -1,0 +1,14 @@
+<div class="inicio">
+  <div class="logo"
+       (click)="haceClic()">
+    <img src="assets/logos/logo_sobre_amarillo.svg"
+         alt="Logo de Le Tiende">
+  </div>
+  <div class="easter-egg">
+    <div class="texto"
+         @easterEgg
+         *ngIf="easterEgg">
+      Café, cocteles, cervezas nacionales e importadas, discos de vinilo, libros y algo más...
+    </div>
+  </div>
+</div>

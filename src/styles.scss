@@ -1,1 +1,71 @@
+@use "sass:map";
+@use "sass:math";
+@use "@angular/material" as mat;
+@use "./estilos/tema" as tema;
+
+// Core
+@include mat.core();
+
+// Paletas
+$letiende-primary: mat.define-palette(tema.$lt-primario);
+$letiende-accent: mat.define-palette(tema.$lt-secundario, 500, 300, 800);
+$letiende-warn: mat.define-palette(tema.$lt-advertencia, A200, A100, A700);
+$lt-basico: tema.$lt-basico;
+
+// Tipografía
+$lt-tipografia: map.merge(
+  mat.define-typography-config(),
+  (
+    body-1: tema.$body-1,
+    body-2: tema.$body-2,
+    body-3: tema.$body-3,
+    body-4: tema.$body-4,
+    body-5: tema.$body-5,
+    heading-1: tema.$heading-1,
+    heading-2: tema.$heading-2,
+    heading-3: tema.$heading-3,
+    heading-4: tema.$heading-4,
+    heading-5: tema.$heading-5,
+    caption-1: tema.$caption-1,
+    caption-2: tema.$caption-2,
+    caption-3: tema.$caption-3,
+    especial-1: tema.$especial-1,
+    especial-2: tema.$especial-2,
+    especial-3: tema.$especial-3,
+    especial-4: tema.$especial-4,
+  )
+);
+@include mat.typography-hierarchy($lt-tipografia);
+
+// Tamaños
+$tamanos: tema.$tamanos;
+
+// Tema
+$letiende-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $letiende-primary,
+      accent: $letiende-accent,
+      warn: $letiende-warn,
+    ),
+    typography: $lt-tipografia,
+  )
+);
+@include mat.all-component-themes($letiende-theme);
+
 /* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Poppins, Roboto, "Helvetica Neue", sans-serif;
+  color: map.get(tema.$lt-basico, marron);
+  .contenedor + * {
+    display: flex;
+    width: 100vw;
+    height: calc(100vh - map.get(tema.$tamanos, alto-pie));
+  }
+}
