@@ -1,0 +1,37 @@
+@use "sass:map";
+@use "sass:math";
+@use "@angular/material" as mat;
+@use "/src/styles.scss" as estilos;
+
+$typography-config: mat.get-typography-config(estilos.$letiende-theme);
+$marron: map.get(estilos.$lt-basico, marron);
+$amarillo: map.get(estilos.$lt-basico, amarillo);
+
+$modulo: math.div(map.get(estilos.$tamanos, alto-navbar), 4);
+
+.navbar {
+  &.xl,
+  &.lg,
+  &.md {
+    gap: $modulo;
+    .menu {
+      display: none;
+    }
+  }
+  &.sm,
+  &.xs {
+    .enlace {
+      display: none;
+    }
+  }
+  img.logo {
+    margin-left: $modulo;
+    width: auto;
+    height: calc(100% - $modulo);
+  }
+  .enlace {
+    &.activo {
+      color: $marron;
+    }
+  }
+}

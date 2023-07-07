@@ -1,0 +1,20 @@
+<mat-toolbar class="navbar"
+             [ngClass]="bpPantalla"
+             color="primary">
+    <button class="menu"
+            mat-icon-button
+            aria-label="Menú principal">
+        <mat-icon>menu</mat-icon>
+    </button>
+    <img class="logo"
+         src="assets/logos/logo_sobre_verde.svg"
+         alt="Logotipo de Le Tiende">
+    <a mat-button
+       class="enlace"
+       *ngFor="let vinculo of vinculos"
+       routerLinkActive="activo"
+       [routerLinkActiveOptions]="{exact: true}"
+       [routerLink]="vinculo.vinculo">
+        {{ vinculo.titulo }}
+    </a>
+</mat-toolbar>
