@@ -9,7 +9,7 @@ $amarillo: map.get(estilos.$lt-basico, amarillo);
 .pie {
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-evenly;
   height: map.get(estilos.$tamanos, alto-pie);
   @include mat.typography-level($typography-config, "body-4");
   background-color: $marron;

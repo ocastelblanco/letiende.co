@@ -1,0 +1,96 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "/src/styles.scss" as estilos;
+
+$typography-config: mat.get-typography-config(estilos.$letiende-theme);
+$verde: map.get(estilos.$lt-basico, verde);
+$naranja: map.get(estilos.$lt-basico, naranja);
+$amarillo: map.get(estilos.$lt-basico, amarillo);
+$marron: map.get(estilos.$lt-basico, marron);
+
+.menu {
+  background-color: $amarillo;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+  @include mat.typography-level($typography-config, "body-1");
+  .categoria {
+    width: 100%;
+    max-width: map.get(estilos.$tamanos, ancho-menu);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-blend-mode: darken;
+    background-color: rgba(0, 0, 0, 0.3);
+    & > * {
+      width: calc(100% - 64px);
+    }
+    & > .texto {
+      margin: 32px 32px 16px;
+      display: flex;
+      flex-direction: column;
+      .titulo {
+        @include mat.typography-level($typography-config, "heading-2");
+      }
+      .descripcion {
+        @include mat.typography-level($typography-config, "body-3");
+      }
+    }
+    .subcategorias {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      .subcategoria {
+        width: 48%;
+        min-width: 320px;
+        background-color: rgba($marron, 50%);
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        & > * {
+          margin-left: 16px;
+          margin-right: 16px;
+        }
+        & > .texto {
+          margin: 16px 16px 8px;
+          display: flex;
+          flex-direction: column;
+          .titulo {
+            @include mat.typography-level($typography-config, "heading-3");
+          }
+          .descripcion {
+            @include mat.typography-level($typography-config, "body-5");
+          }
+        }
+        .producto {
+          display: flex;
+          align-items: baseline;
+          justify-content: center;
+          &:not(:last-of-type) {
+            border-bottom: 1px rgba(#fff, 0.2) solid;
+          }
+          .texto {
+            display: flex;
+            flex-direction: column;
+            margin: 0.5em 0.25em;
+            .titulo {
+              @include mat.typography-level($typography-config, "body-2");
+            }
+            .descripcion {
+              @include mat.typography-level($typography-config, "caption-2");
+            }
+          }
+          .valor {
+            @include mat.typography-level($typography-config, "body-3");
+          }
+        }
+      }
+    }
+  }
+}

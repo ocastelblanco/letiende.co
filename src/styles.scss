@@ -25,14 +25,13 @@ $lt-tipografia: map.merge(
     heading-2: tema.$heading-2,
     heading-3: tema.$heading-3,
     heading-4: tema.$heading-4,
-    heading-5: tema.$heading-5,
     caption-1: tema.$caption-1,
     caption-2: tema.$caption-2,
     caption-3: tema.$caption-3,
     especial-1: tema.$especial-1,
     especial-2: tema.$especial-2,
     especial-3: tema.$especial-3,
-    especial-4: tema.$especial-4,
+    especial-4: tema.$especial-4
   )
 );
 @include mat.typography-hierarchy($lt-tipografia);
@@ -46,9 +45,9 @@ $letiende-theme: mat.define-light-theme(
     color: (
       primary: $letiende-primary,
       accent: $letiende-accent,
-      warn: $letiende-warn,
+      warn: $letiende-warn
     ),
-    typography: $lt-tipografia,
+    typography: $lt-tipografia
   )
 );
 @include mat.all-component-themes($letiende-theme);
