@@ -15,18 +15,21 @@ $marron: map.get(estilos.$lt-basico, marron);
   flex-direction: column;
   align-items: center;
   color: #fff;
-  @include mat.typography-level($typography-config, "body-1");
   .categoria {
     width: 100%;
     max-width: map.get(estilos.$tamanos, ancho-menu);
-    background-size: cover;
+    background-size: cover, 25%;
     background-repeat: no-repeat;
     background-attachment: fixed;
+    background-position-y: center, 17%;
+    background-position-x: center, 72%;
+    background-blend-mode: color;
+    background-color: rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-blend-mode: darken;
-    background-color: rgba(0, 0, 0, 0.3);
+    margin-top: 16px;
+    border-radius: map.get(estilos.$tamanos, border-radius);
     & > * {
       width: calc(100% - 64px);
     }
@@ -35,7 +38,7 @@ $marron: map.get(estilos.$lt-basico, marron);
       display: flex;
       flex-direction: column;
       .titulo {
-        @include mat.typography-level($typography-config, "heading-2");
+        @include mat.typography-level($typography-config, "especial-1");
       }
       .descripcion {
         @include mat.typography-level($typography-config, "body-3");
@@ -46,11 +49,12 @@ $marron: map.get(estilos.$lt-basico, marron);
       justify-content: space-between;
       gap: 20px;
       flex-wrap: wrap;
+      margin-bottom: 32px;
       .subcategoria {
         width: 48%;
         min-width: 320px;
         background-color: rgba($marron, 50%);
-        border-radius: 4px;
+        border-radius: map.get(estilos.$tamanos, border-radius);
         display: flex;
         flex-direction: column;
         & > * {
@@ -71,7 +75,7 @@ $marron: map.get(estilos.$lt-basico, marron);
         .producto {
           display: flex;
           align-items: baseline;
-          justify-content: center;
+          justify-content: space-between;
           &:not(:last-of-type) {
             border-bottom: 1px rgba(#fff, 0.2) solid;
           }
