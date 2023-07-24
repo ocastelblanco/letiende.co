@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService, Menu } from 'src/app/servicios/data.service';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 interface Elemento {
   id: number;
@@ -16,8 +17,28 @@ interface Elemento {
   styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent implements OnInit {
+  bpPantalla!: string | undefined;
+  anchos = new Map([
+    [Breakpoints.XSmall, 'xs'],
+    [Breakpoints.Small, 'sm'],
+    [Breakpoints.Medium, 'md'],
+    [Breakpoints.Large, 'lg'],
+    [Breakpoints.XLarge, 'xl'],
+  ]);
   menu: Elemento[] = [];
-  constructor(private data: DataService) { }
+  constructor(private data: DataService, private breakpoint: BreakpointObserver) {
+    this.breakpoint
+      .observe([
+        Breakpoints.XSmall,
+        Breakpoints.Small,
+        Breakpoints.Medium,
+        Breakpoints.Large,
+        Breakpoints.XLarge,
+      ])
+      .subscribe(result => {
+        for (const tam of Object.keys(result.breakpoints)) if (result.breakpoints[tam]) this.bpPantalla = this.anchos.get(tam);
+      });
+  }
   ngOnInit(): void {
     this.data.getMenu().subscribe((menu: Menu[]) => {
       if (menu.length > 0) {

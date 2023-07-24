@@ -1,7 +1,8 @@
-<div class="menu">
+<div class="menu"
+     [ngClass]="bpPantalla">
     <div class="categoria"
          [ngClass]="simplifica(categoria.titulo)"
-         [ngStyle]="{'backgroundImage': imagenFondo(categoria.imagen) + ', url(assets/logos/logo_blanco.svg)'}"
+         [ngStyle]="{'backgroundImage': imagenFondo(categoria.imagen)}"
          *ngFor="let categoria of menu">
         <div class="texto">
             <div class="titulo">
@@ -12,6 +13,7 @@
                 {{categoria.descripcion}}
             </div>
         </div>
+        <div class="logo"></div>
         <div class="subcategorias">
             <div class="subcategoria"
                  *ngFor="let subcategoria of categoria.hijos">

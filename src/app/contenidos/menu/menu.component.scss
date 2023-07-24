@@ -15,18 +15,20 @@ $marron: map.get(estilos.$lt-basico, marron);
   flex-direction: column;
   align-items: center;
   color: #fff;
+  padding-bottom: 32px;
   .categoria {
     width: 100%;
     max-width: map.get(estilos.$tamanos, ancho-menu);
-    background-size: cover, 25%;
+    background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    background-position-y: center, 17%;
-    background-position-x: center, 72%;
+    background-position-y: center;
+    background-position-x: center;
     background-blend-mode: color;
-    background-color: rgba(0, 0, 0, 0.25);
+    background-color: rgba(0, 0, 0, 0.4);
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
     margin-top: 16px;
     border-radius: map.get(estilos.$tamanos, border-radius);
@@ -37,12 +39,19 @@ $marron: map.get(estilos.$lt-basico, marron);
       margin: 32px 32px 16px;
       display: flex;
       flex-direction: column;
+      width: 70%;
       .titulo {
         @include mat.typography-level($typography-config, "especial-1");
       }
       .descripcion {
         @include mat.typography-level($typography-config, "body-3");
       }
+    }
+    & > .logo {
+      width: 20%;
+      aspect-ratio: 525.26/230.56;
+      background-image: url("/assets/logos/logo_blanco.svg");
+      background-repeat: no-repeat;
     }
     .subcategorias {
       display: flex;
@@ -53,7 +62,7 @@ $marron: map.get(estilos.$lt-basico, marron);
       .subcategoria {
         width: 48%;
         min-width: 320px;
-        background-color: rgba($marron, 50%);
+        background-color: rgba($marron, 75%);
         border-radius: map.get(estilos.$tamanos, border-radius);
         display: flex;
         flex-direction: column;
