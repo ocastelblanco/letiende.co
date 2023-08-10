@@ -38,7 +38,6 @@ export class DataService {
             tipo: el[8]
           });
         });
-        menu.sort((a: Menu, b: Menu) => a.posicion - b.posicion);
         this.menu.next(menu);
       });
   }

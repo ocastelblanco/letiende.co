@@ -9,6 +9,7 @@ interface Elemento {
   valor: number;
   visible: boolean;
   imagen: string;
+  posicion: number;
   hijos: Elemento[];
 }
 
@@ -49,6 +50,7 @@ export class MenuComponent implements OnInit {
             titulo: el.titulo,
             descripcion: el.descripcion,
             valor: el.valor,
+            posicion: el.posicion,
             visible: el.visible,
             imagen: el.imagen,
             hijos: []
@@ -61,6 +63,13 @@ export class MenuComponent implements OnInit {
             }
           });
         });
+        this.menu.sort((a: Elemento, b: Elemento) => a.posicion - b.posicion)
+          .forEach((cat: Elemento) => {
+            cat.hijos.sort((a: Elemento, b: Elemento) => a.posicion - b.posicion)
+              .forEach((subcat: Elemento) => {
+                subcat.hijos.sort((a: Elemento, b: Elemento) => a.posicion - b.posicion);
+              });
+          });
       }
     });
   }
