@@ -1,45 +1,51 @@
 <div class="menu"
      [ngClass]="bpPantalla">
+  <ng-container *ngFor="let categoria of menu">
     <div class="categoria"
          [ngClass]="simplifica(categoria.titulo)"
          [ngStyle]="{'backgroundImage': imagenFondo(categoria.imagen)}"
-         *ngFor="let categoria of menu">
-        <div class="texto">
-            <div class="titulo">
-                {{categoria.titulo}}
-            </div>
-            <div *ngIf="categoria.descripcion"
-                 class="descripcion">
-                {{categoria.descripcion}}
-            </div>
+         *ngIf="categoria.visible">
+      <div class="texto">
+        <div class="titulo">
+          {{categoria.titulo}}
         </div>
-        <div class="logo"></div>
-        <div class="subcategorias">
-            <div class="subcategoria"
-                 *ngFor="let subcategoria of categoria.hijos">
+        <div *ngIf="categoria.descripcion"
+             class="descripcion">
+          {{categoria.descripcion}}
+        </div>
+      </div>
+      <div class="logo"></div>
+      <div class="subcategorias">
+        <ng-container *ngFor="let subcategoria of categoria.hijos">
+          <div class="subcategoria"
+               *ngIf="subcategoria.visible">
+            <div class="texto">
+              <div class="titulo">{{subcategoria.titulo}}</div>
+              <div *ngIf="subcategoria.descripcion"
+                   class="descripcion">
+                {{subcategoria.descripcion}}
+              </div>
+            </div>
+            <ng-container *ngFor="let producto of subcategoria.hijos">
+              <div class="producto"
+                   *ngIf="producto.visible">
                 <div class="texto">
-                    <div class="titulo">{{subcategoria.titulo}}</div>
-                    <div *ngIf="subcategoria.descripcion"
-                         class="descripcion">
-                        {{subcategoria.descripcion}}
-                    </div>
+                  <div class="titulo">
+                    {{producto.titulo}}
+                  </div>
+                  <div *ngIf="producto.descripcion"
+                       class="descripcion">
+                    {{producto.descripcion}}
+                  </div>
                 </div>
-                <div class="producto"
-                     *ngFor="let producto of subcategoria.hijos">
-                    <div class="texto">
-                        <div class="titulo">
-                            {{producto.titulo}}
-                        </div>
-                        <div *ngIf="producto.descripcion"
-                             class="descripcion">
-                            {{producto.descripcion}}
-                        </div>
-                    </div>
-                    <div class="valor">
-                        {{producto.valor | currency:'COP':'symbol-narrow':'1.0-0'}}
-                    </div>
+                <div class="valor">
+                  {{producto.valor | currency:'COP':'symbol-narrow':'1.0-0'}}
                 </div>
-            </div>
-        </div>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+      </div>
     </div>
+  </ng-container>
 </div>

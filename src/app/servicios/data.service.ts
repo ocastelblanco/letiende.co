@@ -8,8 +8,9 @@ export interface Menu {
   posicion: number;
   titulo: string;
   descripcion: string;
-  imagen: string;
   valor: number;
+  visible: boolean;
+  imagen: string;
   tipo: string;
 }
 
@@ -31,11 +32,13 @@ export class DataService {
             posicion: el[2],
             titulo: el[3],
             descripcion: el[4],
-            imagen: el[5],
-            valor: el[6],
-            tipo: el[7]
+            valor: el[5],
+            visible: el[6] == 'Si',
+            imagen: el[7],
+            tipo: el[8]
           });
         });
+        menu.sort((a: Menu, b: Menu) => a.posicion - b.posicion);
         this.menu.next(menu);
       });
   }

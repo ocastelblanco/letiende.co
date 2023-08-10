@@ -6,8 +6,9 @@ interface Elemento {
   id: number;
   titulo: string;
   descripcion: string;
-  imagen: string;
   valor: number;
+  visible: boolean;
+  imagen: string;
   hijos: Elemento[];
 }
 
@@ -47,8 +48,9 @@ export class MenuComponent implements OnInit {
             id: el.id,
             titulo: el.titulo,
             descripcion: el.descripcion,
-            imagen: el.imagen,
             valor: el.valor,
+            visible: el.visible,
+            imagen: el.imagen,
             hijos: []
           };
           if (el.tipo == 'Categoría') this.menu.push(elemento);
