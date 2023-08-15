@@ -8,8 +8,9 @@ export interface Menu {
   posicion: number;
   titulo: string;
   descripcion: string;
-  imagen: string;
   valor: number;
+  visible: boolean;
+  imagen: string;
   tipo: string;
 }
 export interface Evento {
