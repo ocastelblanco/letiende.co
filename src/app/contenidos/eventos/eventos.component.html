@@ -1,0 +1,16 @@
+<div class="eventos">
+  <mat-card *ngFor="let evento of eventos"
+            class="evento">
+    <mat-card-header>
+      <mat-card-title>
+        {{ evento.nombre }}
+      </mat-card-title>
+      <mat-card-subtitle>
+        {{ evento.descripcion }}
+      </mat-card-subtitle>
+      <img mat-card-image
+           [src]="evento.portada">
+    </mat-card-header>
+    <mat-card-content>Contenido</mat-card-content>
+  </mat-card>
+</div>
