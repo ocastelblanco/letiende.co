@@ -40,9 +40,10 @@ export class DataService {
           posicion: el[2],
           titulo: el[3],
           descripcion: el[4],
-          imagen: el[5],
-          valor: el[6],
-          tipo: el[7]
+          valor: el[5],
+          visible: el[6],
+          imagen: el[7],
+          tipo: el[8]
         }));
         this.menu.next(menu);
       });
