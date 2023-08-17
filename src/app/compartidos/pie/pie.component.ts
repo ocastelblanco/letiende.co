@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IconDefinition, faInstagram } from '@fortawesome/free-brands-svg-icons';
+import { IconDefinition, faInstagram, faTiktok } from '@fortawesome/free-brands-svg-icons';
 
 @Component({
   selector: 'lt-pie',
@@ -8,4 +8,5 @@ import { IconDefinition, faInstagram } from '@fortawesome/free-brands-svg-icons'
 })
 export class PieComponent {
   ig: IconDefinition = faInstagram;
+  tiktok: IconDefinition = faTiktok;
 }

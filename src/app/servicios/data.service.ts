@@ -20,6 +20,7 @@ export interface Evento {
   fecha: Date;
   ig: string;
   tiktok: string;
+  registro: string;
 }
 
 @Injectable({
@@ -56,7 +57,8 @@ export class DataService {
           portada: el[2],
           fecha: new Date(el[3]),
           ig: el[4],
-          tiktok: el[5]
+          tiktok: el[5],
+          registro: el[6]
         }));
         this.eventos.next(eventos);
       });

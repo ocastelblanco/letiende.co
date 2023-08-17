@@ -6,6 +6,10 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es-CO';
+
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -13,12 +17,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatCardModule } from '@angular/material/card';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { InicioComponent } from './inicio/inicio.component';
 import { PieComponent } from './compartidos/pie/pie.component';
 import { MenuComponent } from './contenidos/menu/menu.component';
 import { NavbarComponent } from './compartidos/navbar/navbar.component';
 import { EventosComponent } from './contenidos/eventos/eventos.component';
+
+registerLocaleData(localeEs);
 
 @NgModule({
   declarations: [
@@ -40,8 +47,11 @@ import { EventosComponent } from './contenidos/eventos/eventos.component';
     MatIconModule,
     MatBottomSheetModule,
     MatCardModule,
+    MatTooltipModule
   ],
-  providers: [],
+  providers: [
+    { provide: LOCALE_ID, useValue: 'es' }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

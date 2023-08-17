@@ -26,7 +26,7 @@ export class NavbarComponent {
     [Breakpoints.XLarge, 'xl'],
   ]);
   vinculos: Vinculo[] = [
-    { titulo: 'INICIO', vinculo: '/' },
+    { titulo: 'EVENTOS', vinculo: 'eventos' },
     { titulo: 'MENÚ', vinculo: 'menu' },
   ];
   constructor(private breakpoint: BreakpointObserver, private _bottomSheet: MatBottomSheet) {

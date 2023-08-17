@@ -1,5 +1,32 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "/src/styles.scss" as estilos;
+
+$typography-config: mat.get-typography-config(estilos.$letiende-theme);
+$verde: map.get(estilos.$lt-basico, verde);
+$naranja: map.get(estilos.$lt-basico, naranja);
+$amarillo: map.get(estilos.$lt-basico, amarillo);
+$marron: map.get(estilos.$lt-basico, marron);
+
 .eventos {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: map.get(estilos.$tamanos, gap);
+  align-items: flex-start;
+  justify-content: space-evenly;
+  background-color: $amarillo;
   .evento {
     max-width: 400px;
+    margin: map.get(estilos.$tamanos, gap);
+    background-color: $marron;
+    color: white;
+    .mat-mdc-card-title {
+      @include mat.typography-level($typography-config, "heading-3");
+    }
+    .mat-mdc-card-subtitle {
+      @include mat.typography-level($typography-config, "body-4");
+      color: $amarillo;
+    }
   }
 }
