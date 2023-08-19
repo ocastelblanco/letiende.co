@@ -19,14 +19,20 @@ $marron: map.get(estilos.$lt-basico, marron);
   .evento {
     max-width: 400px;
     margin: map.get(estilos.$tamanos, gap);
-    background-color: $marron;
-    color: white;
-    .mat-mdc-card-title {
-      @include mat.typography-level($typography-config, "heading-3");
+    background-color: $amarillo;
+    color: $marron;
+    .mat-mdc-card-header {
+      margin-bottom: 8px;
+      .mat-mdc-card-title {
+        @include mat.typography-level($typography-config, "heading-3");
+      }
+      .mat-mdc-card-subtitle {
+        @include mat.typography-level($typography-config, "body-4");
+        color: $verde;
+      }
     }
-    .mat-mdc-card-subtitle {
-      @include mat.typography-level($typography-config, "body-4");
-      color: $amarillo;
+    .mat-mdc-card-content {
+      margin-top: 8px;
     }
   }
 }

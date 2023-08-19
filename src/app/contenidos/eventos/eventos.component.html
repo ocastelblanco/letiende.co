@@ -1,7 +1,7 @@
 <div class="eventos">
   <ng-container *ngFor="let evento of eventos">
     <mat-card *ngIf="evento.fecha && evento.fecha > hoy"
-              class="evento">
+              class="evento mat-elevation-z4">
       <mat-card-header>
         <mat-card-title>
           {{ evento.nombre }}

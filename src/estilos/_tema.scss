@@ -115,6 +115,10 @@ $tamanos: (
   gap: 20px
 );
 
+$estilos: (
+  box-shadow: 5px 5px #000
+);
+
 // Tipografías
 $body-1: mat.define-typography-level(
   $font-family: Poppins,
