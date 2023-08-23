@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { Router, RouterEvent, NavigationEnd } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 export interface Menu {
   id: number;
@@ -23,6 +26,8 @@ export interface Evento {
   registro: string;
 }
 
+declare var gtag: any;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -30,7 +35,14 @@ export class DataService {
   private rutaJson: string = 'https://script.google.com/macros/s/AKfycbzAgKjUUqb_xqVjIU6ci_egsJhPPc3bpn5V7mKJWKW6yEt-PrvmDcRlm7f429cw0F4/exec';
   private menu: BehaviorSubject<Menu[]> = new BehaviorSubject<Menu[]>([]);
   private eventos: BehaviorSubject<Evento[]> = new BehaviorSubject<Evento[]>([]);
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router) {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((e) => {
+      gtag('js', new Date());
+      gtag('config', environment.googleAnalytics);
+    });
+  }
   init(): void {
     this.http.get(this.rutaJson + '?pagina=menu', { responseType: 'json' })
       .subscribe((resp: any) => {
@@ -62,11 +74,25 @@ export class DataService {
         }));
         this.eventos.next(eventos);
       });
+    this.initGA();
   }
   getMenu(): BehaviorSubject<Menu[]> {
     return this.menu;
   }
   getEventos(): BehaviorSubject<Evento[]> {
     return this.eventos;
+  }
+  initGA() {
+    const script: HTMLScriptElement = document.createElement('script');
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=' + environment.googleAnalytics;
+    script.async = true;
+    document.getElementsByTagName('head')[0].appendChild(script);
+    const gtagEl: HTMLScriptElement = document.createElement('script');
+    const gtagBody: Text = document.createTextNode(`
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+    `);
+    gtagEl.appendChild(gtagBody);
+    document.body.appendChild(gtagEl);
   }
 }
