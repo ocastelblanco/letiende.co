@@ -1,14 +1,14 @@
-import { NgModule } from '@angular/core';
+import { NgModule, LOCALE_ID } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+
+import { registerLocaleData } from '@angular/common';
+import localeEsCO from '@angular/common/locales/es-CO';
+import localeEsCOExtra from '@angular/common/locales/extra/es-CO';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
-
-import { LOCALE_ID } from '@angular/core';
-import { registerLocaleData } from '@angular/common';
-import localeEs from '@angular/common/locales/es-CO';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
@@ -25,7 +25,7 @@ import { MenuComponent } from './contenidos/menu/menu.component';
 import { NavbarComponent } from './compartidos/navbar/navbar.component';
 import { EventosComponent } from './contenidos/eventos/eventos.component';
 
-registerLocaleData(localeEs);
+registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
 @NgModule({
   declarations: [
@@ -50,7 +50,7 @@ registerLocaleData(localeEs);
     MatTooltipModule
   ],
   providers: [
-    { provide: LOCALE_ID, useValue: 'es' }
+    { provide: LOCALE_ID, useValue: 'es-CO' }
   ],
   bootstrap: [AppComponent]
 })
