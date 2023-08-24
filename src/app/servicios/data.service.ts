@@ -77,6 +77,7 @@ export class DataService {
     this.initGA();
   }
   getMenu(): BehaviorSubject<Menu[]> {
+    console.log(this.menu);
     return this.menu;
   }
   getEventos(): BehaviorSubject<Evento[]> {

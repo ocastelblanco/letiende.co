@@ -6,7 +6,8 @@ import { MenuComponent } from './contenidos/menu/menu.component';
 import { EventosComponent } from './contenidos/eventos/eventos.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'eventos', pathMatch: 'full' },
+  /*{ path: '', redirectTo: 'eventos', pathMatch: 'full' },*/
+  { path: '', redirectTo: 'inicio', pathMatch: 'full' },
   { path: 'inicio', component: InicioComponent },
   { path: 'menu', component: MenuComponent },
   { path: 'eventos', component: EventosComponent },
