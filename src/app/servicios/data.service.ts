@@ -54,7 +54,7 @@ export class DataService {
           titulo: el[3],
           descripcion: el[4],
           valor: el[5],
-          visible: el[6],
+          visible: el[6].toLowerCase() == 'si' ? true : false,
           imagen: el[7],
           tipo: el[8]
         }));
