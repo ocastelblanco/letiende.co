@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Router, RouterEvent, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { environment } from '../../environments/environment';
 
 export interface Menu {
@@ -32,7 +32,7 @@ declare var gtag: any;
   providedIn: 'root'
 })
 export class DataService {
-  private rutaJson: string = 'https://script.google.com/macros/s/AKfycbzAgKjUUqb_xqVjIU6ci_egsJhPPc3bpn5V7mKJWKW6yEt-PrvmDcRlm7f429cw0F4/exec';
+  public rutaJson: string = 'https://script.google.com/macros/s/AKfycbzAgKjUUqb_xqVjIU6ci_egsJhPPc3bpn5V7mKJWKW6yEt-PrvmDcRlm7f429cw0F4/exec';
   private menu: BehaviorSubject<Menu[]> = new BehaviorSubject<Menu[]>([]);
   private eventos: BehaviorSubject<Evento[]> = new BehaviorSubject<Evento[]>([]);
   constructor(private http: HttpClient, private router: Router) {

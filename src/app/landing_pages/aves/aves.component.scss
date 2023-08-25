@@ -1,0 +1,144 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "/src/styles.scss" as estilos;
+
+$typography-config: mat.get-typography-config(estilos.$letiende-theme);
+$verde: map.get(estilos.$lt-basico, verde);
+$naranja: map.get(estilos.$lt-basico, naranja);
+$amarillo: map.get(estilos.$lt-basico, amarillo);
+$marron: map.get(estilos.$lt-basico, marron);
+
+$margen: 24px;
+
+.aves {
+  background-color: $amarillo;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .card {
+    max-width: 552px;
+    padding: $margen;
+    background: linear-gradient(#87ceeb, $naranja);
+    .encabezado {
+      display: flex;
+      flex-direction: column;
+      .titulo {
+        color: $naranja;
+        position: relative;
+        align-self: center;
+        .titulo1 {
+          font-weight: 500;
+        }
+        .subtitulo {
+          position: absolute;
+        }
+      }
+    }
+    .cuerpo {
+      position: relative;
+      .info {
+        padding: $margen;
+        border-left: $naranja solid 8px;
+      }
+      .enlaces {
+        position: absolute;
+        left: 0;
+        background-color: rgba($amarillo, 0.5);
+      }
+      .imagen {
+        width: calc(100% + $margen + $margen);
+        margin-left: $margen * -1;
+        img {
+          width: 100%;
+          height: auto;
+        }
+      }
+    }
+  }
+  &.sm,
+  &.md,
+  &.lg,
+  &.xl {
+    padding-bottom: 32px;
+    .card {
+      margin-top: $margen;
+      border-radius: 16px;
+      .encabezado {
+        .titulo {
+          .titulo1 {
+            @include mat.typography-level($typography-config, "heading-1");
+          }
+          .titulo2 {
+            @include mat.typography-level($typography-config, "especial-0");
+          }
+          .subtitulo {
+            @include mat.typography-level($typography-config, "body-1");
+            top: 78px;
+            left: 118px;
+          }
+        }
+        .texto {
+          padding: $margen 16px;
+          @include mat.typography-level($typography-config, "body-2");
+        }
+      }
+      .cuerpo {
+        .info {
+          position: absolute;
+          top: 0;
+          left: 0;
+          @include mat.typography-level($typography-config, "body-1");
+        }
+        .enlaces {
+          top: 320px;
+          border-radius: 8px;
+        }
+        .enlaces-min {
+          display: none;
+        }
+        .imagen {
+          padding-top: 160px;
+        }
+      }
+    }
+  }
+  &.xs {
+    .card {
+      height: 100%;
+      .encabezado {
+        .titulo {
+          .titulo1 {
+            @include mat.typography-level($typography-config, "heading-2");
+          }
+          .titulo2 {
+            @include mat.typography-level($typography-config, "especial-1");
+          }
+          .subtitulo {
+            @include mat.typography-level($typography-config, "body-3");
+            top: 56px;
+            left: 58px;
+          }
+        }
+        .texto {
+          padding: $margen 16px;
+          @include mat.typography-level($typography-config, "body-3");
+        }
+      }
+      .cuerpo {
+        .info {
+          @include mat.typography-level($typography-config, "body-3");
+        }
+        .enlaces {
+          display: none;
+        }
+        .enlaces-min {
+          margin-top: map.get(estilos.$tamanos, gap);
+          display: flex;
+          flex-direction: column;
+          gap: map.get(estilos.$tamanos, gap);
+        }
+      }
+    }
+  }
+}

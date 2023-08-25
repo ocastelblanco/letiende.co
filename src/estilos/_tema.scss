@@ -204,6 +204,12 @@ $caption-3: mat.define-typography-level(
   $line-height: 10px,
   $letter-spacing: 0px
 );
+$especial-0: mat.define-typography-level(
+  $font-family: Angellya,
+  $font-size: 96px,
+  $line-height: 1,
+  $letter-spacing: 0px
+);
 $especial-1: mat.define-typography-level(
   $font-family: Angellya,
   $font-size: 72px,

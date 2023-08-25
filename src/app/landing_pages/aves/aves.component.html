@@ -1,0 +1,116 @@
+<div class="aves"
+     [ngClass]="bpPantalla">
+  <div class="card"
+       *ngIf="datos.titulo1">
+    <div class="encabezado">
+      <div class="titulo">
+        <span class="titulo1"
+              [innerHTML]="datos.titulo1 | safe: 'html'">
+        </span>
+        <span class="titulo2"
+              [innerHTML]="datos.titulo2 | safe: 'html'">
+        </span>
+        <div class="subtitulo">
+          <span [innerHTML]="datos.subtitulo | safe: 'html'">
+          </span>
+        </div>
+      </div>
+      <div class="texto">
+        <span [innerHTML]="datos.texto | safe: 'html'"></span>
+      </div>
+    </div>
+    <div class="cuerpo">
+      <div class="info">
+        <span [innerHTML]="datos.info | safe: 'html'"></span>
+      </div>
+      <div class="enlaces-min">
+        <a mat-raised-button
+           color="primary"
+           matTooltip="Diego Emerson"
+           matTooltipPosition="above"
+           [href]="datos.wa_de"
+           target="_blank">
+          <fa-icon [icon]="ig"></fa-icon>
+          <span>&nbsp;&nbsp;Diego Emerson</span>
+        </a>
+        <a mat-raised-button
+           color="primary"
+           matTooltip="Le Tiende"
+           matTooltipPosition="above"
+           [href]="datos.ig_lt"
+           target="_blank">
+          <fa-icon [icon]="ig"></fa-icon>
+          <span>&nbsp;&nbsp;Instagram</span>
+        </a>
+        <button mat-raised-button
+                color="primary"
+                matTooltip="Ver video"
+                matTooltipPosition="above"
+                *ngIf="datos.video">
+          <fa-icon [icon]="video"></fa-icon>
+          <span>&nbsp;&nbsp;Video</span>
+        </button>
+        <a mat-raised-button
+           color="primary"
+           matTooltip="Regístrate para asistir al conversatorio"
+           matTooltipPosition="above"
+           [href]="datos.registro"
+           target="_blank">
+          <fa-icon [icon]="registro"></fa-icon>
+          <span>&nbsp;&nbsp;Regístrate para asistir</span>
+        </a>
+        <a mat-raised-button
+           color="primary"
+           matTooltip="Brochure de la exposición"
+           matTooltipPosition="above"
+           [href]="datos.brochure"
+           *ngIf="datos.brochure"
+           download>
+          <fa-icon [icon]="brochure"></fa-icon>
+          <span>&nbsp;&nbsp;Brochure</span>
+        </a>
+      </div>
+      <div class="enlaces">
+        <a mat-icon-button
+           matTooltip="Diego Emerson"
+           matTooltipPosition="above"
+           [href]="datos.wa_de"
+           target="_blank">
+          <fa-icon [icon]="ig"></fa-icon>
+        </a>
+        <a mat-icon-button
+           matTooltip="Le Tiende"
+           matTooltipPosition="above"
+           [href]="datos.ig_lt"
+           target="_blank">
+          <fa-icon [icon]="ig"></fa-icon>
+        </a>
+        <button mat-icon-button
+                matTooltip="Ver video"
+                matTooltipPosition="above"
+                *ngIf="datos.video">
+          <fa-icon [icon]="video"></fa-icon>
+        </button>
+        <a mat-icon-button
+           matTooltip="Regístrate para asistir al conversatorio"
+           matTooltipPosition="above"
+           [href]="datos.registro"
+           target="_blank">
+          <fa-icon [icon]="registro"></fa-icon>
+        </a>
+        <a mat-icon-button
+           matTooltip="Brochure de la exposición"
+           matTooltipPosition="above"
+           [href]="datos.brochure"
+           *ngIf="datos.brochure"
+           download>
+          <fa-icon [icon]="brochure"></fa-icon>
+        </a>
+      </div>
+      <div class="imagen">
+        <img src="assets/imgs/ave_sola.png"
+             alt="Fotografía de Diego Emerson">
+      </div>
+    </div>
+  </div>
+</div>

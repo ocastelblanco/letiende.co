@@ -11,6 +11,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { SafePipe } from './pipes/safe.pipe';
 
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,6 +25,7 @@ import { PieComponent } from './compartidos/pie/pie.component';
 import { MenuComponent } from './contenidos/menu/menu.component';
 import { NavbarComponent } from './compartidos/navbar/navbar.component';
 import { EventosComponent } from './contenidos/eventos/eventos.component';
+import { AvesComponent } from './landing_pages/aves/aves.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -34,7 +36,9 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     PieComponent,
     MenuComponent,
     NavbarComponent,
-    EventosComponent
+    EventosComponent,
+    AvesComponent,
+    SafePipe,
   ],
   imports: [
     BrowserModule,
