@@ -5,8 +5,9 @@ import {
   MatBottomSheetModule,
   MatBottomSheetRef,
 } from '@angular/material/bottom-sheet';
+import { MenuDesplegableComponent } from './menu-desplegable/menu-desplegable.component';
 
-interface Vinculo {
+export interface Vinculo {
   titulo: string;
   vinculo: string;
 }
@@ -42,5 +43,8 @@ export class NavbarComponent {
       .subscribe(result => {
         for (const tam of Object.keys(result.breakpoints)) if (result.breakpoints[tam]) this.bpPantalla = this.anchos.get(tam);
       });
+  }
+  abreMenu(): void {
+    this._bottomSheet.open(MenuDesplegableComponent, { data: { vinculos: this.vinculos } });
   }
 }

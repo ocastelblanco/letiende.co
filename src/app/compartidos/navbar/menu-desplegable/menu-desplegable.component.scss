@@ -1,0 +1,14 @@
+@use "sass:map";
+@use "sass:math";
+@use "@angular/material" as mat;
+@use "/src/styles.scss" as estilos;
+
+$typography-config: mat.get-typography-config(estilos.$letiende-theme);
+$marron: map.get(estilos.$lt-basico, marron);
+$amarillo: map.get(estilos.$lt-basico, amarillo);
+
+.menu-desplegable {
+  a {
+    @include mat.typography-level($typography-config, "body-4");
+  }
+}

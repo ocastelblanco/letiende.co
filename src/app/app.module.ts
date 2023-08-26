@@ -19,6 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatListModule } from '@angular/material/list';
 
 import { InicioComponent } from './inicio/inicio.component';
 import { PieComponent } from './compartidos/pie/pie.component';
@@ -26,6 +27,7 @@ import { MenuComponent } from './contenidos/menu/menu.component';
 import { NavbarComponent } from './compartidos/navbar/navbar.component';
 import { EventosComponent } from './contenidos/eventos/eventos.component';
 import { AvesComponent } from './landing_pages/aves/aves.component';
+import { MenuDesplegableComponent } from './compartidos/navbar/menu-desplegable/menu-desplegable.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -39,6 +41,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     EventosComponent,
     AvesComponent,
     SafePipe,
+    MenuDesplegableComponent,
   ],
   imports: [
     BrowserModule,
@@ -51,7 +54,8 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MatIconModule,
     MatBottomSheetModule,
     MatCardModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatListModule,
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-CO' }
