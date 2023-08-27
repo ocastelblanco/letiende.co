@@ -9,10 +9,11 @@ import { AvesComponent } from './landing_pages/aves/aves.component';
 const routes: Routes = [
   { path: '', redirectTo: 'eventos', pathMatch: 'full' },
   /*{ path: '', redirectTo: 'inicio', pathMatch: 'full' },*/
-  /*{ path: 'inicio', component: InicioComponent },*/
-  { path: 'menu', component: MenuComponent },
-  { path: 'eventos', component: EventosComponent },
-  { path: 'aves', component: AvesComponent },
+  { path: 'menu', component: MenuComponent, title: 'Menú Le Tiende' },
+  { path: 'eventos', component: EventosComponent, title: 'Eventos Le Tiende' },
+  { path: 'aves', component: AvesComponent, title: 'Objetivo: Aves' },
+  { path: '**', redirectTo: 'eventos', pathMatch: 'full' },
+  { path: 'inicio', component: InicioComponent },
 ];
 
 @NgModule({
