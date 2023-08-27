@@ -21,6 +21,7 @@ export interface Evento {
   descripcion: string;
   portada: string;
   fecha: Date;
+  link: string;
   ig: string;
   tiktok: string;
   registro: string;
@@ -68,9 +69,10 @@ export class DataService {
           descripcion: el[1],
           portada: el[2],
           fecha: new Date(el[3]),
-          ig: el[4],
-          tiktok: el[5],
-          registro: el[6]
+          link: el[4],
+          ig: el[5],
+          tiktok: el[6],
+          registro: el[7]
         }));
         this.eventos.next(eventos);
       });

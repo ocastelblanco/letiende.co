@@ -17,22 +17,49 @@ $marron: map.get(estilos.$lt-basico, marron);
   justify-content: space-evenly;
   background-color: $amarillo;
   .evento {
-    max-width: 400px;
+    max-width: 360px;
     margin: map.get(estilos.$tamanos, gap);
-    background-color: $amarillo;
-    color: $marron;
-    .mat-mdc-card-header {
-      margin-bottom: 8px;
-      .mat-mdc-card-title {
-        @include mat.typography-level($typography-config, "heading-3");
-      }
-      .mat-mdc-card-subtitle {
-        @include mat.typography-level($typography-config, "body-4");
-        color: $verde;
-      }
-    }
+    background-color: $marron;
+    color: $amarillo;
     .mat-mdc-card-content {
-      margin-top: 8px;
+      margin-top: 16px;
+      display: flex;
+      .fecha {
+        display: flex;
+        flex-direction: column;
+        background-color: $verde;
+        align-items: center;
+        padding: 8px 16px;
+        border-radius: 8px;
+        .mes {
+          @include mat.typography-level($typography-config, "body-2");
+          text-transform: uppercase;
+        }
+        .dia {
+          @include mat.typography-level($typography-config, "heading-1");
+        }
+        .hora {
+          @include mat.typography-level($typography-config, "body-4");
+        }
+      }
+      .info {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 0 8px;
+        .texto {
+          .titulo {
+            @include mat.typography-level($typography-config, "heading-3");
+          }
+          .descripcion {
+            @include mat.typography-level($typography-config, "body-4");
+            color: $naranja;
+          }
+        }
+        .acciones {
+          display: flex;
+        }
+      }
     }
   }
 }

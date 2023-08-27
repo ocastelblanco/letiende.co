@@ -16,6 +16,7 @@ $marron: map.get(estilos.$lt-basico, marron);
   align-items: center;
   color: #fff;
   padding-bottom: 32px;
+  position: relative;
   .categoria {
     width: 100%;
     max-width: map.get(estilos.$tamanos, ancho-menu);
@@ -104,6 +105,16 @@ $marron: map.get(estilos.$lt-basico, marron);
           }
         }
       }
+    }
+  }
+  .promociones {
+    position: fixed;
+    display: flex;
+    max-width: map.get(estilos.$tamanos, ancho-menu);
+    width: 100%;
+    justify-content: flex-end;
+    .boton-promo {
+      margin: 36px 36px 0 0;
     }
   }
 }

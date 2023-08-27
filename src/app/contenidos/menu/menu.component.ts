@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { DataService, Menu } from 'src/app/servicios/data.service';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { IconDefinition, faBullhorn } from '@fortawesome/free-solid-svg-icons';
+import { MatMenuTrigger } from '@angular/material/menu';
 
 interface Elemento {
   id: number;
@@ -19,6 +21,8 @@ interface Elemento {
   styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent implements OnInit {
+  @ViewChild(MatMenuTrigger) menuProm: MatMenuTrigger = {} as MatMenuTrigger;
+  promo: IconDefinition = faBullhorn;
   bpPantalla!: string | undefined;
   anchos = new Map([
     [Breakpoints.XSmall, 'xs'],
@@ -71,6 +75,7 @@ export class MenuComponent implements OnInit {
               });
           });
       }
+      this.menuProm.openMenu();
     });
   }
   imagenFondo(ruta: string): string {

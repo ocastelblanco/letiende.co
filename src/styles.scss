@@ -3,6 +3,7 @@
 @use "@angular/material" as mat;
 @use "./estilos/tema" as tema;
 @use "./estilos/bottomSheet" as bottomSheet;
+@use "./estilos/menu" as menu;
 
 // Core
 @include mat.core();
@@ -54,6 +55,7 @@ $letiende-theme: mat.define-light-theme(
 );
 @include mat.all-component-themes($letiende-theme);
 @include bottomSheet.tema($letiende-theme);
+@include menu.tema($letiende-theme);
 
 /* You can add global styles to this file, and also import other style files */
 
@@ -69,5 +71,9 @@ body {
     display: flex;
     width: 100vw;
     min-height: calc(100vh - map.get(tema.$tamanos, alto-pie) - map.get(tema.$tamanos, alto-navbar));
+  }
+  // Backdrop del desplegable de Promociones
+  .backPromo {
+    background-color: rgba(#000, 0.6);
   }
 }

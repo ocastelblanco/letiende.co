@@ -1,0 +1,89 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "tema" as tema;
+
+@mixin color($theme) {
+  $naranja: map.get(tema.$lt-basico, naranja);
+  $amarillo: map.get(tema.$lt-basico, amarillo);
+  $verde: map.get(tema.$lt-basico, verde);
+  .mat-mdc-menu-panel {
+    &.promo {
+      background-image: url("/assets/imgs/blackboard.jpg");
+      color: white;
+      min-width: 280px !important;
+      max-width: 560px !important;
+      padding: 0 24px 16px;
+      .promo-titulo {
+        margin: 16px;
+      }
+      .subcat {
+        .producto {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 8px;
+          .texto {
+            max-width: 70%;
+            margin-bottom: 8px;
+            .titulo {
+              color: white;
+            }
+            .descripcion {
+              color: $amarillo;
+            }
+          }
+          .valor {
+            color: white;
+          }
+          &:not(:last-of-type) {
+            border-bottom: 1px solid rgba($amarillo, 0.2);
+          }
+        }
+      }
+    }
+  }
+}
+@mixin typography($theme) {
+  $typography-config: mat.get-typography-config($theme);
+  .mat-mdc-menu-panel {
+    &.promo {
+      .cerrar {
+        position: absolute;
+        right: 4px;
+        top: 4px;
+      }
+      .promo-titulo {
+        @include mat.typography-level($typography-config, "especial-2");
+      }
+      .subcat {
+        .producto {
+          .texto {
+            .titulo {
+              @include mat.typography-level($typography-config, "body-2");
+            }
+            .descripcion {
+              @include mat.typography-level($typography-config, "caption-2");
+            }
+          }
+          .valor {
+            @include mat.typography-level($typography-config, "body-3");
+          }
+        }
+      }
+      &.xs {
+        .promo-titulo {
+          @include mat.typography-level($typography-config, "especial-3");
+        }
+      }
+    }
+  }
+}
+@mixin tema($theme) {
+  $color-config: mat.get-color-config($theme);
+  @if $color-config != null {
+    @include color($theme);
+  }
+  $typography-config: mat.get-typography-config($theme);
+  @if $typography-config != null {
+    @include typography($theme);
+  }
+}

@@ -20,6 +20,7 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
 
 import { InicioComponent } from './inicio/inicio.component';
 import { PieComponent } from './compartidos/pie/pie.component';
@@ -56,6 +57,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MatCardModule,
     MatTooltipModule,
     MatListModule,
+    MatMenuModule,
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-CO' }

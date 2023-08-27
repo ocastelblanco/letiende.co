@@ -18,7 +18,7 @@
       <div class="subcategorias">
         <ng-container *ngFor="let subcategoria of categoria.hijos">
           <div class="subcategoria"
-               *ngIf="subcategoria.visible">
+               *ngIf="subcategoria.visible && subcategoria.titulo != 'Promociones'">
             <div class="texto">
               <div class="titulo">{{subcategoria.titulo}}</div>
               <div *ngIf="subcategoria.descripcion"
@@ -48,4 +48,44 @@
       </div>
     </div>
   </ng-container>
+  <div class="promociones">
+    <button class="boton-promo"
+            matTooltip="Promociones de hoy"
+            matTooltipPosition="left"
+            [matMenuTriggerFor]="promos"
+            mat-fab>
+      <fa-icon [icon]="promo"
+               size="lg"></fa-icon>
+    </button>
+  </div>
 </div>
+<mat-menu class="promo"
+          backdropClass="backPromo"
+          xPosition="before"
+          yPosition="below"
+          #promos="matMenu">
+  <button class="cerrar"
+          mat-icon-button>
+    <mat-icon>close</mat-icon>
+  </button>
+  <div class="promo-titulo">
+    <span>Promociones de hoy</span>
+  </div>
+  <ng-container *ngFor="let cat of menu">
+    <ng-container *ngFor="let subcat of cat.hijos">
+      <div class="subcat"
+           *ngIf="subcat.titulo == 'Promociones'">
+        <ng-container *ngFor="let producto of subcat.hijos">
+          <div class="producto"
+               *ngIf="producto.visible">
+            <div class="texto">
+              <div class="titulo">{{producto.titulo}}</div>
+              <div class="descripcion">{{producto.descripcion}}</div>
+            </div>
+            <div class="valor">{{producto.valor | currency:'COP':'symbol-narrow':'1.0-0'}}</div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+  </ng-container>
+</mat-menu>

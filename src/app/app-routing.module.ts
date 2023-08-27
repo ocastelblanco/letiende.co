@@ -7,9 +7,9 @@ import { EventosComponent } from './contenidos/eventos/eventos.component';
 import { AvesComponent } from './landing_pages/aves/aves.component';
 
 const routes: Routes = [
-  /*{ path: '', redirectTo: 'eventos', pathMatch: 'full' },*/
-  { path: '', redirectTo: 'inicio', pathMatch: 'full' },
-  { path: 'inicio', component: InicioComponent },
+  { path: '', redirectTo: 'eventos', pathMatch: 'full' },
+  /*{ path: '', redirectTo: 'inicio', pathMatch: 'full' },*/
+  /*{ path: 'inicio', component: InicioComponent },*/
   { path: 'menu', component: MenuComponent },
   { path: 'eventos', component: EventosComponent },
   { path: 'aves', component: AvesComponent },
