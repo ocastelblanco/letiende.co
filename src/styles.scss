@@ -2,6 +2,7 @@
 @use "sass:math";
 @use "@angular/material" as mat;
 @use "./estilos/tema" as tema;
+@use "./estilos/bottomSheet" as bottomSheet;
 
 // Core
 @include mat.core();
@@ -52,6 +53,7 @@ $letiende-theme: mat.define-light-theme(
   )
 );
 @include mat.all-component-themes($letiende-theme);
+@include bottomSheet.tema($letiende-theme);
 
 /* You can add global styles to this file, and also import other style files */
 

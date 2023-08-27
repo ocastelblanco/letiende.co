@@ -1,0 +1,42 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "tema" as tema;
+
+@mixin color($theme) {
+  $naranja: map.get(tema.$lt-basico, naranja);
+  $amarillo: map.get(tema.$lt-basico, amarillo);
+  $verde: map.get(tema.$lt-basico, verde);
+
+  .mat-bottom-sheet-container {
+    background-color: $amarillo;
+    .mdc-list-item {
+      .mdc-list-item__primary-text {
+        color: $naranja;
+      }
+      &:hover {
+        background-color: rgba($verde, 0.5);
+      }
+    }
+  }
+}
+@mixin typography($theme) {
+  $typography-config: mat.get-typography-config($theme);
+  .mat-bottom-sheet-container {
+    .mdc-list-item {
+      .mdc-list-item__primary-text {
+        @include mat.typography-level($typography-config, "body-3");
+        text-transform: capitalize;
+      }
+    }
+  }
+}
+@mixin tema($theme) {
+  $color-config: mat.get-color-config($theme);
+  @if $color-config != null {
+    @include color($theme);
+  }
+  $typography-config: mat.get-typography-config($theme);
+  @if $typography-config != null {
+    @include typography($theme);
+  }
+}
