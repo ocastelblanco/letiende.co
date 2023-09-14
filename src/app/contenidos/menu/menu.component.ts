@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { DataService, Menu } from 'src/app/servicios/data.service';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { IconDefinition, faBullhorn } from '@fortawesome/free-solid-svg-icons';
+import { IconDefinition, faBullhorn, faHeart } from '@fortawesome/free-solid-svg-icons';
 import { MatMenuTrigger } from '@angular/material/menu';
 
 interface Elemento {
@@ -14,6 +14,11 @@ interface Elemento {
   posicion: number;
   hijos: Elemento[];
 }
+interface TipoImagen {
+  tipo: string;
+  ruta: string;
+  icono: IconDefinition;
+}
 
 @Component({
   selector: 'lt-menu',
@@ -23,6 +28,7 @@ interface Elemento {
 export class MenuComponent implements OnInit {
   @ViewChild(MatMenuTrigger) menuProm: MatMenuTrigger = {} as MatMenuTrigger;
   promo: IconDefinition = faBullhorn;
+  heart: IconDefinition = faHeart;
   bpPantalla!: string | undefined;
   anchos = new Map([
     [Breakpoints.XSmall, 'xs'],
@@ -74,14 +80,36 @@ export class MenuComponent implements OnInit {
                 subcat.hijos.sort((a: Elemento, b: Elemento) => a.posicion - b.posicion);
               });
           });
+        setTimeout(() => this.menuProm.openMenu(), 500);
       }
-      this.menuProm.openMenu();
     });
   }
   imagenFondo(ruta: string): string {
     return 'url(' +
       (ruta.substring(0, 4) == 'http' || ruta.substring(0, 3) == 'www' ? '' : 'assets/menu/') +
       ruta + ')';
+  }
+  imagenProducto(imagen: string): TipoImagen {
+    const salida: TipoImagen = {
+      icono: {} as IconDefinition,
+      tipo: 'vacio',
+      ruta: ''
+    };
+    if (imagen) {
+      salida.tipo = 'imagen';
+      salida.ruta = imagen;
+      if (!imagen.includes('.')) {
+        salida.tipo = 'icono';
+        switch (imagen) {
+          case 'heart':
+            salida.icono = this.heart;
+            break;
+          default:
+            salida.icono = this.promo;
+        }
+      }
+    }
+    return salida;
   }
   simplifica(texto: string): string {
     return texto

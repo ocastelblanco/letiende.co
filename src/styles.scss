@@ -72,8 +72,15 @@ body {
     width: 100vw;
     min-height: calc(100vh - map.get(tema.$tamanos, alto-pie) - map.get(tema.$tamanos, alto-navbar));
   }
-  // Backdrop del desplegable de Promociones
+  // Desplegable de Promociones
   .backPromo {
     background-color: rgba(#000, 0.6);
+  }
+  .producto {
+    & > .imagen {
+      display: flex;
+      align-items: center;
+      color: red;
+    }
   }
 }
