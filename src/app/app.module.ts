@@ -29,6 +29,7 @@ import { NavbarComponent } from './compartidos/navbar/navbar.component';
 import { EventosComponent } from './contenidos/eventos/eventos.component';
 import { AvesComponent } from './landing_pages/aves/aves.component';
 import { MenuDesplegableComponent } from './compartidos/navbar/menu-desplegable/menu-desplegable.component';
+import { JsonLdDirective } from './directivas/json-ld.directive';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -43,6 +44,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     AvesComponent,
     SafePipe,
     MenuDesplegableComponent,
+    JsonLdDirective,
   ],
   imports: [
     BrowserModule,

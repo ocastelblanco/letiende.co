@@ -1,9 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { Router, NavigationEnd } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { DOCUMENT } from '@angular/common';
+
 
 export interface Menu {
   id: number;
@@ -26,8 +28,13 @@ export interface Evento {
   tiktok: string;
   registro: string;
 }
-
-declare var gtag: any;
+export interface SEO {
+  pagina?: string;
+  titulo: string;
+  descripcion: string;
+  keywords: string[];
+}
+declare let gtag: any;
 
 @Injectable({
   providedIn: 'root'
@@ -36,7 +43,8 @@ export class DataService {
   public rutaJson: string = 'https://script.google.com/macros/s/AKfycbzAgKjUUqb_xqVjIU6ci_egsJhPPc3bpn5V7mKJWKW6yEt-PrvmDcRlm7f429cw0F4/exec';
   private menu: BehaviorSubject<Menu[]> = new BehaviorSubject<Menu[]>([]);
   private eventos: BehaviorSubject<Evento[]> = new BehaviorSubject<Evento[]>([]);
-  constructor(private http: HttpClient, private router: Router) {
+  private SEO: BehaviorSubject<SEO[]> = new BehaviorSubject<SEO[]>([]);
+  constructor(private http: HttpClient, private router: Router, @Inject(DOCUMENT) private doc: Document) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((e) => {
@@ -45,6 +53,12 @@ export class DataService {
     });
   }
   init(): void {
+    this.http.get(this.rutaJson + '?pagina=SEO', { responseType: 'json' })
+      .subscribe((resp: any) => {
+        const seo: SEO[] = [];
+        resp.forEach((linea: string[]) => seo.push({ pagina: linea[0], titulo: linea[1], descripcion: linea[2], keywords: this.separaKeywords(linea[3]) }));
+        this.SEO.next(seo);
+      });
     this.http.get(this.rutaJson + '?pagina=menu', { responseType: 'json' })
       .subscribe((resp: any) => {
         const menu: Menu[] = [];
@@ -78,13 +92,16 @@ export class DataService {
       });
     this.initGA();
   }
+  getSEO(): BehaviorSubject<SEO[]> {
+    return this.SEO;
+  }
   getMenu(): BehaviorSubject<Menu[]> {
     return this.menu;
   }
   getEventos(): BehaviorSubject<Evento[]> {
     return this.eventos;
   }
-  initGA() {
+  initGA(): void {
     const script: HTMLScriptElement = document.createElement('script');
     script.src = 'https://www.googletagmanager.com/gtag/js?id=' + environment.googleAnalytics;
     script.async = true;
@@ -96,5 +113,20 @@ export class DataService {
     `);
     gtagEl.appendChild(gtagBody);
     document.body.appendChild(gtagEl);
+  }
+  creaURLCanonica(): void {
+    const lista: NodeList = document.querySelectorAll('link[rel="canonical"]');
+    for (let i: number = 0; i < lista.length; i++) {
+      const elemento: HTMLLinkElement = lista[i] as HTMLLinkElement;
+      elemento.remove();
+    }
+    const link: HTMLLinkElement = this.doc.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    this.doc.head.appendChild(link);
+    link.setAttribute('href', this.doc.URL);
+  }
+  separaKeywords(cadena: string): string[] {
+    const regExp: RegExp = /[,\.;:-_]/gm;
+    return cadena.split(regExp).map((el: string) => el.trim());
   }
 }
