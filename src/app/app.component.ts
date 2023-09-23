@@ -56,6 +56,7 @@ export class AppComponent implements OnInit {
             this.metaService.updateTag({ name: 'keywords', content: this.seo.keywords.join(',') });
             this.metaService.updateTag({ name: 'description', content: this.seo.descripcion });
           }
+          this.data.creaURLCanonica();
         });
       });
       this.titleService.setTitle(this.seo.titulo);
@@ -65,7 +66,6 @@ export class AppComponent implements OnInit {
         { name: 'robots', content: 'index, follow' }
       ]);
       // Crea una URL canónica para cada página
-      this.data.creaURLCanonica();
     });
   }
 }
