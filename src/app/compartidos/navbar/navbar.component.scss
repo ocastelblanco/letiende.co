@@ -10,12 +10,16 @@ $amarillo: map.get(estilos.$lt-basico, amarillo);
 $modulo: math.div(map.get(estilos.$tamanos, alto-navbar), 4);
 
 .navbar {
+  position: relative;
   &.xl,
   &.lg,
   &.md {
     gap: $modulo;
     .menu {
       display: none;
+    }
+    .titulo {
+      position: absolute;
     }
   }
   &.sm,
@@ -33,5 +37,11 @@ $modulo: math.div(map.get(estilos.$tamanos, alto-navbar), 4);
     &.activo {
       color: $marron;
     }
+  }
+  .titulo {
+    @include mat.typography-level($typography-config, "especial-2");
+    color: $amarillo;
+    width: 100%;
+    text-align: center;
   }
 }

@@ -16,6 +16,10 @@
        routerLinkActive="activo"
        [routerLinkActiveOptions]="{exact: true}"
        [routerLink]="vinculo.vinculo">
-        {{ vinculo.titulo }}
+        {{ vinculo.titulo.toUpperCase() }}
     </a>
+    <div class="titulo"
+         *ngIf="vinculos[numVinculo].titulo != 'inicio'">
+        {{ vinculos[numVinculo].titulo }}
+    </div>
 </mat-toolbar>
