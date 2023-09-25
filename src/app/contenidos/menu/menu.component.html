@@ -15,7 +15,8 @@
         </div>
       </div>
       <div class="logo"></div>
-      <div class="subcategorias">
+      <div class="subcategorias"
+           @subcategorias>
         <ng-container *ngFor="let subcategoria of categoria.hijos">
           <div class="subcategoria"
                *ngIf="subcategoria.visible && subcategoria.titulo != 'Promociones'">

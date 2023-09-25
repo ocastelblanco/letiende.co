@@ -33,6 +33,7 @@ $marron: map.get(estilos.$lt-basico, marron);
     align-items: center;
     margin-top: 16px;
     border-radius: map.get(estilos.$tamanos, border-radius);
+    overflow: hidden;
     & > * {
       width: calc(100% - 64px);
     }

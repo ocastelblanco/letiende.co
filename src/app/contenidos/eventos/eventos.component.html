@@ -1,57 +1,61 @@
 <div class="eventos">
-  <ng-container *ngFor="let evento of eventos">
-    <mat-card *ngIf="evento.fecha && evento.fecha > hoy"
-              class="evento mat-elevation-z4">
-      <img mat-card-image
-           [src]="evento.portada">
-      <mat-card-content>
-        <div class="fecha">
-          <div class="mes">{{ evento.fecha | date: 'MMM':undefined:'es-CO' }}</div>
-          <div class="dia">{{ evento.fecha | date: 'd':undefined:'es-CO' }}</div>
-          <div class="hora">{{ evento.fecha | date: 'h:mm a':undefined:'es-CO' }}</div>
-        </div>
-        <div class="info">
-          <div class="texto">
-            <div class="titulo">{{ evento.nombre }}</div>
-            <div class="descripcion">{{ evento.descripcion }}</div>
+  <div class="eventos-animados"
+       *ngIf="eventos.length > 0"
+       @eventos>
+    <ng-container *ngFor="let evento of eventos">
+      <mat-card class="evento mat-elevation-z4"
+                *ngIf="evento.fecha && evento.fecha > hoy">
+        <img mat-card-image
+             [src]="evento.portada">
+        <mat-card-content>
+          <div class="fecha">
+            <div class="mes">{{ evento.fecha | date: 'MMM':undefined:'es-CO' }}</div>
+            <div class="dia">{{ evento.fecha | date: 'd':undefined:'es-CO' }}</div>
+            <div class="hora">{{ evento.fecha | date: 'h:mm a':undefined:'es-CO' }}</div>
           </div>
-          <div class="acciones"
-               *ngIf="evento.ig || evento.tiktok || evento.link || evento.registro">
-            <a mat-icon-button
-               matTooltip="Más información"
-               matTooltipPosition="above"
-               [href]="evento.link"
-               [target]="evento.link.indexOf('letiende.co') > -1 ? '_self' : '_blank'"
-               *ngIf="evento.link">
-              <fa-icon [icon]="info"></fa-icon>
-            </a>
-            <a mat-icon-button
-               matTooltip="Instagram"
-               matTooltipPosition="above"
-               [href]="evento.ig"
-               target="_blank"
-               *ngIf="evento.ig">
-              <fa-icon [icon]="ig"></fa-icon>
-            </a>
-            <a mat-icon-button
-               matTooltip="TikTok"
-               matTooltipPosition="above"
-               [href]="evento.tiktok"
-               target="_blank"
-               *ngIf="evento.tiktok">
-              <fa-icon [icon]="tiktok"></fa-icon>
-            </a>
-            <a mat-icon-button
-               matTooltip="Regístrate para este evento"
-               matTooltipPosition="above"
-               [href]="evento.registro"
-               target="_blank"
-               *ngIf="evento.registro">
-              <fa-icon [icon]="registro"></fa-icon>
-            </a>
+          <div class="info">
+            <div class="texto">
+              <div class="titulo">{{ evento.nombre }}</div>
+              <div class="descripcion">{{ evento.descripcion }}</div>
+            </div>
+            <div class="acciones"
+                 *ngIf="evento.ig || evento.tiktok || evento.link || evento.registro">
+              <a mat-icon-button
+                 matTooltip="Más información"
+                 matTooltipPosition="above"
+                 [href]="evento.link"
+                 [target]="evento.link.indexOf('letiende.co') > -1 ? '_self' : '_blank'"
+                 *ngIf="evento.link">
+                <fa-icon [icon]="info"></fa-icon>
+              </a>
+              <a mat-icon-button
+                 matTooltip="Instagram"
+                 matTooltipPosition="above"
+                 [href]="evento.ig"
+                 target="_blank"
+                 *ngIf="evento.ig">
+                <fa-icon [icon]="ig"></fa-icon>
+              </a>
+              <a mat-icon-button
+                 matTooltip="TikTok"
+                 matTooltipPosition="above"
+                 [href]="evento.tiktok"
+                 target="_blank"
+                 *ngIf="evento.tiktok">
+                <fa-icon [icon]="tiktok"></fa-icon>
+              </a>
+              <a mat-icon-button
+                 matTooltip="Regístrate para este evento"
+                 matTooltipPosition="above"
+                 [href]="evento.registro"
+                 target="_blank"
+                 *ngIf="evento.registro">
+                <fa-icon [icon]="registro"></fa-icon>
+              </a>
+            </div>
           </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </ng-container>
+        </mat-card-content>
+      </mat-card>
+    </ng-container>
+  </div>
 </div>

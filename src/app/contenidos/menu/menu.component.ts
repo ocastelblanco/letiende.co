@@ -3,6 +3,7 @@ import { DataService, Menu } from 'src/app/servicios/data.service';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { IconDefinition, faBullhorn, faHeart } from '@fortawesome/free-solid-svg-icons';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { trigger, stagger, query, style, animate, transition } from '@angular/animations';
 
 interface Elemento {
   id: number;
@@ -23,7 +24,20 @@ interface TipoImagen {
 @Component({
   selector: 'lt-menu',
   templateUrl: './menu.component.html',
-  styleUrls: ['./menu.component.scss']
+  styleUrls: ['./menu.component.scss'],
+  animations: [
+    trigger('subcategorias', [
+      transition(':enter', [
+        query('.subcategoria', [
+          style({ opacity: 0, transform: 'translateX(-100%)' }),
+          stagger(50, [
+            animate('500ms cubic-bezier(0.35, 0, 0.25, 1)',
+              style({ opacity: 1, transform: 'none' }))
+          ])
+        ]),
+      ])
+    ]),
+  ]
 })
 export class MenuComponent implements OnInit {
   @ViewChild(MatMenuTrigger) menuProm: MatMenuTrigger = {} as MatMenuTrigger;
@@ -80,7 +94,7 @@ export class MenuComponent implements OnInit {
                 subcat.hijos.sort((a: Elemento, b: Elemento) => a.posicion - b.posicion);
               });
           });
-        setTimeout(() => this.menuProm.openMenu(), 500);
+        setTimeout(() => this.menuProm.openMenu(), 1000);
       }
     });
   }
