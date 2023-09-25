@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DataService, SEO } from './servicios/data.service';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, UrlSegment } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'lt-root',
@@ -47,25 +47,26 @@ export class AppComponent implements OnInit {
     this.data.init();
   }
   ngOnInit(): void {
-    this.data.getSEO().subscribe((SEO: SEO[]) => {
-      this.router.events.pipe(filter((ev: any) => ev instanceof NavigationEnd)).subscribe((ev: any) => {
-        this.route.firstChild?.url.subscribe((url: UrlSegment[]) => {
+    this.router.events.pipe(filter((ev: any) => ev instanceof NavigationEnd)).subscribe((ev: any) => {
+      this.route.firstChild?.url.subscribe((url: UrlSegment[]) => {
+        this.data.getSEO().subscribe((SEO: SEO[]) => {
           const _seo: SEO = SEO.find((pag: SEO) => pag.pagina == url[0].path) as SEO;
           if (_seo) {
             this.seo = _seo;
             this.metaService.updateTag({ name: 'keywords', content: this.seo.keywords.join(',') });
             this.metaService.updateTag({ name: 'description', content: this.seo.descripcion });
+            this.titleService.setTitle(this.seo.titulo);
           }
+          // Crea una URL canónica para cada página
           this.data.creaURLCanonica();
+          // Las opciones por defecto
+          this.metaService.addTags([
+            { name: 'keywords', content: this.seo.keywords.join(',') },
+            { name: 'description', content: this.seo.descripcion },
+            { name: 'robots', content: 'index, follow' }
+          ]);
         });
       });
-      this.titleService.setTitle(this.seo.titulo);
-      this.metaService.addTags([
-        { name: 'keywords', content: this.seo.keywords.join(',') },
-        { name: 'description', content: this.seo.descripcion },
-        { name: 'robots', content: 'index, follow' }
-      ]);
-      // Crea una URL canónica para cada página
     });
   }
 }
