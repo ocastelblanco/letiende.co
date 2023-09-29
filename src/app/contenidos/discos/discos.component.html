@@ -1,3 +1,20 @@
 <div class="discos">
-  DISCOS
+  <ng-container *ngFor="let disco of discos">
+    <mat-card class="disco mat-elevation-z4"
+              *ngIf="disco.visible">
+      <img mat-card-image
+           *ngIf="disco.cover"
+           [src]="disco.cover">
+      <mat-card-content>
+        <div class="album">{{ disco.album }}</div>
+        <div class="artista">{{ disco.artista }}</div>
+        <div class="estado">{{ disco.estado }}</div>
+        <div class="valor">{{ disco.valor | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+        <div class="origen">{{ disco.origen }}</div>
+        <div class="anno">{{ disco.anno }}</div>
+        <div class="genero">{{ disco.genero?.join(', ') }}</div>
+        <div class="descripcion">{{ disco.descripcion }}</div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
 </div>

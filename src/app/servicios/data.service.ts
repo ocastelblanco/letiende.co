@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { Router, NavigationEnd } from '@angular/router';
 import { environment } from '../../environments/environment';
@@ -34,16 +34,32 @@ export interface SEO {
   descripcion: string;
   keywords: string[];
 }
+export interface Disco {
+  album: string;
+  artista: string;
+  estado: string;
+  barcode: string;
+  valor: number;
+  visible: boolean;
+  origen?: string;
+  anno?: string;
+  genero?: string[];
+  cover?: string;
+  descripcion?: string;
+}
+
 declare let gtag: any;
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
-  public rutaJson: string = 'https://script.google.com/macros/s/AKfycbzAgKjUUqb_xqVjIU6ci_egsJhPPc3bpn5V7mKJWKW6yEt-PrvmDcRlm7f429cw0F4/exec';
+  public rutaJson: string = 'https://script.google.com/macros/s/AKfycbzAgKjUUqb_xqVjIU6ci_egsJhPPc3bpn5V7mKJWKW6yEt-PrvmDcRlm7f429cw0F4/exec?pagina=';
+  private rutaAPI: string = 'https://api.letiende.co/';
   private menu: BehaviorSubject<Menu[]> = new BehaviorSubject<Menu[]>([]);
   private eventos: BehaviorSubject<Evento[]> = new BehaviorSubject<Evento[]>([]);
   private SEO: BehaviorSubject<SEO[]> = new BehaviorSubject<SEO[]>([]);
+  private discos: BehaviorSubject<Disco[]> = new BehaviorSubject<Disco[]>([]);
   constructor(private http: HttpClient, private router: Router, @Inject(DOCUMENT) private doc: Document) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -53,13 +69,13 @@ export class DataService {
     });
   }
   init(): void {
-    this.http.get(this.rutaJson + '?pagina=SEO', { responseType: 'json' })
+    this.http.get(this.rutaJson + 'SEO', { responseType: 'json' })
       .subscribe((resp: any) => {
         const seo: SEO[] = [];
         resp.forEach((linea: string[]) => seo.push({ pagina: linea[0], titulo: linea[1], descripcion: linea[2], keywords: this.separaKeywords(linea[3]) }));
         this.SEO.next(seo);
       });
-    this.http.get(this.rutaJson + '?pagina=menu', { responseType: 'json' })
+    this.http.get(this.rutaJson + 'menu', { responseType: 'json' })
       .subscribe((resp: any) => {
         const menu: Menu[] = [];
         resp.forEach((el: any) => menu.push({
@@ -75,7 +91,7 @@ export class DataService {
         }));
         this.menu.next(menu);
       });
-    this.http.get(this.rutaJson + '?pagina=eventos', { responseType: 'json' })
+    this.http.get(this.rutaJson + 'eventos', { responseType: 'json' })
       .subscribe((resp: any) => {
         const eventos: Evento[] = [];
         resp.forEach((el: any) => eventos.push({
@@ -128,5 +144,29 @@ export class DataService {
   separaKeywords(cadena: string): string[] {
     const regExp: RegExp = /[,\.;:-_]/gm;
     return cadena.split(regExp).map((el: string) => el.trim());
+  }
+  getDiscos(): BehaviorSubject<Disco[]> {
+    this.http.get(this.rutaJson + 'discos', { responseType: 'json' })
+      .subscribe((resp: any) => {
+        const _discos: Disco[] = [];
+        resp.forEach((disco: any[]) => {
+          const _disco: Disco = {
+            album: disco[0],
+            artista: disco[1],
+            estado: disco[2],
+            barcode: disco[3],
+            valor: disco[4],
+            visible: disco[5].toLowerCase() == 'si'
+          };
+          _discos.push(_disco);
+        });
+        this.discos.next(_discos);
+      });
+    return this.discos;
+  }
+  getDiscoInfo(album: string, artista: string, barcode: string | null = null): Observable<any> {
+    const query: string = 'album=' + album + '&artista=' + artista;
+    const bcode: string = barcode ? '&barcode=' + barcode : '';
+    return this.http.get(this.rutaAPI + 'discogs?' + query + bcode);
   }
 }

@@ -16,4 +16,7 @@ $marron: map.get(estilos.$lt-basico, marron);
   align-items: flex-start;
   justify-content: space-evenly;
   background-color: $amarillo;
+  .disco {
+    width: 240px;
+  }
 }

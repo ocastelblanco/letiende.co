@@ -28,6 +28,7 @@ export class NavbarComponent {
     /*{ titulo: 'Inicio', vinculo: 'inicio' },*/
     { titulo: 'Eventos', vinculo: 'eventos' },
     { titulo: 'Menú', vinculo: 'menu' },
+    { titulo: 'Discos', vinculo: 'discos' },
   ];
   numVinculo: number = 0;
   constructor(
