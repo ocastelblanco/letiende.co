@@ -59,6 +59,8 @@ $letiende-theme: mat.define-light-theme(
 
 /* You can add global styles to this file, and also import other style files */
 
+$naranja: map.get(tema.$lt-basico, naranja);
+
 html,
 body {
   height: 100%;
@@ -80,7 +82,11 @@ body {
     & > .imagen {
       display: flex;
       align-items: center;
-      color: red;
+      color: $naranja;
     }
+  }
+  // Spacer genérico para elementos tipo flex
+  .spacer {
+    flex: 1 1 auto;
   }
 }

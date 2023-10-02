@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { DataService, Menu } from 'src/app/servicios/data.service';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { IconDefinition, faBullhorn, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { IconDefinition, faBullhorn, faHeart, faCertificate } from '@fortawesome/free-solid-svg-icons';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { trigger, stagger, query, style, animate, transition } from '@angular/animations';
 
@@ -43,6 +43,7 @@ export class MenuComponent implements OnInit {
   @ViewChild(MatMenuTrigger) menuProm: MatMenuTrigger = {} as MatMenuTrigger;
   promo: IconDefinition = faBullhorn;
   heart: IconDefinition = faHeart;
+  certificate: IconDefinition = faCertificate;
   bpPantalla!: string | undefined;
   anchos = new Map([
     [Breakpoints.XSmall, 'xs'],
@@ -117,6 +118,9 @@ export class MenuComponent implements OnInit {
         switch (imagen) {
           case 'heart':
             salida.icono = this.heart;
+            break;
+          case 'certificate':
+            salida.icono = this.certificate;
             break;
           default:
             salida.icono = this.promo;
