@@ -10,54 +10,92 @@ $marron: map.get(estilos.$lt-basico, marron);
 
 .eventos {
   width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  gap: map.get(estilos.$tamanos, gap);
-  align-items: flex-start;
-  justify-content: space-evenly;
   background-color: $amarillo;
-  .evento {
-    max-width: 360px;
-    margin: map.get(estilos.$tamanos, gap);
-    background-color: $marron;
-    color: $amarillo;
-    .mat-mdc-card-content {
-      margin-top: 16px;
-      display: flex;
-      .fecha {
-        display: flex;
-        flex-direction: column;
-        background-color: $verde;
-        align-items: center;
-        padding: 8px 16px;
-        border-radius: 8px;
-        .mes {
-          @include mat.typography-level($typography-config, "body-2");
-          text-transform: uppercase;
-        }
-        .dia {
-          @include mat.typography-level($typography-config, "heading-1");
-        }
-        .hora {
-          @include mat.typography-level($typography-config, "body-4");
+  .lista-eventos {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get(estilos.$tamanos, gap);
+    align-items: flex-start;
+    justify-content: space-evenly;
+    .evento {
+      &:not(.vacio) {
+        max-width: 360px;
+        margin: map.get(estilos.$tamanos, gap);
+        background-color: $marron;
+        color: $amarillo;
+        .mat-mdc-card-content {
+          margin-top: 16px;
+          display: flex;
+          .fecha {
+            display: flex;
+            flex-direction: column;
+            background-color: $verde;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 8px;
+            .mes {
+              @include mat.typography-level($typography-config, "body-2");
+              text-transform: uppercase;
+            }
+            .dia {
+              @include mat.typography-level($typography-config, "heading-1");
+            }
+            .hora {
+              @include mat.typography-level($typography-config, "body-4");
+            }
+          }
+          .info {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 0 8px;
+            .texto {
+              .titulo {
+                @include mat.typography-level($typography-config, "heading-3");
+              }
+              .descripcion {
+                @include mat.typography-level($typography-config, "body-4");
+                color: $naranja;
+              }
+            }
+            .acciones {
+              display: flex;
+            }
+          }
         }
       }
-      .info {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 0 8px;
+      &.vacio {
+        background-color: white;
+        padding: 16px;
+        margin-top: 16px;
+        max-width: 360px;
+        text-align: center;
+        .icono {
+          font-size: 80px;
+          line-height: 1.25;
+          color: $marron;
+        }
         .texto {
+          color: $marron;
+          .ups {
+            @include mat.typography-level($typography-config, "heading-1");
+          }
           .titulo {
             @include mat.typography-level($typography-config, "heading-3");
+            margin: 16px 0;
           }
-          .descripcion {
-            @include mat.typography-level($typography-config, "body-4");
+          .vinculo {
+            font-weight: 500;
+            text-decoration: none;
             color: $naranja;
+            display: inline-flex;
+            align-items: center;
+            &::after {
+              font-family: "Material Icons";
+              content: "\e89e";
+            }
           }
-        }
-        .acciones {
-          display: flex;
         }
       }
     }

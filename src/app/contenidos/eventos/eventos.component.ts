@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService, Evento } from 'src/app/servicios/data.service';
 import { IconDefinition, faInstagram, faTiktok } from '@fortawesome/free-brands-svg-icons';
-import { faPenToSquare } from '@fortawesome/free-regular-svg-icons';
+import { faPenToSquare, faFaceGrinBeamSweat } from '@fortawesome/free-regular-svg-icons';
 import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { trigger, stagger, query, style, animate, transition } from '@angular/animations';
 
@@ -29,9 +29,13 @@ export class EventosComponent implements OnInit {
   ig: IconDefinition = faInstagram;
   tiktok: IconDefinition = faTiktok;
   registro: IconDefinition = faPenToSquare;
+  doh: IconDefinition = faFaceGrinBeamSweat;
   hoy: Date = new Date();
   constructor(private data: DataService) { }
   ngOnInit(): void {
     this.data.getEventos().subscribe((eventos: Evento[]) => this.eventos = eventos);
+  }
+  hayEventos(): boolean {
+    return this.eventos.find((evento: Evento) => evento.fecha > this.hoy) ? true : false;
   }
 }
