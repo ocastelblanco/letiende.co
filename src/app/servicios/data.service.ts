@@ -1,10 +1,11 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable, Inject, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { Router, NavigationEnd } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { DOCUMENT } from '@angular/common';
+import { ListResult, Storage, StorageReference, getDownloadURL, listAll, ref } from '@angular/fire/storage';
 
 
 export interface Menu {
@@ -34,17 +35,19 @@ export interface SEO {
   descripcion: string;
   keywords: string[];
 }
-export interface Disco {
+export interface PortadaDisco {
+  barcode: string;
+  cover?: string;
+}
+export interface Disco extends PortadaDisco {
   album: string;
   artista: string;
   estado: string;
-  barcode: string;
   valor: number;
   visible: boolean;
   origen?: string;
   anno?: string;
   genero?: string[];
-  cover?: string;
   descripcion?: string;
 }
 
@@ -60,6 +63,8 @@ export class DataService {
   private eventos: BehaviorSubject<Evento[]> = new BehaviorSubject<Evento[]>([]);
   private SEO: BehaviorSubject<SEO[]> = new BehaviorSubject<SEO[]>([]);
   private discos: BehaviorSubject<Disco[]> = new BehaviorSubject<Disco[]>([]);
+  private storage: Storage = inject(Storage);
+  private portadas: BehaviorSubject<PortadaDisco[]> = new BehaviorSubject<PortadaDisco[]>([]);
   constructor(private http: HttpClient, private router: Router, @Inject(DOCUMENT) private doc: Document) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -107,6 +112,7 @@ export class DataService {
         this.eventos.next(eventos);
       });
     this.initGA();
+    this.getPortadas();
   }
   getSEO(): BehaviorSubject<SEO[]> {
     return this.SEO;
@@ -146,7 +152,7 @@ export class DataService {
     return cadena.split(regExp).map((el: string) => el.trim());
   }
   getDiscos(): BehaviorSubject<Disco[]> {
-    this.http.get(this.rutaJson + 'discos', { responseType: 'json' })
+    const resDiscos: any = this.http.get(this.rutaJson + 'discos', { responseType: 'json' })
       .subscribe((resp: any) => {
         const _discos: Disco[] = [];
         resp.forEach((disco: any[]) => {
@@ -161,6 +167,7 @@ export class DataService {
           _discos.push(_disco);
         });
         this.discos.next(_discos);
+        resDiscos.unsuscribe();
       });
     return this.discos;
   }
@@ -168,5 +175,20 @@ export class DataService {
     const query: string = 'album=' + album + '&artista=' + artista;
     const bcode: string = barcode ? '&barcode=' + barcode : '';
     return this.http.get(this.rutaAPI + 'discogs?' + query + bcode);
+  }
+  getPortadas(): BehaviorSubject<PortadaDisco[]> {
+    const listRef = ref(this.storage, 'discos/portadas');
+    const portadas: PortadaDisco[] = [];
+    listAll(listRef).then((res: ListResult) => {
+      const total: number = res.items.length;
+      res.items.forEach((item: StorageReference, index: number) => {
+        const barcode: string = item.name.substring(0, item.name.indexOf('.'));
+        getDownloadURL(item).then((url: string) => {
+          portadas.push({ barcode: barcode, cover: url });
+          if (index >= (total - 1)) this.portadas.next(portadas);
+        });
+      });
+    });
+    return this.portadas;
   }
 }
