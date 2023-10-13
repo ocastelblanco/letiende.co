@@ -31,11 +31,22 @@ export class DiscosComponent implements OnInit {
                     { qty: '1 LP', descriptions: [] };
                   const descripcion: string = formato.qty + ' ' + formato.descriptions.join(', ');
                   const _portada: PortadaDisco | undefined = portadas.find((portada: PortadaDisco) => disco.barcode == portada.barcode);
-                  disco.origen = resp.country,
-                    disco.anno = resp.year,
-                    disco.genero = resp.genre,
-                    disco.cover = _portada ? _portada.cover : undefined,
-                    disco.descripcion = descripcion
+                  disco.origen = resp.country;
+                  disco.anno = resp.year;
+                  disco.genero = resp.genre;
+                  disco.cover = _portada ? _portada.cover : undefined;
+                  disco.descripcion = descripcion;
+                  if (!_portada && index == 1) {
+                    let extension: string = resp.cover_image.substring(resp.cover_image.lastIndexOf('.') + 1);
+                    extension = extension == 'jpeg' ? 'jpg' : extension;
+                    const archivo: string = disco.barcode + '.' + extension;
+                    const putPortada: Subscription = this.data.putPortada(archivo, resp.cover_image).subscribe((url: string) => {
+                      if (url != '') {
+                        disco.cover = url;
+                        putPortada.unsubscribe();
+                      }
+                    });
+                  }
                 });
             });
           }

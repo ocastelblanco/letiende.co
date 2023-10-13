@@ -5,7 +5,7 @@ import { filter } from 'rxjs/operators';
 import { Router, NavigationEnd } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { DOCUMENT } from '@angular/common';
-import { ListResult, Storage, StorageReference, getDownloadURL, listAll, ref } from '@angular/fire/storage';
+import { ListResult, Storage, StorageReference, UploadResult, getDownloadURL, listAll, ref, uploadBytes } from '@angular/fire/storage';
 
 
 export interface Menu {
@@ -112,7 +112,6 @@ export class DataService {
         this.eventos.next(eventos);
       });
     this.initGA();
-    this.getPortadas();
   }
   getSEO(): BehaviorSubject<SEO[]> {
     return this.SEO;
@@ -177,7 +176,7 @@ export class DataService {
     return this.http.get(this.rutaAPI + 'discogs?' + query + bcode);
   }
   getPortadas(): BehaviorSubject<PortadaDisco[]> {
-    const listRef = ref(this.storage, 'discos/portadas');
+    const listRef: StorageReference = ref(this.storage, 'discos/portadas');
     const portadas: PortadaDisco[] = [];
     listAll(listRef).then((res: ListResult) => {
       const total: number = res.items.length;
@@ -190,5 +189,15 @@ export class DataService {
       });
     });
     return this.portadas;
+  }
+  putPortada(archivo: string, url: string): BehaviorSubject<string> {
+    console.log('Voy a iniciar la descarga de ' + archivo);
+    const ruta: BehaviorSubject<string> = new BehaviorSubject<string>('');
+    this.http.get(url, { responseType: 'blob' }).subscribe((blob: Blob) => {
+      const subida: StorageReference = ref(this.storage, 'discos/portadas/' + archivo);
+      console.log('Ya tengo la ruta de Discogs y la referencia de subida');
+      uploadBytes(subida, blob).then((res: UploadResult) => getDownloadURL(res.ref).then((_ruta: string) => ruta.next(_ruta)));
+    });
+    return ruta;
   }
 }
