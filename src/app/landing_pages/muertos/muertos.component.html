@@ -1,0 +1,117 @@
+<div class="muertos"
+     [ngClass]="bpPantalla">
+  <div class="altar mat-elevation-z8">
+    <div class="capas">
+      <div class="capa capa1">
+        <div class="cabecera">
+          <img src="assets/muertos/img/catrina_logo.png"
+               alt="Altar de muertos">
+        </div>
+        <div class="calaquitas">
+          <div class="calaquita"
+               [ngClass]="'calaquita' + indexCalaquita"
+               *ngFor="let numCalaquita of calaquitas[0]; index as indexCalaquita">
+            <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'">
+          </div>
+        </div>
+        <div class="velas">
+          <div class="vela"
+               [ngClass]="'vela' + indexVela"
+               *ngFor="let numVela of velas[0]; index as indexVela">
+            <img [src]="'assets/muertos/img/vela0' + numVela + '.png'">
+          </div>
+        </div>
+        <div class="flores">
+          <div class="flor"
+               [ngClass]="'flor' + indexFlor"
+               *ngFor="let numFlor of flores[0]; index as indexFlor">
+            <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'">
+          </div>
+        </div>
+        <div class="picado">
+          <img src="assets/muertos/img/picado01.svg">
+        </div>
+      </div>
+      <div class="capa capa2">
+        <div class="fotos">
+          <div class="foto abuela">
+            <img src="assets/muertos/img/abuela.png">
+          </div>
+          <div class="foto abuelo">
+            <img src="assets/muertos/img/abuelo.png">
+          </div>
+          <div class="foto perro">
+            <img src="assets/muertos/img/perro.png">
+          </div>
+        </div>
+        <div class="calaquitas">
+          <div class="calaquita"
+               [ngClass]="'calaquita' + indexCalaquita"
+               *ngFor="let numCalaquita of calaquitas[1]; index as indexCalaquita">
+            <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'">
+          </div>
+        </div>
+        <div class="velas">
+          <div class="vela"
+               [ngClass]="'vela' + indexVela"
+               *ngFor="let numVela of velas[1]; index as indexVela">
+            <img [src]="'assets/muertos/img/vela0' + numVela + '.png'">
+          </div>
+        </div>
+        <div class="flores">
+          <div class="flor"
+               [ngClass]="'flor' + indexFlor"
+               *ngFor="let numFlor of flores[1]; index as indexFlor">
+            <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'">
+          </div>
+        </div>
+        <div class="picado">
+          <img src="assets/muertos/img/picado02.svg">
+        </div>
+      </div>
+      <div class="capa capa3">
+        <div class="comidas">
+          <div class="comida"
+               [ngClass]="'comida' + numComida"
+               *ngFor="let numComida of [1, 3, 5, 2, 4, 6]">
+            <img [src]="'assets/muertos/img/comida0' + numComida + '.png'">
+          </div>
+          <div class="spacer"></div>
+          <div class="comida perro">
+            <img src="assets/muertos/img/comida_perro.png"
+                 alt="">
+          </div>
+        </div>
+        <div class="calaquitas">
+          <div class="calaquita"
+               [ngClass]="'calaquita' + indexCalaquita"
+               *ngFor="let numCalaquita of calaquitas[2]; index as indexCalaquita">
+            <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'">
+          </div>
+        </div>
+        <div class="velas">
+          <div class="vela"
+               [ngClass]="'vela' + indexVela"
+               *ngFor="let numVela of velas[2]; index as indexVela">
+            <img [src]="'assets/muertos/img/vela0' + numVela + '.png'">
+          </div>
+        </div>
+        <div class="flores">
+          <div class="flor"
+               [ngClass]="'flor' + indexFlor"
+               *ngFor="let numFlor of flores[2]; index as indexFlor">
+            <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'">
+          </div>
+        </div>
+        <div class="picado">
+          <img src="assets/muertos/img/picado03.svg">
+        </div>
+      </div>
+    </div>
+    <div class="textos">
+      <div class="instrucciones">
+        Trae las fotos de tus seres queridos que ya no están con nosotros.
+      </div>
+    </div>
+  </div>
+</div>

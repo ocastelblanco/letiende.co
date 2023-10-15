@@ -1,0 +1,191 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "/src/styles.scss" as estilos;
+
+$typography-config: mat.get-typography-config(estilos.$letiende-theme);
+$verde: map.get(estilos.$lt-basico, verde);
+$naranja: map.get(estilos.$lt-basico, naranja);
+$amarillo: map.get(estilos.$lt-basico, amarillo);
+$marron: map.get(estilos.$lt-basico, marron);
+
+.muertos {
+  background-color: $amarillo;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .altar {
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    .capas {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      .capa {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+        position: relative;
+        .picado {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          img {
+            width: auto;
+            height: 100%;
+          }
+        }
+        .fotos {
+          display: flex;
+          align-items: flex-end;
+          position: relative;
+          .foto {
+            position: absolute;
+            img {
+              height: 100%;
+              width: auto;
+            }
+          }
+        }
+        .calaquitas,
+        .flores,
+        .velas,
+        .comidas {
+          display: flex;
+          justify-content: space-between;
+          position: absolute;
+          .calaquita,
+          .flor,
+          .vela,
+          .comida {
+            img {
+              height: 100%;
+              width: auto;
+            }
+          }
+        }
+        .velas {
+          justify-content: space-evenly;
+        }
+      }
+    }
+    .textos {
+      color: $amarillo;
+      .titulo {
+        @include mat.typography-level($typography-config, "especial-2");
+      }
+    }
+  }
+  &.sm,
+  &.md,
+  &.lg,
+  &.xl {
+    .altar {
+      max-width: 640px;
+      margin: 12px 0;
+      border-radius: 4px;
+      .capas {
+        margin-top: 20px;
+        .capa {
+          .calaquitas,
+          .flores,
+          .velas {
+            .calaquita {
+              height: 30px;
+            }
+            .flor {
+              height: 20px;
+            }
+            .vela {
+              height: 25px;
+            }
+          }
+          .flores {
+            bottom: 65px;
+          }
+          &.capa1 {
+            .cabecera {
+              height: 150px;
+              img {
+                height: 100%;
+                width: auto;
+              }
+            }
+            .calaquitas,
+            .flores,
+            .velas {
+              width: 50%;
+              bottom: 50px;
+            }
+            .flores {
+              bottom: 42px;
+            }
+            .picado {
+              height: 50px;
+            }
+          }
+          &.capa2 {
+            .fotos {
+              height: 96px;
+              width: 75%;
+              .foto {
+                height: 80px;
+                &.abuela {
+                  left: 60px;
+                }
+                &.abuelo {
+                  left: 130px;
+                }
+                &.perro {
+                  right: 54px;
+                }
+              }
+            }
+            .calaquitas,
+            .flores,
+            .velas {
+              width: 75%;
+              bottom: 75px;
+            }
+            .flores {
+              bottom: 65px;
+            }
+            .picado {
+              height: 75px;
+            }
+          }
+          &.capa3 {
+            margin-top: 20px;
+            .comidas {
+              height: 45px;
+              position: relative;
+              width: 85%;
+              .comida {
+                margin-right: 12px;
+              }
+            }
+            .calaquitas,
+            .flores,
+            .velas {
+              width: 90%;
+              bottom: 75px;
+            }
+            .flores {
+              bottom: 65px;
+            }
+            .picado {
+              height: 90px;
+            }
+          }
+        }
+      }
+    }
+  }
+  &.xs {
+    .altar {
+    }
+  }
+}

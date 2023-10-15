@@ -43,5 +43,8 @@ $modulo: math.div(map.get(estilos.$tamanos, alto-navbar), 4);
     color: $amarillo;
     width: 100%;
     text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
 }

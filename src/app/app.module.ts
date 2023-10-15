@@ -35,6 +35,7 @@ import { EventosComponent } from './contenidos/eventos/eventos.component';
 import { AvesComponent } from './landing_pages/aves/aves.component';
 import { MenuDesplegableComponent } from './compartidos/navbar/menu-desplegable/menu-desplegable.component';
 import { DiscosComponent } from './contenidos/discos/discos.component';
+import { MuertosComponent } from './landing_pages/muertos/muertos.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -51,6 +52,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MenuDesplegableComponent,
     JsonLdDirective,
     DiscosComponent,
+    MuertosComponent,
   ],
   imports: [
     BrowserModule,
