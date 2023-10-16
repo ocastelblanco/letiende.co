@@ -43,6 +43,7 @@ $marron: map.get(estilos.$lt-basico, marron);
             }
             .hora {
               @include mat.typography-level($typography-config, "body-4");
+              min-width: 5em;
             }
           }
           .info {

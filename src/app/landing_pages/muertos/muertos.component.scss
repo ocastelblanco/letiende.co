@@ -339,5 +339,12 @@ $marron: map.get(estilos.$lt-basico, marron);
         height: 360px;
       }
     }
+    @media (max-width: 364px) {
+      .altar {
+        .capas {
+          display: none;
+        }
+      }
+    }
   }
 }

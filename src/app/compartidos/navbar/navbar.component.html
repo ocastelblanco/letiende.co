@@ -10,14 +10,16 @@
     <img class="logo"
          src="assets/logos/logo_sobre_verde.svg"
          alt="Logotipo de Le Tiende">
-    <a mat-button
-       class="enlace"
-       *ngFor="let vinculo of vinculos"
-       routerLinkActive="activo"
-       [routerLinkActiveOptions]="{exact: true}"
-       [routerLink]="vinculo.vinculo">
-        {{ vinculo.titulo.toUpperCase() }}
-    </a>
+    <div class="enlaces">
+        <a mat-button
+           class="enlace"
+           *ngFor="let vinculo of vinculos"
+           routerLinkActive="activo"
+           [routerLinkActiveOptions]="{exact: true}"
+           [routerLink]="vinculo.vinculo">
+            {{ vinculo.titulo.toUpperCase() }}
+        </a>
+    </div>
     <div class="titulo"
          *ngIf="vinculos[numVinculo].titulo != 'inicio'">
         {{ vinculos[numVinculo].titulo }}

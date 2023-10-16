@@ -109,6 +109,7 @@ export class MuertosComponent {
         Breakpoints.XLarge,
       ])
       .subscribe(result => {
+        if (this.breakpoint.isMatched('(max-width: 364px)')) this.textosVisibles = true;
         for (const tam of Object.keys(result.breakpoints)) if (result.breakpoints[tam]) this.bpPantalla = this.anchos.get(tam);
       });
   }

@@ -19,12 +19,17 @@ $modulo: math.div(map.get(estilos.$tamanos, alto-navbar), 4);
       display: none;
     }
     .titulo {
-      position: absolute;
+      flex: 1 1 auto;
     }
   }
   &.sm,
   &.xs {
     .enlace {
+      display: none;
+    }
+  }
+  &.xs {
+    .logo {
       display: none;
     }
   }
