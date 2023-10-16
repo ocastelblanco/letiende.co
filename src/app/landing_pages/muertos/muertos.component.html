@@ -7,111 +7,178 @@
           <img src="assets/muertos/img/catrina_logo.png"
                alt="Altar de muertos">
         </div>
-        <div class="calaquitas">
+        <div class="calaquitas"
+             @calaquitas
+             *ngIf="animaCalaquitas[0]"
+             (@calaquitas.done)="finalizaAnimacion('calaquitas0', $event)">
           <div class="calaquita"
                [ngClass]="'calaquita' + indexCalaquita"
                *ngFor="let numCalaquita of calaquitas[0]; index as indexCalaquita">
             <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'">
           </div>
         </div>
-        <div class="velas">
+        <div class="velas"
+             @velas
+             *ngIf="animaVelas[0]"
+             (@velas.done)="finalizaAnimacion('velas0', $event)">
           <div class="vela"
                [ngClass]="'vela' + indexVela"
                *ngFor="let numVela of velas[0]; index as indexVela">
             <img [src]="'assets/muertos/img/vela0' + numVela + '.png'">
           </div>
         </div>
-        <div class="flores">
+        <div class="flores"
+             @flores
+             *ngIf="animaFlores[0]"
+             (@flores.done)="finalizaAnimacion('flores0', $event)">
           <div class="flor"
                [ngClass]="'flor' + indexFlor"
                *ngFor="let numFlor of flores[0]; index as indexFlor">
             <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'">
           </div>
         </div>
-        <div class="picado">
+        <div class="picado"
+             [@picado]="animaPicados[0]"
+             (@picado.done)="finalizaAnimacion('picado0', $event)">
           <img src="assets/muertos/img/picado01.svg">
         </div>
       </div>
       <div class="capa capa2">
         <div class="fotos">
-          <div class="foto abuela">
-            <img src="assets/muertos/img/abuela.png">
-          </div>
-          <div class="foto abuelo">
-            <img src="assets/muertos/img/abuelo.png">
-          </div>
-          <div class="foto perro">
-            <img src="assets/muertos/img/perro.png">
+          <div class="trigger"
+               @fotos
+               *ngIf="animaFotos"
+               (@fotos.done)="finalizaAnimacion('fotos', $event)">
+            <div class="foto abuela">
+              <img src="assets/muertos/img/abuela.png">
+            </div>
+            <div class="foto abuelo">
+              <img src="assets/muertos/img/abuelo.png">
+            </div>
+            <div class="foto perro">
+              <img src="assets/muertos/img/perro.png">
+            </div>
           </div>
         </div>
-        <div class="calaquitas">
+        <div class="calaquitas"
+             @calaquitas
+             *ngIf="animaCalaquitas[1]"
+             (@calaquitas.done)="finalizaAnimacion('calaquitas1', $event)">
           <div class="calaquita"
                [ngClass]="'calaquita' + indexCalaquita"
                *ngFor="let numCalaquita of calaquitas[1]; index as indexCalaquita">
             <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'">
           </div>
         </div>
-        <div class="velas">
+        <div class="velas"
+             @velas
+             *ngIf="animaVelas[1]"
+             (@velas.done)="finalizaAnimacion('velas1', $event)">
           <div class="vela"
                [ngClass]="'vela' + indexVela"
                *ngFor="let numVela of velas[1]; index as indexVela">
             <img [src]="'assets/muertos/img/vela0' + numVela + '.png'">
           </div>
         </div>
-        <div class="flores">
+        <div class="flores"
+             @flores
+             *ngIf="animaFlores[1]"
+             (@flores.done)="finalizaAnimacion('flores1', $event)">
           <div class="flor"
                [ngClass]="'flor' + indexFlor"
                *ngFor="let numFlor of flores[1]; index as indexFlor">
             <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'">
           </div>
         </div>
-        <div class="picado">
+        <div class="picado"
+             [@picado]="animaPicados[1]"
+             (@picado.done)="finalizaAnimacion('picado1', $event)">
           <img src="assets/muertos/img/picado02.svg">
         </div>
       </div>
       <div class="capa capa3">
         <div class="comidas">
-          <div class="comida"
-               [ngClass]="'comida' + numComida"
-               *ngFor="let numComida of [1, 3, 5, 2, 4, 6]">
-            <img [src]="'assets/muertos/img/comida0' + numComida + '.png'">
-          </div>
-          <div class="spacer"></div>
-          <div class="comida perro">
-            <img src="assets/muertos/img/comida_perro.png"
-                 alt="">
+          <div class="trigger"
+               @comidas
+               *ngIf="animaComidas"
+               (@comidas.done)="finalizaAnimacion('comidas', $event)">
+            <div class="comida"
+                 [ngClass]="'comida' + numComida"
+                 *ngFor="let numComida of [1, 3, 5, 2, 4, 6]">
+              <img [src]="'assets/muertos/img/comida0' + numComida + '.png'">
+            </div>
+            <div class="spacer"></div>
+            <div class="comida perro">
+              <img src="assets/muertos/img/comida_perro.png">
+            </div>
           </div>
         </div>
-        <div class="calaquitas">
+        <div class="calaquitas"
+             @calaquitas
+             *ngIf="animaCalaquitas[2]"
+             (@calaquitas.done)="finalizaAnimacion('calaquitas2', $event)">
           <div class="calaquita"
                [ngClass]="'calaquita' + indexCalaquita"
                *ngFor="let numCalaquita of calaquitas[2]; index as indexCalaquita">
             <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'">
           </div>
         </div>
-        <div class="velas">
+        <div class="velas"
+             @velas
+             *ngIf="animaVelas[2]"
+             (@velas.done)="finalizaAnimacion('velas2', $event)">
           <div class="vela"
                [ngClass]="'vela' + indexVela"
                *ngFor="let numVela of velas[2]; index as indexVela">
             <img [src]="'assets/muertos/img/vela0' + numVela + '.png'">
           </div>
         </div>
-        <div class="flores">
+        <div class="flores"
+             @flores
+             *ngIf="animaFlores[2]"
+             (@flores.done)="finalizaAnimacion('flores2', $event)">
           <div class="flor"
                [ngClass]="'flor' + indexFlor"
                *ngFor="let numFlor of flores[2]; index as indexFlor">
             <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'">
           </div>
         </div>
-        <div class="picado">
+        <div class="picado"
+             [@picado]="animaPicados[2]"
+             (@picado.done)="finalizaAnimacion('picado2', $event)">
           <img src="assets/muertos/img/picado03.svg">
         </div>
       </div>
     </div>
     <div class="textos">
-      <div class="instrucciones">
-        Trae las fotos de tus seres queridos que ya no están con nosotros.
-      </div>
+      <ng-container *ngIf="textosVisibles">
+        <div class="titulo">
+          <span>Altar de Muertos</span>
+        </div>
+        <div class="pasos"
+             @pasos>
+          <div class="subtitulo paso paso1">
+            <span>Entre el 18 de octubre y el 2 de noviembre:</span>
+          </div>
+          <div class="instruccion paso paso2">
+            <ol start="1">
+              <li>Pon en nuestro altar una fotografía de tus seres queridos, que ya no estén con nosotros.</li>
+            </ol>
+          </div>
+          <div class="instruccion paso paso3">
+            <ol start="2">
+              <li>Acompaña la foto con una comida, bebida u objeto que, en vida, siempre les haya gustado y que te los
+                recuerde.</li>
+            </ol>
+          </div>
+          <div class="subtitulo paso paso4">
+            <span>El 2 de noviembre, a las 7:00pm:</span>
+          </div>
+          <div class="instruccion paso paso5">
+            <span>Comparte con ellos y con nosotros un momento en este mundo, para que nunca los olvidemos.</span>
+          </div>
+        </div>
+      </ng-container>
     </div>
   </div>
 </div>

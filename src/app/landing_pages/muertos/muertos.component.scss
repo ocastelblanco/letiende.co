@@ -42,11 +42,14 @@ $marron: map.get(estilos.$lt-basico, marron);
           display: flex;
           align-items: flex-end;
           position: relative;
-          .foto {
-            position: absolute;
-            img {
-              height: 100%;
-              width: auto;
+          .trigger {
+            position: relative;
+            .foto {
+              position: absolute;
+              img {
+                height: 100%;
+                width: auto;
+              }
             }
           }
         }
@@ -59,8 +62,7 @@ $marron: map.get(estilos.$lt-basico, marron);
           position: absolute;
           .calaquita,
           .flor,
-          .vela,
-          .comida {
+          .vela {
             img {
               height: 100%;
               width: auto;
@@ -70,12 +72,41 @@ $marron: map.get(estilos.$lt-basico, marron);
         .velas {
           justify-content: space-evenly;
         }
+        .comidas {
+          position: relative;
+          .trigger {
+            display: flex;
+            justify-content: space-between;
+            .comida {
+              img {
+                height: 100%;
+                width: auto;
+              }
+            }
+          }
+        }
       }
     }
     .textos {
       color: $amarillo;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 12px 16px;
+      height: 282px;
       .titulo {
+        color: $verde;
         @include mat.typography-level($typography-config, "especial-2");
+        margin: 12px 0;
+      }
+      .subtitulo {
+        @include mat.typography-level($typography-config, "heading-4");
+      }
+      .instruccion {
+        @include mat.typography-level($typography-config, "body-4");
+      }
+      .paso5 {
+        margin: 1em 0 0 3em;
       }
     }
   }
@@ -131,16 +162,21 @@ $marron: map.get(estilos.$lt-basico, marron);
             .fotos {
               height: 96px;
               width: 75%;
-              .foto {
-                height: 80px;
-                &.abuela {
-                  left: 60px;
-                }
-                &.abuelo {
-                  left: 130px;
-                }
-                &.perro {
-                  right: 54px;
+              .trigger {
+                height: 96px;
+                width: 100%;
+                .foto {
+                  top: 16px;
+                  height: 80px;
+                  &.abuela {
+                    left: 60px;
+                  }
+                  &.abuelo {
+                    left: 130px;
+                  }
+                  &.perro {
+                    right: 54px;
+                  }
                 }
               }
             }
@@ -161,10 +197,13 @@ $marron: map.get(estilos.$lt-basico, marron);
             margin-top: 20px;
             .comidas {
               height: 45px;
-              position: relative;
               width: 85%;
-              .comida {
-                margin-right: 12px;
+              .trigger {
+                height: 45px;
+                width: 100%;
+                .comida {
+                  margin-right: 12px;
+                }
               }
             }
             .calaquitas,
