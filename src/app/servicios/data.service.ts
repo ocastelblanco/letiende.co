@@ -1,4 +1,4 @@
-import { Injectable, Inject, inject } from '@angular/core';
+import { Injectable, Inject, inject, signal, WritableSignal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -65,6 +65,8 @@ export class DataService {
   private discos: BehaviorSubject<Disco[]> = new BehaviorSubject<Disco[]>([]);
   private storage: Storage = inject(Storage);
   private portadas: BehaviorSubject<PortadaDisco[]> = new BehaviorSubject<PortadaDisco[]>([]);
+  private interfaz: BehaviorSubject<any> = new BehaviorSubject<any>({});
+  public idioma: WritableSignal<string> = signal('es');
   constructor(private http: HttpClient, private router: Router, @Inject(DOCUMENT) private doc: Document) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -74,6 +76,8 @@ export class DataService {
     });
   }
   init(): void {
+    this.http.get('assets/datos/interfaz.json', { responseType: 'json' })
+      .subscribe((resp: any) => this.interfaz.next(resp));
     this.http.get(this.rutaJson + 'SEO', { responseType: 'json' })
       .subscribe((resp: any) => {
         const seo: SEO[] = [];
@@ -121,6 +125,9 @@ export class DataService {
   }
   getEventos(): BehaviorSubject<Evento[]> {
     return this.eventos;
+  }
+  getInterfaz(): BehaviorSubject<any> {
+    return this.interfaz;
   }
   initGA(): void {
     const script: HTMLScriptElement = document.createElement('script');

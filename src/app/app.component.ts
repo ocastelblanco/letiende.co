@@ -47,6 +47,7 @@ export class AppComponent implements OnInit {
     this.data.init();
   }
   ngOnInit(): void {
+    this.data.idioma.set('es');
     this.router.events.pipe(filter((ev: any) => ev instanceof NavigationEnd)).subscribe((ev: any) => {
       this.route.firstChild?.url.subscribe((url: UrlSegment[]) => {
         this.data.getSEO().subscribe((SEO: SEO[]) => {

@@ -2,6 +2,6 @@
   <a mat-list-item
      [href]="vinculo.vinculo"
      *ngFor="let vinculo of data.vinculos">
-    {{ vinculo.titulo }}
+    {{ vinculo.lang[data.idioma] }}
   </a>
 </mat-nav-list>

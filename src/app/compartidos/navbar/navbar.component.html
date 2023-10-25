@@ -1,27 +1,45 @@
 <mat-toolbar class="navbar"
              [ngClass]="bpPantalla"
              color="primary">
-    <button class="menu"
-            (click)="abreMenu()"
-            mat-icon-button
-            aria-label="Menú principal">
-        <mat-icon>menu</mat-icon>
+  <button class="menu"
+          (click)="abreMenu()"
+          mat-icon-button
+          aria-label="Menú principal">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <img class="logo"
+       src="assets/logos/logo_sobre_verde.svg"
+       alt="Logotipo de Le Tiende">
+  <div class="enlaces">
+    <a mat-button
+       class="enlace"
+       *ngFor="let vinculo of vinculos"
+       routerLinkActive="activo"
+       [routerLinkActiveOptions]="{exact: true}"
+       [routerLink]="vinculo.vinculo">
+      {{ vinculo.lang[idioma].toUpperCase() }}
+    </a>
+  </div>
+  <div class="titulo"
+       *ngIf="vinculos[numVinculo].lang[idioma] != 'inicio'">
+    {{ vinculos[numVinculo].lang[idioma] }}
+  </div>
+  <div class="idioma">
+    <button mat-icon-button
+            [matMenuTriggerFor]="menuIdioma">
+      <mat-icon [svgIcon]="bandera"></mat-icon>
     </button>
-    <img class="logo"
-         src="assets/logos/logo_sobre_verde.svg"
-         alt="Logotipo de Le Tiende">
-    <div class="enlaces">
-        <a mat-button
-           class="enlace"
-           *ngFor="let vinculo of vinculos"
-           routerLinkActive="activo"
-           [routerLinkActiveOptions]="{exact: true}"
-           [routerLink]="vinculo.vinculo">
-            {{ vinculo.titulo.toUpperCase() }}
-        </a>
-    </div>
-    <div class="titulo"
-         *ngIf="vinculos[numVinculo].titulo != 'inicio'">
-        {{ vinculos[numVinculo].titulo }}
-    </div>
+  </div>
 </mat-toolbar>
+<mat-menu #menuIdioma="matMenu">
+  <button mat-menu-item
+          (click)="cambiaIdioma('es')">
+    <mat-icon svgIcon="flag-co"></mat-icon>
+    <span>Español</span>
+  </button>
+  <button mat-menu-item
+          (click)="cambiaIdioma('en')">
+    <mat-icon svgIcon="flag-gb"></mat-icon>
+    <span>English</span>
+  </button>
+</mat-menu>

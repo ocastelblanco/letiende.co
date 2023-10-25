@@ -8,5 +8,5 @@ import { Vinculo } from '../navbar.component';
   styleUrls: ['./menu-desplegable.component.scss']
 })
 export class MenuDesplegableComponent {
-  constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: { vinculos: Vinculo[] }) { }
+  constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: { vinculos: Vinculo[], idioma: string }) { }
 }

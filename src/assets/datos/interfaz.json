@@ -1,0 +1,59 @@
+{
+  "nabvar": [
+    {
+      "enlace": "menu",
+      "lang": {
+        "es": "Menú",
+        "en": "Menu"
+      }
+    },
+    {
+      "enlace": "eventos",
+      "lang": {
+        "es": "Eventos",
+        "en": "Events"
+      }
+    },
+    {
+      "enlace": "muertos",
+      "lang": {
+        "es": "Fiesta de Muertos",
+        "en": "Fiesta de Muertos"
+      }
+    },
+    {
+      "enlace": "inicio",
+      "lang": {
+        "es": "Inicio",
+        "en": "Home"
+      }
+    },
+    {
+      "enlace": "discos",
+      "lang": {
+        "es": "Discos",
+        "en": "Records"
+      }
+    }
+  ],
+  "eventos": {
+    "ups": {
+      "es": "¡Ups!",
+      "en": "Oops!"
+    },
+    "noEventos": {
+      "es": "Parece que no tenemos eventos programados próximamente.",
+      "en": "It seems that we don't have any upcoming events scheduled."
+    },
+    "siguenos": {
+      "es": "Síguenos en {{IG}} {{o regístrate}} para que te avisemos de nuestros próximos eventos.",
+      "en": "Follow us on {{IG}} {{or subscribe}} to be notified about our upcoming events."
+    }
+  },
+  "menu": {
+    "promociones": {
+      "es": "Promociones de hoy",
+      "en": "Today's Promotions"
+    }
+  }
+}
