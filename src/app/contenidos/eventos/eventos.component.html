@@ -10,9 +10,9 @@
                [src]="evento.portada">
           <mat-card-content>
             <div class="fecha">
-              <div class="mes">{{ evento.fecha | date: 'MMM':undefined:'es-CO' }}</div>
-              <div class="dia">{{ evento.fecha | date: 'd':undefined:'es-CO' }}</div>
-              <div class="hora">{{ evento.fecha | date: 'h:mm a':undefined:'es-CO' }}</div>
+              <div class="mes">{{ evento.fecha | date: 'MMM':'GMT-5:00':interfaz.fecha[idioma] }}</div>
+              <div class="dia">{{ evento.fecha | date: 'd':'GMT-5:00':interfaz.fecha[idioma] }}</div>
+              <div class="hora">{{ evento.fecha | date: 'h:mm a':'GMT-5:00':interfaz.fecha[idioma] }}</div>
             </div>
             <div class="info">
               <div class="texto">
@@ -22,7 +22,7 @@
               <div class="acciones"
                    *ngIf="evento.ig || evento.tiktok || evento.link || evento.registro">
                 <a mat-icon-button
-                   matTooltip="Más información"
+                   [matTooltip]="interfaz.masinformacion[idioma]"
                    matTooltipPosition="above"
                    [href]="evento.link"
                    [target]="evento.link.indexOf('letiende.co') > -1 ? '_self' : '_blank'"
@@ -46,7 +46,7 @@
                   <fa-icon [icon]="tiktok"></fa-icon>
                 </a>
                 <a mat-icon-button
-                   matTooltip="Regístrate para este evento"
+                   [matTooltip]="interfaz.registro[idioma]"
                    matTooltipPosition="above"
                    [href]="evento.registro"
                    target="_blank"
@@ -66,23 +66,25 @@
           </fa-icon>
         </div>
         <div class="texto">
-          <div class="ups">¡Ups!</div>
-          <div class="titulo">Parece que no tenemos eventos programados próximamente.</div>
-          <div class="explicacion">
+          <div class="ups">{{ interfaz.ups[idioma] }}</div>
+          <div class="titulo">{{ interfaz.noeventos[idioma] }}</div>
+          <div class="explicacion"
+               [innerHTML]="textoSiguenos() | safe:'html'">
+            <!--
             Síguenos en
             <a class="vinculo"
+               target="_blank"
                href="https://www.instagram.com/letiende_parkway/">
               IG
             </a>
-            <!--
             o
-            <a href="letiende.co/registro"
+            <a href="https://www.letiende.co/registro"
                target="_blank"
                class="vinculo">
               regístrate
             </a>
-          -->
             para que te avisemos de nuestros próximos eventos.
+          -->
           </div>
         </div>
       </mat-card>

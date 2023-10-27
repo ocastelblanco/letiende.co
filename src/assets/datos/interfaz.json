@@ -37,17 +37,29 @@
     }
   ],
   "eventos": {
+    "fecha": {
+      "es": "es-CO",
+      "en": "en-US"
+    },
     "ups": {
       "es": "¡Ups!",
       "en": "Oops!"
     },
-    "noEventos": {
+    "noeventos": {
       "es": "Parece que no tenemos eventos programados próximamente.",
       "en": "It seems that we don't have any upcoming events scheduled."
     },
     "siguenos": {
-      "es": "Síguenos en {{IG}} {{o regístrate}} para que te avisemos de nuestros próximos eventos.",
-      "en": "Follow us on {{IG}} {{or subscribe}} to be notified about our upcoming events."
+      "es": "Síguenos en {{IG}} y {{TikTok}} para que te avisemos de nuestros próximos eventos.",
+      "en": "Follow us on {{IG}} and {{TikTok}} to be notified about our upcoming events."
+    },
+    "masinformacion": {
+      "es": "Más información",
+      "en": "More info"
+    },
+    "registro": {
+      "es": "Regístrate para este evento",
+      "en": "Event registration"
     }
   },
   "menu": {

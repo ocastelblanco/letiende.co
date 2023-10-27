@@ -89,4 +89,17 @@ body {
   .spacer {
     flex: 1 1 auto;
   }
+  .vinculo {
+    font-weight: 500;
+    text-decoration: none;
+    color: $naranja;
+    &.externo {
+      display: inline-flex;
+      align-items: center;
+      &::after {
+        font-family: "Material Icons";
+        content: "\e89e";
+      }
+    }
+  }
 }
