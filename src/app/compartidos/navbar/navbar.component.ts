@@ -33,7 +33,6 @@ export class NavbarComponent {
     /*{ titulo: 'Inicio', vinculo: 'inicio' },*/
     { vinculo: 'eventos', lang: { 'es': 'Eventos', 'en': 'Events' } },
     { vinculo: 'menu', lang: { 'es': 'Menú', 'en': 'Menu' } },
-    { vinculo: 'muertos', lang: { 'es': 'Fiesta de Muertos', 'en': 'Fiesta de Muertos' } },
     //{ titulo: 'Discos', vinculo: 'discos' },
   ];
   numVinculo: number = 0;
