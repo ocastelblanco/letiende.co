@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, effect } from '@angular/core';
 import { DataService, Menu } from 'src/app/servicios/data.service';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { IconDefinition, faBullhorn, faHeart, faCertificate } from '@fortawesome/free-solid-svg-icons';
@@ -7,8 +7,8 @@ import { trigger, stagger, query, style, animate, transition } from '@angular/an
 
 interface Elemento {
   id: number;
-  titulo: string;
-  descripcion: string;
+  titulo: any;
+  descripcion: any;
   valor: number;
   visible: boolean;
   imagen: string;
@@ -53,6 +53,7 @@ export class MenuComponent implements OnInit {
     [Breakpoints.XLarge, 'xl'],
   ]);
   menu: Elemento[] = [];
+  idioma: string = 'es';
   constructor(private data: DataService, private breakpoint: BreakpointObserver) {
     this.breakpoint
       .observe([
@@ -65,6 +66,7 @@ export class MenuComponent implements OnInit {
       .subscribe(result => {
         for (const tam of Object.keys(result.breakpoints)) if (result.breakpoints[tam]) this.bpPantalla = this.anchos.get(tam);
       });
+    effect(() => this.idioma = this.data.idioma());
   }
   ngOnInit(): void {
     this.data.getMenu().subscribe((menu: Menu[]) => {

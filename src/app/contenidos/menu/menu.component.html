@@ -2,16 +2,16 @@
      [ngClass]="bpPantalla">
   <ng-container *ngFor="let categoria of menu">
     <div class="categoria"
-         [ngClass]="simplifica(categoria.titulo)"
+         [ngClass]="simplifica(categoria.titulo[idioma])"
          [ngStyle]="{'backgroundImage': imagenFondo(categoria.imagen)}"
          *ngIf="categoria.visible">
       <div class="texto">
         <div class="titulo">
-          {{categoria.titulo}}
+          {{ categoria.titulo[idioma] }}
         </div>
-        <div *ngIf="categoria.descripcion"
+        <div *ngIf="categoria.descripcion[idioma]"
              class="descripcion">
-          {{categoria.descripcion}}
+          {{ categoria.descripcion[idioma] }}
         </div>
       </div>
       <div class="logo"></div>
@@ -19,12 +19,12 @@
            @subcategorias>
         <ng-container *ngFor="let subcategoria of categoria.hijos">
           <div class="subcategoria"
-               *ngIf="subcategoria.visible && subcategoria.titulo != 'Promociones'">
+               *ngIf="subcategoria.visible && subcategoria.titulo.es != 'Promociones'">
             <div class="texto">
-              <div class="titulo">{{subcategoria.titulo}}</div>
-              <div *ngIf="subcategoria.descripcion"
+              <div class="titulo">{{subcategoria.titulo[idioma]}}</div>
+              <div *ngIf="subcategoria.descripcion[idioma]"
                    class="descripcion">
-                {{subcategoria.descripcion}}
+                {{subcategoria.descripcion[idioma]}}
               </div>
             </div>
             <ng-container *ngFor="let producto of subcategoria.hijos">
@@ -43,11 +43,11 @@
                 </div>
                 <div class="texto">
                   <div class="titulo">
-                    {{producto.titulo}}
+                    {{producto.titulo[idioma]}}
                   </div>
-                  <div *ngIf="producto.descripcion"
+                  <div *ngIf="producto.descripcion[idioma]"
                        class="descripcion">
-                    {{producto.descripcion}}
+                    {{producto.descripcion[idioma]}}
                   </div>
                 </div>
                 <div class="spacer"></div>
@@ -87,7 +87,7 @@
   <ng-container *ngFor="let cat of menu">
     <ng-container *ngFor="let subcat of cat.hijos">
       <div class="subcat"
-           *ngIf="subcat.titulo == 'Promociones'">
+           *ngIf="subcat.titulo.es == 'Promociones'">
         <ng-container *ngFor="let producto of subcat.hijos">
           <div class="producto"
                *ngIf="producto.visible">
@@ -103,8 +103,8 @@
                    [src]="imagenProducto(producto.imagen).ruta">
             </div>
             <div class="texto">
-              <div class="titulo">{{producto.titulo}}</div>
-              <div class="descripcion">{{producto.descripcion}}</div>
+              <div class="titulo">{{producto.titulo[idioma]}}</div>
+              <div class="descripcion">{{producto.descripcion[idioma]}}</div>
             </div>
             <div class="valor">{{producto.valor | currency:'COP':'symbol-narrow':'1.0-0'}}</div>
           </div>

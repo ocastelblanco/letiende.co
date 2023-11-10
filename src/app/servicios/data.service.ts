@@ -7,13 +7,12 @@ import { environment } from '../../environments/environment';
 import { DOCUMENT } from '@angular/common';
 import { ListResult, Storage, StorageReference, UploadResult, getDownloadURL, listAll, ref, uploadBytes } from '@angular/fire/storage';
 
-
 export interface Menu {
   id: number;
   padre: number;
   posicion: number;
-  titulo: string;
-  descripcion: string;
+  titulo: any;
+  descripcion: any;
   valor: number;
   visible: boolean;
   imagen: string;
@@ -91,8 +90,8 @@ export class DataService {
           id: el[0],
           padre: el[1],
           posicion: el[2],
-          titulo: el[3],
-          descripcion: el[4],
+          titulo: { es: el[3], en: el[9] },
+          descripcion: { es: el[4], en: el[10] },
           valor: el[5],
           visible: el[6].toLowerCase() == 'si' ? true : false,
           imagen: el[7],
