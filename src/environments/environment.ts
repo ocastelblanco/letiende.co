@@ -14,7 +14,8 @@ export const environment = {
     measurementId: 'G-TVXJHNZZEQ',
   },
   production: false,
-  googleAnalytics: ''
+  googleAnalytics: '',
+  enDesarrollo: []
 };
 
 /*

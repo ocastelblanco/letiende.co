@@ -10,5 +10,6 @@ export const environment = {
     measurementId: 'G-TVXJHNZZEQ',
   },
   production: true,
-  googleAnalytics: 'G-TQTGGTM26R'
+  googleAnalytics: 'G-TQTGGTM26R',
+  enDesarrollo: ['inicio', 'discos']
 };

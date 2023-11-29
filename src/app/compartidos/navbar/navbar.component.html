@@ -11,19 +11,22 @@
        src="assets/logos/logo_sobre_verde.svg"
        alt="Logotipo de Le Tiende">
   <div class="enlaces">
-    <a mat-button
-       class="enlace"
-       *ngFor="let vinculo of vinculos"
-       routerLinkActive="activo"
-       [routerLinkActiveOptions]="{exact: true}"
-       [routerLink]="vinculo.vinculo">
-      {{ vinculo.lang[idioma].toUpperCase() }}
-    </a>
+    <ng-container *ngFor="let vinculo of vinculos">
+      <a mat-button
+         class="enlace"
+         *ngIf="!enDesarrollo.includes(vinculo.vinculo)"
+         routerLinkActive="activo"
+         [routerLinkActiveOptions]="{exact: true}"
+         [routerLink]="vinculo.vinculo">
+        {{ vinculo.lang[idioma].toUpperCase() }}
+      </a>
+    </ng-container>
   </div>
   <div class="titulo"
-       *ngIf="vinculos[numVinculo].lang[idioma] != 'inicio'">
+       *ngIf="!enDesarrollo.includes(vinculos[numVinculo].vinculo)">
     {{ vinculos[numVinculo].lang[idioma] }}
   </div>
+  <span class="spacer"></span>
   <div class="idioma">
     <button mat-icon-button
             [matMenuTriggerFor]="menuIdioma">

@@ -7,6 +7,7 @@ import { filter } from 'rxjs';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { DataService } from 'src/app/servicios/data.service';
+import { environment } from 'src/environments/environment';
 
 export interface Vinculo {
   vinculo: string;
@@ -19,6 +20,7 @@ export interface Vinculo {
   styleUrls: ['./navbar.component.scss'],
 })
 export class NavbarComponent {
+  enDesarrollo: string[] = environment.enDesarrollo;
   bpPantalla!: string | undefined;
   anchos = new Map([
     [Breakpoints.XSmall, 'xs'],
@@ -30,10 +32,9 @@ export class NavbarComponent {
   bandera: string = 'flag-co';
   idioma: string = 'es';
   vinculos: Vinculo[] = [
-    /*{ titulo: 'Inicio', vinculo: 'inicio' },*/
     { vinculo: 'eventos', lang: { 'es': 'Eventos', 'en': 'Events' } },
     { vinculo: 'menu', lang: { 'es': 'Menú', 'en': 'Menu' } },
-    //{ titulo: 'Discos', vinculo: 'discos' },
+    { vinculo: 'discos', lang: { 'es': 'Discos', 'en': 'Records' } },
   ];
   numVinculo: number = 0;
   constructor(

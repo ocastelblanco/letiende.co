@@ -23,7 +23,7 @@ export class DiscosComponent implements OnInit {
               if (a.artista > b.artista) return 1;
               return 0;
             });
-            this.discos.forEach((disco: Disco, index: number) => {
+            this.discos.forEach((disco: Disco) => {
               this.data.getDiscoInfo(disco.album, disco.artista, disco.barcode.substring(0, 3) != 'LTD' ? disco.barcode : null)
                 .subscribe((resp: any) => {
                   const formato: any = resp.formats ?
@@ -36,7 +36,7 @@ export class DiscosComponent implements OnInit {
                   disco.genero = resp.genre;
                   disco.cover = _portada ? _portada.cover : undefined;
                   disco.descripcion = descripcion;
-                  if (!_portada && index == 1) {
+                  if (!_portada) {
                     let extension: string = resp.cover_image.substring(resp.cover_image.lastIndexOf('.') + 1);
                     extension = extension == 'jpeg' ? 'jpg' : extension;
                     const archivo: string = disco.barcode + '.' + extension;

@@ -172,12 +172,12 @@ export class DataService {
           _discos.push(_disco);
         });
         this.discos.next(_discos);
-        resDiscos.unsuscribe();
+        resDiscos.unsubscribe();
       });
     return this.discos;
   }
   getDiscoInfo(album: string, artista: string, barcode: string | null = null): Observable<any> {
-    const query: string = 'album=' + album + '&artista=' + artista;
+    const query: string = 'album=' + encodeURIComponent(album) + '&artista=' + encodeURIComponent(artista);
     const bcode: string = barcode ? '&barcode=' + barcode : '';
     return this.http.get(this.rutaAPI + 'discogs?' + query + bcode);
   }
@@ -197,13 +197,19 @@ export class DataService {
     return this.portadas;
   }
   putPortada(archivo: string, url: string): BehaviorSubject<string> {
-    console.log('Voy a iniciar la descarga de ' + archivo);
     const ruta: BehaviorSubject<string> = new BehaviorSubject<string>('');
-    this.http.get(url, { responseType: 'blob' }).subscribe((blob: Blob) => {
+    const getCoverDiscogs: string | null = this.rutaAPI + 'coverDiscogs?cover=' + url;
+    this.http.get(getCoverDiscogs, { responseType: 'json' }).subscribe((resp: any) => {
+      if (resp.err || resp.rateLimit) console.log(resp.rateLimit, resp.err);
+      const blob: Blob = this.convertBinaryToBlob(resp.data);
       const subida: StorageReference = ref(this.storage, 'discos/portadas/' + archivo);
-      console.log('Ya tengo la ruta de Discogs y la referencia de subida');
       uploadBytes(subida, blob).then((res: UploadResult) => getDownloadURL(res.ref).then((_ruta: string) => ruta.next(_ruta)));
     });
     return ruta;
   }
+  convertBinaryToBlob(binary: string, contentType: string = 'image/jpeg'): Blob {
+    const uInt8Array: Uint8Array = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) uInt8Array[i] = binary.charCodeAt(i);
+    return new Blob([uInt8Array], { type: contentType });
+  };
 }

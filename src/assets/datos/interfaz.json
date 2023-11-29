@@ -1,28 +1,28 @@
 {
-  "nabvar": [
+  "navbar": [
     {
-      "enlace": "menu",
+      "vinculo": "menu",
       "lang": {
         "es": "Menú",
         "en": "Menu"
       }
     },
     {
-      "enlace": "eventos",
+      "vinculo": "eventos",
       "lang": {
         "es": "Eventos",
         "en": "Events"
       }
     },
     {
-      "enlace": "inicio",
+      "vinculo": "inicio",
       "lang": {
         "es": "Inicio",
         "en": "Home"
       }
     },
     {
-      "enlace": "discos",
+      "vinculo": "discos",
       "lang": {
         "es": "Discos",
         "en": "Records"
