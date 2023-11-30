@@ -33,11 +33,39 @@ export class EventosComponent implements OnInit {
   hoy: Date = new Date();
   idioma: string = 'es';
   interfaz: any;
+  mes: Date = new Date(this.hoy.getFullYear(), this.hoy.getMonth(), 1);
+  semanas!: Array<Date[]>;
   constructor(private data: DataService) {
     effect(() => this.idioma = this.data.idioma());
-    const primeroMes: Date = new Date(this.hoy.getTime() - ((this.hoy.getDate() - 1) * (24 * 60 * 60 * 1000)));
-    const primeroCalendario: Date = new Date(primeroMes.getTime() - ((primeroMes.getDay() - 1) * (24 * 60 * 60 * 1000)));
-    // El primer día del mes y el primer día del calendario. Debe asociarse a un mes "rotativo"
+    this.calculaCalendario();
+  }
+  calculaCalendario(cambio: number = 0): void {
+    const unDia: number = 24 * 60 * 60 * 1000;
+    let anno: number, mes: number;
+    if (cambio == -1 && this.mes.getMonth() == 0) {
+      anno = this.mes.getFullYear() - 1;
+      mes = 11;
+    } else if (cambio == 1 && this.mes.getMonth() == 11) {
+      anno = this.mes.getFullYear() + 1;
+      mes = 0;
+    } else {
+      anno = this.mes.getFullYear();
+      mes = this.mes.getMonth() + cambio;
+    }
+    this.mes = new Date(anno, mes, 1);
+    let inicioCalendario: Date = new Date(this.mes.getTime() - (this.mes.getDay() * unDia));
+    let finCalendario: Date = new Date(anno, mes + 1, 0);
+    finCalendario.setTime(finCalendario.getTime() + ((6 - finCalendario.getDay()) * unDia));
+    let semana: Date[] = [], cont: number = inicioCalendario.getTime();
+    this.semanas = [];
+    while (cont <= finCalendario.getTime()) {
+      semana.push(new Date(cont));
+      if (new Date(cont).getDay() == 6) {
+        this.semanas.push(semana);
+        semana = [];
+      }
+      cont += unDia;
+    }
   }
   ngOnInit(): void {
     this.data.getEventos().subscribe((eventos: Evento[]) => this.eventos = eventos);

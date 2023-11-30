@@ -11,6 +11,11 @@ $marron: map.get(estilos.$lt-basico, marron);
 .eventos {
   width: 100%;
   background-color: $amarillo;
+  .calendario {
+    .navegacion {
+      display: flex;
+    }
+  }
   .lista-eventos {
     width: 100%;
     display: flex;

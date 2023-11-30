@@ -1,16 +1,31 @@
 <div class="eventos">
   <div class="header"></div>
   <div class="calendario">
+    <nav class="navegacion">
+      <div class="atras">
+        <button mat-icon-button
+                (click)="calculaCalendario(-1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+      </div>
+      <div class="fecha"
+           *ngIf="interfaz">
+        {{ mes | date: 'MMMM / y':'GMT-5:00':interfaz.fecha[idioma] }}
+      </div>
+      <div class="adelante">
+        <button mat-icon-button
+                (click)="calculaCalendario(1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </nav>
     <mat-grid-list cols="7"
                    rowHeight="2:1">
-      <mat-grid-tile>1</mat-grid-tile>
-      <mat-grid-tile>2</mat-grid-tile>
-      <mat-grid-tile>3</mat-grid-tile>
-      <mat-grid-tile>4</mat-grid-tile>
-      <mat-grid-tile>1</mat-grid-tile>
-      <mat-grid-tile>2</mat-grid-tile>
-      <mat-grid-tile>3</mat-grid-tile>
-      <mat-grid-tile>4</mat-grid-tile>
+      <ng-container *ngFor="let semana of semanas">
+        <mat-grid-tile *ngFor="let dia of semana">
+          {{ dia | date }}
+        </mat-grid-tile>
+      </ng-container>
     </mat-grid-list>
   </div>
   <div class="eventos-animados">
