@@ -68,7 +68,14 @@ export class NavbarComponent {
     this.iconRegistry.addSvgIcon('flag-co', this.sanitizer.bypassSecurityTrustResourceUrl('assets/imgs/flags/co.svg'));
     this.iconRegistry.addSvgIcon('flag-gb', this.sanitizer.bypassSecurityTrustResourceUrl('assets/imgs/flags/gb.svg'));
     effect(() => this.idioma = this.data.idioma());
-    this.data.getInterfaz().subscribe(((interfaz: any) => interfaz.navbar ? this.vinculos = interfaz.navbar : null));
+    this.data.getInterfaz().subscribe(((interfaz: any) => {
+      interfaz.navbar ?
+        this.vinculos = interfaz.navbar :
+        null;
+      this.router.url.length > 1 ?
+        this.numVinculo = this.vinculos.findIndex((vin: Vinculo) => vin.vinculo == this.router.url.substring(1)) :
+        null;
+    }));
   }
   abreMenu(): void {
     this._bottomSheet.open(MenuDesplegableComponent, { data: { vinculos: this.vinculos, idioma: this.idioma } });

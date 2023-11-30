@@ -35,6 +35,9 @@ export class EventosComponent implements OnInit {
   interfaz: any;
   constructor(private data: DataService) {
     effect(() => this.idioma = this.data.idioma());
+    const primeroMes: Date = new Date(this.hoy.getTime() - ((this.hoy.getDate() - 1) * (24 * 60 * 60 * 1000)));
+    const primeroCalendario: Date = new Date(primeroMes.getTime() - ((primeroMes.getDay() - 1) * (24 * 60 * 60 * 1000)));
+    // El primer día del mes y el primer día del calendario. Debe asociarse a un mes "rotativo"
   }
   ngOnInit(): void {
     this.data.getEventos().subscribe((eventos: Evento[]) => this.eventos = eventos);

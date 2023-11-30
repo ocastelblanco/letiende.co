@@ -1,6 +1,13 @@
 {
   "navbar": [
     {
+      "vinculo": "inicio",
+      "lang": {
+        "es": "Inicio",
+        "en": "Home"
+      }
+    },
+    {
       "vinculo": "menu",
       "lang": {
         "es": "Menú",
@@ -12,13 +19,6 @@
       "lang": {
         "es": "Eventos",
         "en": "Events"
-      }
-    },
-    {
-      "vinculo": "inicio",
-      "lang": {
-        "es": "Inicio",
-        "en": "Home"
       }
     },
     {

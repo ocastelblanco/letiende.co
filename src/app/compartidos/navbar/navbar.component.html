@@ -1,5 +1,6 @@
 <mat-toolbar class="navbar"
              [ngClass]="bpPantalla"
+             *ngIf="vinculos.length > 0"
              color="primary">
   <button class="menu"
           (click)="abreMenu()"
