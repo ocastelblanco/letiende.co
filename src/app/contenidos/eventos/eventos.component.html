@@ -1,6 +1,22 @@
-<div class="eventos">
-  <div class="header"></div>
-  <div class="calendario">
+<div class="eventos"
+     *ngIf="interfaz">
+  <div class="header">
+    <div class="selector-vista">
+      <span>
+        {{ interfaz.vistade[idioma] }}
+      </span>
+      <mat-button-toggle-group [(ngModel)]="modoVista">
+        <mat-button-toggle value="eventos">
+          {{ interfaz.tipoeventos[idioma] }}
+        </mat-button-toggle>
+        <mat-button-toggle value="calendario">
+          {{ interfaz.tipocalendario[idioma] }}
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  </div>
+  <div class="calendario"
+       *ngIf="modoVista == 'calendario'">
     <nav class="navegacion">
       <div class="atras">
         <button mat-icon-button
@@ -28,7 +44,8 @@
       </ng-container>
     </mat-grid-list>
   </div>
-  <div class="eventos-animados">
+  <div class="eventos-animados"
+       *ngIf="modoVista == 'eventos'">
     <div class="lista-eventos"
          *ngIf="eventos.length > 0"
          @eventos>

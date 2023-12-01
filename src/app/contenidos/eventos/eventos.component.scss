@@ -9,88 +9,110 @@ $amarillo: map.get(estilos.$lt-basico, amarillo);
 $marron: map.get(estilos.$lt-basico, marron);
 
 .eventos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
   background-color: $amarillo;
-  .calendario {
-    .navegacion {
+  .header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px;
+    width: 100%;
+    max-width: 1280px;
+    .selector-vista {
       display: flex;
+      align-items: center;
+      gap: 8px;
     }
   }
-  .lista-eventos {
+  .calendario {
     width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: map.get(estilos.$tamanos, gap);
-    align-items: flex-start;
-    justify-content: space-evenly;
-    .evento {
-      &:not(.vacio) {
-        max-width: 360px;
-        margin: map.get(estilos.$tamanos, gap);
-        background-color: $marron;
-        color: $amarillo;
-        .mat-mdc-card-content {
-          margin-top: 16px;
-          display: flex;
-          .fecha {
+    max-width: 1280px;
+    .navegacion {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+  .eventos-animados {
+    width: 100%;
+    .lista-eventos {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: map.get(estilos.$tamanos, gap);
+      align-items: flex-start;
+      justify-content: space-evenly;
+      .evento {
+        &:not(.vacio) {
+          max-width: 360px;
+          margin: map.get(estilos.$tamanos, gap);
+          background-color: $marron;
+          color: $amarillo;
+          .mat-mdc-card-content {
+            margin-top: 16px;
             display: flex;
-            flex-direction: column;
-            background-color: $verde;
-            align-items: center;
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-align: center;
-            .mes {
-              @include mat.typography-level($typography-config, "body-2");
-              text-transform: uppercase;
+            .fecha {
+              display: flex;
+              flex-direction: column;
+              background-color: $verde;
+              align-items: center;
+              padding: 8px 16px;
+              border-radius: 8px;
+              text-align: center;
+              .mes {
+                @include mat.typography-level($typography-config, "body-2");
+                text-transform: uppercase;
+              }
+              .dia {
+                @include mat.typography-level($typography-config, "heading-1");
+              }
+              .hora {
+                @include mat.typography-level($typography-config, "body-4");
+                min-width: 5em;
+              }
             }
-            .dia {
+            .info {
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              padding: 0 8px;
+              .texto {
+                .titulo {
+                  @include mat.typography-level($typography-config, "heading-3");
+                }
+                .descripcion {
+                  @include mat.typography-level($typography-config, "body-4");
+                  color: $naranja;
+                }
+              }
+              .acciones {
+                display: flex;
+              }
+            }
+          }
+        }
+        &.vacio {
+          background-color: white;
+          padding: 16px;
+          margin-top: 16px;
+          max-width: 360px;
+          text-align: center;
+          .icono {
+            font-size: 80px;
+            line-height: 1.25;
+            color: $marron;
+          }
+          .texto {
+            color: $marron;
+            .ups {
               @include mat.typography-level($typography-config, "heading-1");
             }
-            .hora {
-              @include mat.typography-level($typography-config, "body-4");
-              min-width: 5em;
+            .titulo {
+              @include mat.typography-level($typography-config, "heading-3");
+              margin: 16px 0;
             }
-          }
-          .info {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 0 8px;
-            .texto {
-              .titulo {
-                @include mat.typography-level($typography-config, "heading-3");
-              }
-              .descripcion {
-                @include mat.typography-level($typography-config, "body-4");
-                color: $naranja;
-              }
-            }
-            .acciones {
-              display: flex;
-            }
-          }
-        }
-      }
-      &.vacio {
-        background-color: white;
-        padding: 16px;
-        margin-top: 16px;
-        max-width: 360px;
-        text-align: center;
-        .icono {
-          font-size: 80px;
-          line-height: 1.25;
-          color: $marron;
-        }
-        .texto {
-          color: $marron;
-          .ups {
-            @include mat.typography-level($typography-config, "heading-1");
-          }
-          .titulo {
-            @include mat.typography-level($typography-config, "heading-3");
-            margin: 16px 0;
           }
         }
       }

@@ -35,6 +35,7 @@ export class EventosComponent implements OnInit {
   interfaz: any;
   mes: Date = new Date(this.hoy.getFullYear(), this.hoy.getMonth(), 1);
   semanas!: Array<Date[]>;
+  modoVista: string = 'eventos';
   constructor(private data: DataService) {
     effect(() => this.idioma = this.data.idioma());
     this.calculaCalendario();

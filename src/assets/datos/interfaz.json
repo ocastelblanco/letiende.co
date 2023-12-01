@@ -53,6 +53,18 @@
     "registro": {
       "es": "Regístrate para este evento",
       "en": "Event registration"
+    },
+    "vistade": {
+      "es": "Vista de",
+      "en": "View as"
+    },
+    "tipoeventos": {
+      "es": "Eventos",
+      "en": "Events"
+    },
+    "tipocalendario": {
+      "es": "Calendario",
+      "en": "Calendar"
     }
   },
   "menu": {

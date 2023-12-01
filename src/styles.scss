@@ -4,6 +4,7 @@
 @use "./estilos/tema" as tema;
 @use "./estilos/bottomSheet" as bottomSheet;
 @use "./estilos/menu" as menu;
+@use "./estilos/buttonToggle" as buttonToggle;
 
 // Core
 @include mat.core();
@@ -56,6 +57,7 @@ $letiende-theme: mat.define-light-theme(
 @include mat.all-component-themes($letiende-theme);
 @include bottomSheet.tema($letiende-theme);
 @include menu.tema($letiende-theme);
+@include buttonToggle.tema($letiende-theme);
 
 /* You can add global styles to this file, and also import other style files */
 
