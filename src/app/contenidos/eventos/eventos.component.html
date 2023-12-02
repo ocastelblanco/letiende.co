@@ -26,7 +26,7 @@
       </div>
       <div class="fecha"
            *ngIf="interfaz">
-        {{ mes | date: 'MMMM / y':'GMT-5:00':interfaz.fecha[idioma] }}
+        {{ (mes | date: 'MMMM y':'GMT-5:00':interfaz.fecha[idioma])?.toUpperCase() }}
       </div>
       <div class="adelante">
         <button mat-icon-button
@@ -36,10 +36,22 @@
       </div>
     </nav>
     <mat-grid-list cols="7"
-                   rowHeight="2:1">
+                   class="almanaque-titulo"
+                   rowHeight="16px">
+      <mat-grid-tile *ngFor="let nomDia of semanas[0]">
+        {{ (nomDia | date: 'E':'GMT-5:00':interfaz.fecha[idioma])?.toUpperCase() }}
+      </mat-grid-tile>
+    </mat-grid-list>
+    <mat-grid-list cols="7"
+                   rowHeight="24px">
       <ng-container *ngFor="let semana of semanas">
-        <mat-grid-tile *ngFor="let dia of semana">
-          {{ dia | date }}
+        <mat-grid-tile *ngFor="let dia of semana"
+                       class="almanaque-dias"
+                       [ngClass]="{'actual': dia.getMonth() == hoy.getMonth()}">
+          <div class="num-dia"
+               [ngClass]="{'hoy': hoy.getTime() - dia.getTime() < unDia && hoy.getDay() == dia.getDay()}">
+            {{ dia | date: 'd':'GMT-5:00':interfaz.fecha[idioma]}}
+          </div>
         </mat-grid-tile>
       </ng-container>
     </mat-grid-list>

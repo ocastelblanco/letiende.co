@@ -33,15 +33,15 @@ export class EventosComponent implements OnInit {
   hoy: Date = new Date();
   idioma: string = 'es';
   interfaz: any;
+  unDia: number = 24 * 60 * 60 * 1000;
   mes: Date = new Date(this.hoy.getFullYear(), this.hoy.getMonth(), 1);
   semanas!: Array<Date[]>;
-  modoVista: string = 'eventos';
+  modoVista: string = 'calendario';
   constructor(private data: DataService) {
     effect(() => this.idioma = this.data.idioma());
     this.calculaCalendario();
   }
   calculaCalendario(cambio: number = 0): void {
-    const unDia: number = 24 * 60 * 60 * 1000;
     let anno: number, mes: number;
     if (cambio == -1 && this.mes.getMonth() == 0) {
       anno = this.mes.getFullYear() - 1;
@@ -54,9 +54,9 @@ export class EventosComponent implements OnInit {
       mes = this.mes.getMonth() + cambio;
     }
     this.mes = new Date(anno, mes, 1);
-    let inicioCalendario: Date = new Date(this.mes.getTime() - (this.mes.getDay() * unDia));
+    let inicioCalendario: Date = new Date(this.mes.getTime() - (this.mes.getDay() * this.unDia));
     let finCalendario: Date = new Date(anno, mes + 1, 0);
-    finCalendario.setTime(finCalendario.getTime() + ((6 - finCalendario.getDay()) * unDia));
+    finCalendario.setTime(finCalendario.getTime() + ((6 - finCalendario.getDay()) * this.unDia));
     let semana: Date[] = [], cont: number = inicioCalendario.getTime();
     this.semanas = [];
     while (cont <= finCalendario.getTime()) {
@@ -65,7 +65,7 @@ export class EventosComponent implements OnInit {
         this.semanas.push(semana);
         semana = [];
       }
-      cont += unDia;
+      cont += this.unDia;
     }
   }
   ngOnInit(): void {
