@@ -5,15 +5,59 @@
       <img mat-card-image
            *ngIf="disco.cover"
            [src]="disco.cover">
-      <mat-card-content>
-        <div class="album">{{ disco.album }}</div>
-        <div class="artista">{{ disco.artista }}</div>
-        <div class="estado">{{ disco.estado }}</div>
-        <div class="valor">{{ disco.valor | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
-        <div class="origen">{{ disco.origen }}</div>
-        <div class="anno">{{ disco.anno }}</div>
-        <div class="genero">{{ disco.genero?.join(', ') }}</div>
-        <div class="descripcion">{{ disco.descripcion }}</div>
+      <mat-card-content class="contenido">
+        <div class="album">
+          <fa-icon [icon]="album"
+                   class="icono"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <span class="texto">{{ disco.album }}</span>
+        </div>
+        <div class="artista">
+          <fa-icon [icon]="artista"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <span class="texto">{{ disco.artista }}</span>
+        </div>
+        <div class="estado">
+          <fa-icon [icon]="estado"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <span class="texto">{{ disco.estado }}</span>
+        </div>
+        <div class="valor">
+          <fa-icon [icon]="valor"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <span class="texto">{{ disco.valor | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <div class="origen"
+             *ngIf="disco.origen && disco.barcode.substring(0, 3) != 'LTD'">
+          <fa-icon [icon]="origen"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <span class="texto">{{ disco.origen }}</span>
+        </div>
+        <div class="anno"
+             *ngIf="disco.anno">
+          <fa-icon [icon]="anno"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <span class="texto">{{ disco.anno }}</span>
+        </div>
+        <div class="genero"
+             *ngIf="disco.genero?.length">
+          <fa-icon [icon]="genero"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <span class="chips">{{ disco.genero?.join(', ') }}</span>
+        </div>
+        <div class="descripcion">
+          <fa-icon [icon]="descripcion"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <span class="texto">{{ disco.descripcion }}</span>
+        </div>
       </mat-card-content>
     </mat-card>
   </ng-container>

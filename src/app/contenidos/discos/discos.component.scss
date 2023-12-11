@@ -18,5 +18,17 @@ $marron: map.get(estilos.$lt-basico, marron);
   background-color: $amarillo;
   .disco {
     width: 240px;
+    .contenido {
+      margin-top: 16px;
+      font-size: 16px;
+      & > * .texto {
+        margin-left: 0.5em;
+      }
+      .album {
+        .texto {
+          font-weight: 600;
+        }
+      }
+    }
   }
 }

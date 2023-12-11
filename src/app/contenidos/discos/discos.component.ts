@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { DataService, Disco, PortadaDisco } from 'src/app/servicios/data.service';
+import { IconDefinition, faRecordVinyl, faGuitar, faGauge, faSackDollar, faMapLocation, faCalendarDay, faMusic, faListCheck } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'lt-discos',
@@ -9,6 +10,14 @@ import { DataService, Disco, PortadaDisco } from 'src/app/servicios/data.service
 })
 export class DiscosComponent implements OnInit {
   discos: Disco[] = [];
+  album: IconDefinition = faRecordVinyl;
+  artista: IconDefinition = faGuitar;
+  estado: IconDefinition = faGauge;
+  valor: IconDefinition = faSackDollar;
+  origen: IconDefinition = faMapLocation;
+  anno: IconDefinition = faCalendarDay;
+  genero: IconDefinition = faMusic;
+  descripcion: IconDefinition = faListCheck;
   constructor(private data: DataService) { }
   ngOnInit(): void {
     const _getPortadas: Subscription = this.data.getPortadas().subscribe((portadas: PortadaDisco[]) => {
