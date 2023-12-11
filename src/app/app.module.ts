@@ -26,6 +26,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { DialogModule } from '@angular/cdk/dialog';
 
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideStorage, getStorage } from '@angular/fire/storage';
@@ -39,6 +40,7 @@ import { AvesComponent } from './landing_pages/aves/aves.component';
 import { MenuDesplegableComponent } from './compartidos/navbar/menu-desplegable/menu-desplegable.component';
 import { DiscosComponent } from './contenidos/discos/discos.component';
 import { MuertosComponent } from './landing_pages/muertos/muertos.component';
+import { FichaEventoComponent } from './contenidos/eventos/ficha-evento/ficha-evento.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -56,6 +58,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     JsonLdDirective,
     DiscosComponent,
     MuertosComponent,
+    FichaEventoComponent,
   ],
   imports: [
     BrowserModule,
@@ -74,6 +77,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MatMenuModule,
     MatGridListModule,
     MatButtonToggleModule,
+    DialogModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideStorage(() => getStorage()),
   ],

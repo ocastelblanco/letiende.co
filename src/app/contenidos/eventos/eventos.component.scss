@@ -8,6 +8,11 @@ $naranja: map.get(estilos.$lt-basico, naranja);
 $amarillo: map.get(estilos.$lt-basico, amarillo);
 $marron: map.get(estilos.$lt-basico, marron);
 
+@mixin ancho() {
+  width: 100%;
+  max-width: 1280px;
+}
+
 .eventos {
   display: flex;
   flex-direction: column;
@@ -17,9 +22,8 @@ $marron: map.get(estilos.$lt-basico, marron);
   .header {
     display: flex;
     justify-content: flex-end;
-    padding: 16px;
-    width: 100%;
-    max-width: 1280px;
+    padding: 32px 0;
+    @include ancho();
     .selector-vista {
       display: flex;
       align-items: center;
@@ -27,16 +31,77 @@ $marron: map.get(estilos.$lt-basico, marron);
     }
   }
   .calendario {
-    width: 100%;
-    max-width: 1280px;
+    @include ancho();
     .navegacion {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      margin-bottom: 16px;
+      .fecha {
+        min-width: 10em;
+        text-align: center;
+      }
     }
-    .almanaque-titulo {
-    }
-    .almanaque-dias {
+    .almanaque {
+      .almanaque-titulo,
+      .almanaque-dias {
+        .dia {
+          border: 1px solid rgba($marron, 0.5);
+          color: $marron;
+        }
+      }
+      .almanaque-titulo {
+        .dia {
+          background-color: $verde;
+          color: #fff;
+        }
+      }
+      .almanaque-dias {
+        .dia {
+          .num-dia {
+            width: 2em;
+            height: 2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 4px;
+            font-size: 14px;
+            &.hoy {
+              border-radius: 50%;
+              background-color: $naranja;
+              color: $amarillo;
+            }
+          }
+          .evento {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            width: 100%;
+            background-color: $naranja;
+            margin-bottom: 4px;
+            color: #fff;
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+            &:hover {
+              background-color: $verde;
+            }
+            span {
+              flex: 1 1 auto;
+              padding: 4px 8px;
+            }
+            .expande {
+              margin-right: 4px;
+            }
+          }
+          &:not(.actual) {
+            background-color: rgba($marron, 0.25);
+          }
+          &.pasado {
+            opacity: 0.4;
+          }
+        }
+      }
     }
   }
   .eventos-animados {

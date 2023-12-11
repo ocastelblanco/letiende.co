@@ -35,26 +35,41 @@
         </button>
       </div>
     </nav>
-    <mat-grid-list cols="7"
-                   class="almanaque-titulo"
-                   rowHeight="16px">
-      <mat-grid-tile *ngFor="let nomDia of semanas[0]">
-        {{ (nomDia | date: 'E':'GMT-5:00':interfaz.fecha[idioma])?.toUpperCase() }}
-      </mat-grid-tile>
-    </mat-grid-list>
-    <mat-grid-list cols="7"
-                   rowHeight="24px">
-      <ng-container *ngFor="let semana of semanas">
-        <mat-grid-tile *ngFor="let dia of semana"
-                       class="almanaque-dias"
-                       [ngClass]="{'actual': dia.getMonth() == hoy.getMonth()}">
-          <div class="num-dia"
-               [ngClass]="{'hoy': hoy.getTime() - dia.getTime() < unDia && hoy.getDay() == dia.getDay()}">
-            {{ dia | date: 'd':'GMT-5:00':interfaz.fecha[idioma]}}
-          </div>
+    <div class="almanaque mat-elevation-z4">
+      <mat-grid-list cols="7"
+                     class="almanaque-titulo"
+                     rowHeight="2em">
+        <mat-grid-tile *ngFor="let nomDia of semanas[0]"
+                       class="dia">
+          {{ (nomDia | date: 'E':'GMT-5:00':interfaz.fecha[idioma])?.toUpperCase() }}
         </mat-grid-tile>
-      </ng-container>
-    </mat-grid-list>
+      </mat-grid-list>
+      <mat-grid-list cols="7"
+                     class="almanaque-dias"
+                     rowHeight="96px">
+        <ng-container *ngFor="let semana of semanas">
+          <mat-grid-tile *ngFor="let dia of semana"
+                         class="dia"
+                         [ngClass]="{'actual': dia.getMonth() == mes.getMonth(), 'pasado': dia < hoy && !esHoy(dia)}">
+            <div class="num-dia"
+                 [ngClass]="{'hoy': esHoy(dia)}">
+              {{ dia | date: 'd':'GMT-5:00':interfaz.fecha[idioma]}}
+            </div>
+            <ng-container *ngFor="let evento of eventosDia(dia)">
+              <div class="evento"
+                   (click)="abreFichaEvento(evento)">
+                <span>
+                  {{ evento.nombre }}
+                </span>
+                <fa-icon [icon]="expande"
+                         class="expande">
+                </fa-icon>
+              </div>
+            </ng-container>
+          </mat-grid-tile>
+        </ng-container>
+      </mat-grid-list>
+    </div>
   </div>
   <div class="eventos-animados"
        *ngIf="modoVista == 'eventos'">

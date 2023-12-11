@@ -104,4 +104,19 @@ body {
       }
     }
   }
+  // Para el calendario de eventos
+  .eventos {
+    .calendario {
+      .almanaque {
+        .almanaque-dias {
+          .dia {
+            .mat-grid-tile-content {
+              flex-direction: column;
+              justify-content: flex-start;
+            }
+          }
+        }
+      }
+    }
+  }
 }

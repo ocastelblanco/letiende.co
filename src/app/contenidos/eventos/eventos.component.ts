@@ -2,8 +2,10 @@ import { Component, OnInit, effect } from '@angular/core';
 import { DataService, Evento } from 'src/app/servicios/data.service';
 import { IconDefinition, faInstagram, faTiktok } from '@fortawesome/free-brands-svg-icons';
 import { faPenToSquare, faFaceGrinBeamSweat } from '@fortawesome/free-regular-svg-icons';
-import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo, faUpRightAndDownLeftFromCenter } from '@fortawesome/free-solid-svg-icons';
 import { trigger, stagger, query, style, animate, transition } from '@angular/animations';
+import { FichaEventoComponent } from './ficha-evento/ficha-evento.component';
+import { Dialog } from '@angular/cdk/dialog';
 
 @Component({
   selector: 'lt-eventos',
@@ -30,14 +32,15 @@ export class EventosComponent implements OnInit {
   tiktok: IconDefinition = faTiktok;
   registro: IconDefinition = faPenToSquare;
   doh: IconDefinition = faFaceGrinBeamSweat;
+  expande: IconDefinition = faUpRightAndDownLeftFromCenter;
   hoy: Date = new Date();
   idioma: string = 'es';
   interfaz: any;
   unDia: number = 24 * 60 * 60 * 1000;
   mes: Date = new Date(this.hoy.getFullYear(), this.hoy.getMonth(), 1);
   semanas!: Array<Date[]>;
-  modoVista: string = 'calendario';
-  constructor(private data: DataService) {
+  modoVista: string = 'eventos';
+  constructor(private data: DataService, public fichaEvento: Dialog) {
     effect(() => this.idioma = this.data.idioma());
     this.calculaCalendario();
   }
@@ -102,5 +105,14 @@ export class EventosComponent implements OnInit {
     // Tomado de https://stackoverflow.com/questions/47061160/merge-two-arrays-with-alternating-values
     const completo: any = ([x, ...xs]: string[], ys: string[] = []) => x === undefined ? ys : [x, ...completo(ys, xs)];
     return completo(pares, impares).join('');
+  }
+  esHoy(dia: Date): boolean {
+    return Math.abs(dia.getTime() - this.hoy.getTime()) < this.unDia && dia.getDate() == this.hoy.getDate();
+  }
+  eventosDia(dia: Date): Evento[] {
+    return this.eventos.filter((ev: Evento) => ev.fecha.toDateString() == dia.toDateString());
+  }
+  abreFichaEvento(evento: Evento): void {
+    this.fichaEvento.open(FichaEventoComponent, { data: evento });
   }
 }
