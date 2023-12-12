@@ -21,13 +21,19 @@ $marron: map.get(estilos.$lt-basico, marron);
     .contenido {
       margin-top: 16px;
       font-size: 16px;
-      & > * .texto {
-        margin-left: 0.5em;
+      & > * .icono {
+        margin-right: 0.5em;
+        color: $verde;
       }
       .album {
         .texto {
           font-weight: 600;
         }
+      }
+      .genero,
+      .descripcion {
+        display: flex;
+        align-items: center;
       }
     }
   }

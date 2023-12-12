@@ -1,4 +1,7 @@
 <div class="discos">
+  <div class="header">
+    {{ generaListado('estado') | json}}
+  </div>
   <ng-container *ngFor="let disco of discos">
     <mat-card class="disco mat-elevation-z4"
               *ngIf="disco.visible">
@@ -13,50 +16,75 @@
           </fa-icon>
           <span class="texto">{{ disco.album }}</span>
         </div>
+        <mat-divider></mat-divider>
         <div class="artista">
           <fa-icon [icon]="artista"
+                   class="icono"
                    [fixedWidth]="true">
           </fa-icon>
           <span class="texto">{{ disco.artista }}</span>
         </div>
+        <mat-divider></mat-divider>
         <div class="estado">
           <fa-icon [icon]="estado"
+                   class="icono"
                    [fixedWidth]="true">
           </fa-icon>
           <span class="texto">{{ disco.estado }}</span>
         </div>
+        <mat-divider></mat-divider>
         <div class="valor">
           <fa-icon [icon]="valor"
+                   class="icono"
                    [fixedWidth]="true">
           </fa-icon>
           <span class="texto">{{ disco.valor | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
         </div>
-        <div class="origen"
-             *ngIf="disco.origen && disco.barcode.substring(0, 3) != 'LTD'">
-          <fa-icon [icon]="origen"
-                   [fixedWidth]="true">
-          </fa-icon>
-          <span class="texto">{{ disco.origen }}</span>
-        </div>
-        <div class="anno"
-             *ngIf="disco.anno">
-          <fa-icon [icon]="anno"
-                   [fixedWidth]="true">
-          </fa-icon>
-          <span class="texto">{{ disco.anno }}</span>
-        </div>
-        <div class="genero"
-             *ngIf="disco.genero?.length">
-          <fa-icon [icon]="genero"
-                   [fixedWidth]="true">
-          </fa-icon>
-          <span class="chips">{{ disco.genero?.join(', ') }}</span>
-        </div>
+        <mat-divider></mat-divider>
+        <ng-container *ngIf="disco.origen && disco.barcode.substring(0, 3) != 'LTD'">
+          <div class="origen">
+            <fa-icon [icon]="origen"
+                     class="icono"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span class="texto">{{ disco.origen }}</span>
+          </div>
+          <mat-divider></mat-divider>
+        </ng-container>
+        <ng-container *ngIf="disco.anno">
+          <div class="anno">
+            <fa-icon [icon]="anno"
+                     class="icono"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span class="texto">{{ disco.anno }}</span>
+          </div>
+          <mat-divider></mat-divider>
+        </ng-container>
+        <ng-container *ngIf="disco.genero?.length">
+          <div class="genero">
+            <fa-icon [icon]="genero"
+                     class="icono"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <mat-chip-listbox class="chips-discos">
+              <mat-chip-option *ngFor="let genero of disco.genero">
+                {{ genero }}
+              </mat-chip-option>
+            </mat-chip-listbox>
+          </div>
+          <mat-divider></mat-divider>
+        </ng-container>
         <div class="descripcion">
           <fa-icon [icon]="descripcion"
+                   class="icono"
                    [fixedWidth]="true">
           </fa-icon>
-          <span class="texto">{{ disco.descripcion }}</span>
+          <mat-chip-listbox class="chips-discos">
+            <mat-chip-option *ngFor="let descripcion of disco.descripcion?.split(', ')">
+              {{ descripcion }}
+            </mat-chip-option>
+          </mat-chip-listbox>
         </div>
       </mat-card-content>
     </mat-card>

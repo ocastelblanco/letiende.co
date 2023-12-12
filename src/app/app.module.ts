@@ -27,6 +27,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DialogModule } from '@angular/cdk/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideStorage, getStorage } from '@angular/fire/storage';
@@ -78,6 +80,8 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MatGridListModule,
     MatButtonToggleModule,
     DialogModule,
+    MatDividerModule,
+    MatChipsModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideStorage(() => getStorage()),
   ],

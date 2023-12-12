@@ -1,7 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { DataService, Disco, PortadaDisco } from 'src/app/servicios/data.service';
-import { IconDefinition, faRecordVinyl, faGuitar, faGauge, faSackDollar, faMapLocation, faCalendarDay, faMusic, faListCheck } from '@fortawesome/free-solid-svg-icons';
+import {
+  IconDefinition,
+  faRecordVinyl,
+  faGuitar,
+  faGauge,
+  faSackDollar,
+  faMapLocation,
+  faCalendarDay,
+  faMusic,
+  faListCheck
+} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'lt-discos',
@@ -61,6 +71,28 @@ export class DiscosComponent implements OnInit {
           }
         });
       }
+    });
+  }
+  generaListado(campo: string): string[] {
+    const salida: string[] = [];
+    this.discos
+      .filter((disco: Disco) => disco.visible)
+      .map((disco: Disco) => {
+        const _disco: any = disco;
+        return _disco[campo];
+      })
+      .forEach((elemento: any) => {
+        if (elemento && typeof elemento == 'object') {
+          elemento.forEach((genero: string) => {
+            if (!salida.includes(genero)) salida.push(genero);
+          });
+        }
+        if (elemento && typeof elemento == 'string' && !salida.includes(elemento)) salida.push(elemento);
+      });
+    return salida.sort((a: string, b: string) => {
+      if (a < b) return -1;
+      if (a > b) return 1;
+      return 0;
     });
   }
 }

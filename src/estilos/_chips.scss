@@ -1,0 +1,45 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "tema" as tema;
+
+@mixin color($theme) {
+  $naranja: map.get(tema.$lt-basico, naranja);
+  $amarillo: map.get(tema.$lt-basico, amarillo);
+  $verde: map.get(tema.$lt-basico, verde);
+  $marron: map.get(tema.$lt-basico, marron);
+
+  .mat-mdc-chip-listbox {
+    &.chips-discos {
+      display: inline-flex;
+      .mdc-evolution-chip-set__chips {
+        .mat-mdc-chip-option {
+          height: 24px;
+          background-color: $marron;
+          .mat-mdc-chip-action {
+            padding-right: 6px;
+            .mat-mdc-chip-graphic {
+              padding-right: 0;
+            }
+            .mat-mdc-chip-action-label {
+              font-size: 12px;
+              color: #fff;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+@mixin typography($theme) {
+  $typography-config: mat.get-typography-config($theme);
+}
+@mixin tema($theme) {
+  $color-config: mat.get-color-config($theme);
+  @if $color-config != null {
+    @include color($theme);
+  }
+  $typography-config: mat.get-typography-config($theme);
+  @if $typography-config != null {
+    @include typography($theme);
+  }
+}
