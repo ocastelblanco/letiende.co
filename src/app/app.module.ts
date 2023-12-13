@@ -29,6 +29,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DialogModule } from '@angular/cdk/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSliderModule } from '@angular/material/slider';
 
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideStorage, getStorage } from '@angular/fire/storage';
@@ -82,11 +85,15 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     DialogModule,
     MatDividerModule,
     MatChipsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatSliderModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideStorage(() => getStorage()),
   ],
   providers: [
-    { provide: LOCALE_ID, useValue: 'es-CO' }
+    { provide: LOCALE_ID, useValue: 'es-CO' },
+    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' } }
   ],
   bootstrap: [AppComponent]
 })

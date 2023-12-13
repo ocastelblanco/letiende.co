@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, effect } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { DataService, Disco, PortadaDisco } from 'src/app/servicios/data.service';
 import {
@@ -12,6 +12,17 @@ import {
   faMusic,
   faListCheck
 } from '@fortawesome/free-solid-svg-icons';
+
+interface RangoNum {
+  minimo: number;
+  maximo: number;
+}
+interface Filtros {
+  artistas: string[];
+  estados: string[];
+  generos: string[];
+  rangoPrecios: RangoNum;
+}
 
 @Component({
   selector: 'lt-discos',
@@ -28,8 +39,22 @@ export class DiscosComponent implements OnInit {
   anno: IconDefinition = faCalendarDay;
   genero: IconDefinition = faMusic;
   descripcion: IconDefinition = faListCheck;
-  constructor(private data: DataService) { }
+  idioma: string = 'es';
+  interfaz: any;
+  filtros: Filtros = {
+    artistas: [],
+    estados: [],
+    rangoPrecios: {
+      minimo: 0,
+      maximo: 0
+    },
+    generos: []
+  };
+  constructor(private data: DataService) {
+    effect(() => this.idioma = this.data.idioma());
+  }
   ngOnInit(): void {
+    this.data.getInterfaz().subscribe(((interfaz: any) => interfaz.discos ? this.interfaz = interfaz.discos : null));
     const _getPortadas: Subscription = this.data.getPortadas().subscribe((portadas: PortadaDisco[]) => {
       if (portadas.length > 0) {
         _getPortadas.unsubscribe();
@@ -55,6 +80,9 @@ export class DiscosComponent implements OnInit {
                   disco.genero = resp.genre;
                   disco.cover = _portada ? _portada.cover : undefined;
                   disco.descripcion = descripcion;
+                  this.filtros.artistas = this.generaListado('artista');
+                  this.filtros.estados = this.generaListado('estado');
+                  this.filtros.generos = this.generaListado('genero');
                   if (!_portada) {
                     let extension: string = resp.cover_image.substring(resp.cover_image.lastIndexOf('.') + 1);
                     extension = extension == 'jpeg' ? 'jpg' : extension;
@@ -94,5 +122,15 @@ export class DiscosComponent implements OnInit {
       if (a > b) return 1;
       return 0;
     });
+  }
+  listadoKeyObj(obj: any): string[] {
+    return Object.keys(obj);
+  }
+  valObj(obj: any, key: string): string[] {
+    const _obj: any = obj as any;
+    return _obj[key];
+  }
+  esArray(obj: any, key: string): boolean {
+    return this.valObj(obj, key).constructor.name == 'Array';
   }
 }

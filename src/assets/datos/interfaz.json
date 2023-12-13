@@ -72,5 +72,29 @@
       "es": "Promociones de hoy",
       "en": "Today's Promotions"
     }
+  },
+  "discos": {
+    "filtros": {
+      "es": "Filtrar por",
+      "en": "Filter by"
+    },
+    "selectores": {
+      "artistas": {
+        "es": "Artistas",
+        "en": "Artists"
+      },
+      "estados": {
+        "es": "Estados",
+        "en": "Conditions"
+      },
+      "rangoPrecios": {
+        "es": "Precio",
+        "en": "Price"
+      },
+      "generos": {
+        "es": "Géneros",
+        "en": "Genres"
+      }
+    }
   }
 }

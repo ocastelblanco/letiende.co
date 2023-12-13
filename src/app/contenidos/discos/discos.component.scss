@@ -10,30 +10,35 @@ $marron: map.get(estilos.$lt-basico, marron);
 
 .discos {
   width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  gap: map.get(estilos.$tamanos, gap);
-  align-items: flex-start;
-  justify-content: space-evenly;
   background-color: $amarillo;
-  .disco {
-    width: 240px;
-    .contenido {
-      margin-top: 16px;
-      font-size: 16px;
-      & > * .icono {
-        margin-right: 0.5em;
-        color: $verde;
-      }
-      .album {
-        .texto {
-          font-weight: 600;
+  .filtros {
+    display: flex;
+  }
+  .fichas-discos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get(estilos.$tamanos, gap);
+    align-items: flex-start;
+    justify-content: space-evenly;
+    .disco {
+      width: 240px;
+      .contenido {
+        margin-top: 16px;
+        font-size: 16px;
+        & > * .icono {
+          margin-right: 0.5em;
+          color: $verde;
         }
-      }
-      .genero,
-      .descripcion {
-        display: flex;
-        align-items: center;
+        .album {
+          .texto {
+            font-weight: 600;
+          }
+        }
+        .genero,
+        .descripcion {
+          display: flex;
+          align-items: center;
+        }
       }
     }
   }
