@@ -78,6 +78,10 @@
       "es": "Filtrar por",
       "en": "Filter by"
     },
+    "ordenar": {
+      "es": "Ordenar por",
+      "en": "Sort by"
+    },
     "selectores": {
       "artistas": {
         "es": "Artistas",
@@ -88,6 +92,10 @@
         "en": "Condition"
       },
       "rangoPrecios": {
+        "es": "Rango de precios",
+        "en": "Price range"
+      },
+      "precio": {
         "es": "Precio",
         "en": "Price"
       },

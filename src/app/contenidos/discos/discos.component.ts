@@ -10,20 +10,14 @@ import {
   faMapLocation,
   faCalendarDay,
   faMusic,
-  faListCheck
+  faListCheck,
+  faArrowDownAZ,
+  faArrowDownZA,
+  faArrowDown19,
+  faArrowDown91
 } from '@fortawesome/free-solid-svg-icons';
 import { formatCurrency } from '@angular/common';
-
-interface RangoNum {
-  minimo: number;
-  maximo: number;
-}
-interface Filtros {
-  artistas: string[];
-  estados: string[];
-  generos: string[];
-  rangoPrecios: RangoNum;
-}
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 @Component({
   selector: 'lt-discos',
@@ -40,9 +34,14 @@ export class DiscosComponent implements OnInit {
   anno: IconDefinition = faCalendarDay;
   genero: IconDefinition = faMusic;
   descripcion: IconDefinition = faListCheck;
+  artistaA: IconDefinition = faArrowDownAZ;
+  artistaD: IconDefinition = faArrowDownZA;
+  preciosA: IconDefinition = faArrowDown19;
+  preciosD: IconDefinition = faArrowDown91;
   idioma: string = 'es';
   interfaz: any;
-  filtros: Filtros = {
+  orden: 'artistas-a' | 'artistas-d' | 'precios-a' | 'precios-d' = 'artistas-a';
+  filtros: any = {
     artistas: [],
     estados: [],
     rangoPrecios: {
@@ -51,7 +50,7 @@ export class DiscosComponent implements OnInit {
     },
     generos: []
   };
-  listados: Filtros = {
+  listados: any = {
     artistas: [],
     estados: [],
     rangoPrecios: {
@@ -60,8 +59,32 @@ export class DiscosComponent implements OnInit {
     },
     generos: []
   };
-  constructor(private data: DataService) {
+  selectores: any = {
+    artistas: [],
+    estados: [],
+    generos: []
+  }
+  bpPantalla!: string | undefined;
+  anchos = new Map([
+    [Breakpoints.XSmall, 'xs'],
+    [Breakpoints.Small, 'sm'],
+    [Breakpoints.Medium, 'md'],
+    [Breakpoints.Large, 'lg'],
+    [Breakpoints.XLarge, 'xl'],
+  ]);
+  constructor(private data: DataService, private breakpoint: BreakpointObserver) {
     effect(() => this.idioma = this.data.idioma());
+    this.breakpoint
+      .observe([
+        Breakpoints.XSmall,
+        Breakpoints.Small,
+        Breakpoints.Medium,
+        Breakpoints.Large,
+        Breakpoints.XLarge,
+      ])
+      .subscribe(result => {
+        for (const tam of Object.keys(result.breakpoints)) if (result.breakpoints[tam]) this.bpPantalla = this.anchos.get(tam);
+      });
   }
   ngOnInit(): void {
     this.data.getInterfaz().subscribe(((interfaz: any) => interfaz.discos ? this.interfaz = interfaz.discos : null));
@@ -79,7 +102,7 @@ export class DiscosComponent implements OnInit {
               minimo: this.discos.map((d: Disco) => d.valor).sort((a: number, b: number) => this.ordena(a, b)).shift() ?? 0,
               maximo: this.discos.map((d: Disco) => d.valor).sort((a: number, b: number) => this.ordena(a, b)).pop() ?? 0,
             };
-            this.filtros.rangoPrecios = this.listados.rangoPrecios;
+            this.filtros.rangoPrecios = JSON.parse(JSON.stringify(this.listados.rangoPrecios));
             this.discos.forEach((disco: Disco) => {
               this.data.getDiscoInfo(disco.album, disco.artista, disco.barcode.substring(0, 3) != 'LTD' ? disco.barcode : null)
                 .subscribe((resp: any) => {
@@ -130,24 +153,20 @@ export class DiscosComponent implements OnInit {
       });
     return salida.sort((a: string, b: string) => this.ordena(a, b));
   }
-  listadoKeyObj(obj: any): string[] {
-    return Object.keys(obj);
-  }
-  valObj(obj: any, key: string): string[] {
-    const _obj: any = obj as any;
-    return _obj[key];
-  }
-  esArray(obj: any, key: string): boolean {
-    return this.valObj(obj, key).constructor.name == 'Array';
-  }
   ordena(a: any, b: any): number {
     if (a < b) return -1;
     if (a > b) return 1;
     return 0;
   }
-  cambiaFiltro(campo: string, valor: string): void {
-    const _filtros: any = this.filtros as any;
-    _filtros[campo] = valor;
+  cambiaFiltro(campo: string, esChip: boolean = false, valor: string = ''): void {
+    if (esChip) {
+      const pos: number = this.filtros[campo].indexOf(valor);
+      if (pos > -1) this.filtros[campo].splice(pos, 1);
+      this.selectores[campo] = [];
+      setTimeout(() => this.selectores[campo] = this.filtros[campo]);
+    } else {
+      this.filtros[campo] = this.selectores[campo];
+    }
   }
   filtraDiscos(): Disco[] {
     return this.discos
@@ -161,5 +180,25 @@ export class DiscosComponent implements OnInit {
   }
   aCOP(num: number): string {
     return formatCurrency(num, 'es-CO', '$', 'COP', '3.0');
+  }
+  cambiaRangoPrecios(pos: 0 | 1, valor: number): void {
+    if (pos == 0) this.filtros.rangoPrecios.minimo = valor;
+    if (pos == 1) this.filtros.rangoPrecios.maximo = valor;
+  }
+  cambiaOrden(): void {
+    switch (this.orden) {
+      case 'artistas-a':
+        this.discos.sort((a: Disco, b: Disco) => this.ordena(a.artista, b.artista));
+        break;
+      case 'artistas-d':
+        this.discos.sort((a: Disco, b: Disco) => this.ordena(b.artista, a.artista));
+        break;
+      case 'precios-a':
+        this.discos.sort((a: Disco, b: Disco) => this.ordena(a.valor, b.valor));
+        break;
+      case 'precios-d':
+        this.discos.sort((a: Disco, b: Disco) => this.ordena(b.valor, a.valor));
+        break;
+    }
   }
 }

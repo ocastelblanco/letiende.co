@@ -1,34 +1,143 @@
-<div class="discos">
-  <div class="filtros"
+<div class="discos"
+     [ngClass]="bpPantalla">
+  <div class="header"
        *ngIf="interfaz && listados.artistas.length">
-    <div class="texto">{{ interfaz.filtros[idioma] }}</div>
-    <form class="selectores">
-      <ng-container *ngFor="let selector of listadoKeyObj(listados)">
-        <mat-form-field *ngIf="esArray(listados, selector) else esObjeto">
-          <mat-label>{{ interfaz.selectores[selector][idioma] }}</mat-label>
-          <mat-select multiple
-                      (valueChange)="cambiaFiltro(selector, $event)">
-            <ng-container *ngFor="let elemento of valObj(listados, selector) | keyvalue">
-              <mat-option [value]="elemento.value">{{ elemento.value }}</mat-option>
-            </ng-container>
-          </mat-select>
-        </mat-form-field>
-        <ng-template #esObjeto>
+    <div class="filtros">
+      <div class="texto">{{ interfaz.filtros[idioma] }}</div>
+      <div class="selectores">
+        <div class="select artistas">
+          <mat-form-field>
+            <mat-select multiple
+                        [placeholder]="interfaz.selectores.artistas[idioma]"
+                        [(ngModel)]="selectores.artistas"
+                        (selectionChange)="cambiaFiltro('artistas')">
+              <mat-option class="filtro"
+                          *ngFor="let artista of listados.artistas"
+                          [value]="artista">
+                {{ artista }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="select estados">
+          <mat-form-field>
+            <mat-select multiple
+                        [placeholder]="interfaz.selectores.estados[idioma]"
+                        [(ngModel)]="selectores.estados"
+                        (selectionChange)="cambiaFiltro('estados')">
+              <mat-option class="filtro"
+                          *ngFor="let estado of listados.estados"
+                          [value]="estado">
+                {{ estado }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="rango-precios">
+          <div class="texto">{{ interfaz.selectores.rangoPrecios[idioma] }}</div>
           <mat-slider [min]="listados.rangoPrecios.minimo"
                       [max]="listados.rangoPrecios.maximo"
-                      discrete
-                      step="10000"
-                      [displayWith]="aCOP">
+                      step="10000">
             <input [value]="filtros.rangoPrecios.minimo"
+                   (valueChange)="cambiaRangoPrecios(0, $event)"
                    matSliderStartThumb>
             <input [value]="filtros.rangoPrecios.maximo"
+                   (valueChange)="cambiaRangoPrecios(1, $event)"
                    matSliderEndThumb>
           </mat-slider>
-        </ng-template>
-      </ng-container>
-    </form>
+          <div class="valores">
+            <div class="minimo">{{ aCOP(filtros.rangoPrecios.minimo) }}</div>
+            <div class="maximo">{{ aCOP(filtros.rangoPrecios.maximo) }}</div>
+          </div>
+        </div>
+        <div class="select generos">
+          <mat-form-field>
+            <mat-select multiple
+                        [placeholder]="interfaz.selectores.generos[idioma]"
+                        [(ngModel)]="selectores.generos"
+                        (selectionChange)="cambiaFiltro('generos')">
+              <mat-option class="filtro"
+                          *ngFor="let genero of listados.generos"
+                          [value]="genero">
+                {{ genero }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+    <div class="orden">
+      <div class="texto">{{ interfaz.ordenar[idioma] }}</div>
+      <mat-form-field>
+        <mat-select [(value)]="orden"
+                    (selectionChange)="cambiaOrden()">
+          <mat-option class="ordenador"
+                      value="artistas-a">
+            <fa-icon [icon]="artistaA"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span>{{ interfaz.selectores.artistas[idioma] }}</span>
+          </mat-option>
+          <mat-option class="ordenador"
+                      value="artistas-d">
+            <fa-icon [icon]="artistaD"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span>{{ interfaz.selectores.artistas[idioma] }}</span>
+          </mat-option>
+          <mat-option class="ordenador"
+                      value="precios-a">
+            <fa-icon [icon]="preciosA"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span>{{ interfaz.selectores.precio[idioma] }}</span>
+          </mat-option>
+          <mat-option class="ordenador"
+                      value="precios-d">
+            <fa-icon [icon]="preciosD"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span>{{ interfaz.selectores.precio[idioma] }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
   </div>
-  <div class="chips"></div>
+  <div class="chips">
+    <mat-chip-listbox class="chips-filtros artistas">
+      <ng-container *ngFor="let chip of filtros.artistas">
+        <mat-chip-option (click)="cambiaFiltro('artistas', true, chip)">
+          {{ chip }}
+          <button matChipRemove
+                  (click)="cambiaFiltro('artistas', true, chip)">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-option>
+      </ng-container>
+    </mat-chip-listbox>
+    <mat-chip-listbox class="chips-filtros estados">
+      <ng-container *ngFor="let chip of filtros.estados">
+        <mat-chip-option (click)="cambiaFiltro('estados', true, chip)">
+          {{ chip }}
+          <button matChipRemove
+                  (click)="cambiaFiltro('estados', true, chip)">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-option>
+      </ng-container>
+    </mat-chip-listbox>
+    <mat-chip-listbox class="chips-filtros generos">
+      <ng-container *ngFor="let chip of filtros.generos">
+        <mat-chip-option (click)="cambiaFiltro('generos', true, chip)">
+          {{ chip }}
+          <button matChipRemove
+                  (click)="cambiaFiltro('generos', true, chip)">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-option>
+      </ng-container>
+    </mat-chip-listbox>
+  </div>
   <div class="fichas-discos">
     <ng-container *ngFor="let disco of filtraDiscos()">
       <mat-card class="disco mat-elevation-z4">

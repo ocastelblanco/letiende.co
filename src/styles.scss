@@ -6,6 +6,7 @@
 @use "./estilos/menu" as menu;
 @use "./estilos/buttonToggle" as buttonToggle;
 @use "./estilos/chips" as chips;
+@use "./estilos/select" as select;
 
 // Core
 @include mat.core();
@@ -60,6 +61,7 @@ $letiende-theme: mat.define-light-theme(
 @include menu.tema($letiende-theme);
 @include buttonToggle.tema($letiende-theme);
 @include chips.tema($letiende-theme);
+@include select.tema($letiende-theme);
 
 /* You can add global styles to this file, and also import other style files */
 

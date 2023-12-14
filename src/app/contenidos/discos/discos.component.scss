@@ -8,11 +8,62 @@ $naranja: map.get(estilos.$lt-basico, naranja);
 $amarillo: map.get(estilos.$lt-basico, amarillo);
 $marron: map.get(estilos.$lt-basico, marron);
 
+$max-width-select: 360px;
+$min-width-select: 240px;
+
 .discos {
   width: 100%;
   background-color: $amarillo;
-  .filtros {
+  .header {
     display: flex;
+    justify-content: space-between;
+    padding: 16px;
+    flex-wrap: wrap;
+    gap: 24px;
+    .filtros {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      & > .texto {
+        font-size: 16px;
+      }
+      .selectores {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        .select {
+          min-width: $min-width-select;
+          max-width: $max-width-select;
+        }
+        .rango-precios {
+          flex: 1 1 auto;
+          max-width: $max-width-select;
+          min-width: $min-width-select;
+          margin-top: -16px;
+          & > .texto {
+            font-size: 14px;
+          }
+          .mat-mdc-slider {
+            width: calc(100% - 16px);
+          }
+          .valores {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+          }
+        }
+      }
+    }
+    .orden {
+      min-width: $min-width-select;
+      max-width: $max-width-select;
+      & > .texto {
+        font-size: 16px;
+      }
+    }
+  }
+  .chips {
+    padding: 8px 32px;
   }
   .fichas-discos {
     display: flex;
@@ -20,6 +71,7 @@ $marron: map.get(estilos.$lt-basico, marron);
     gap: map.get(estilos.$tamanos, gap);
     align-items: flex-start;
     justify-content: space-evenly;
+    padding-bottom: 32px;
     .disco {
       width: 240px;
       .contenido {
@@ -39,6 +91,17 @@ $marron: map.get(estilos.$lt-basico, marron);
           display: flex;
           align-items: center;
         }
+      }
+    }
+  }
+  &.xs,
+  &.sm {
+    .header {
+      .select,
+      .rango-precios,
+      .orden {
+        max-width: none !important;
+        width: 100%;
       }
     }
   }

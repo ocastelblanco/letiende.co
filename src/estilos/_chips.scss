@@ -9,12 +9,12 @@
   $marron: map.get(tema.$lt-basico, marron);
 
   .mat-mdc-chip-listbox {
-    &.chips-discos {
+    &.chips-discos,
+    &.chips-filtros {
       display: inline-flex;
       .mdc-evolution-chip-set__chips {
         .mat-mdc-chip-option {
           height: 24px;
-          background-color: $marron;
           .mat-mdc-chip-action {
             padding-right: 6px;
             .mat-mdc-chip-graphic {
@@ -22,6 +22,33 @@
             }
             .mat-mdc-chip-action-label {
               font-size: 12px;
+              color: #fff;
+            }
+          }
+        }
+      }
+    }
+    &.chips-discos {
+      .mdc-evolution-chip-set__chips {
+        .mat-mdc-chip-option {
+          background-color: $marron;
+          .mat-mdc-chip-action {
+            .mat-mdc-chip-action-label {
+              color: #fff;
+            }
+          }
+        }
+      }
+    }
+    &.chips-filtros {
+      .mdc-evolution-chip-set__chips {
+        .mat-mdc-chip-option {
+          background-color: $verde;
+          .mat-mdc-chip-remove {
+            padding-left: 0;
+          }
+          .mat-mdc-chip-action {
+            .mat-mdc-chip-action-label {
               color: #fff;
             }
           }
