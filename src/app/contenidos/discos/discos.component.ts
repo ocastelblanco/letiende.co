@@ -75,7 +75,6 @@ export class DiscosComponent implements OnInit {
             this.discos.sort((a: Disco, b: Disco) => this.ordena(a.artista, b.artista));
             this.listados.artistas = this.generaListado('artista');
             this.listados.estados = this.generaListado('estado');
-            console.log(this.listados.artistas);
             this.listados.rangoPrecios = {
               minimo: this.discos.map((d: Disco) => d.valor).sort((a: number, b: number) => this.ordena(a, b)).shift() ?? 0,
               maximo: this.discos.map((d: Disco) => d.valor).sort((a: number, b: number) => this.ordena(a, b)).pop() ?? 0,

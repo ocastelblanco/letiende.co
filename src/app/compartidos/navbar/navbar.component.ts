@@ -78,7 +78,12 @@ export class NavbarComponent {
     }));
   }
   abreMenu(): void {
-    this._bottomSheet.open(MenuDesplegableComponent, { data: { vinculos: this.vinculos, idioma: this.idioma } });
+    this._bottomSheet.open(MenuDesplegableComponent, {
+      data: {
+        vinculos: this.vinculos.filter((vinculo: Vinculo) => !this.enDesarrollo.includes(vinculo.vinculo)),
+        idioma: this.idioma
+      }
+    });
   }
   cambiaIdioma(idioma: string): void {
     switch (idioma) {
