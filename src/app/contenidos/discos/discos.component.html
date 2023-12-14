@@ -1,23 +1,27 @@
 <div class="discos">
   <div class="filtros"
-       *ngIf="interfaz">
+       *ngIf="interfaz && listados.artistas.length">
     <div class="texto">{{ interfaz.filtros[idioma] }}</div>
     <form class="selectores">
-      <ng-container *ngFor="let selector of listadoKeyObj(filtros)">
-        <mat-form-field *ngIf="esArray(filtros, selector) else esObjeto">
+      <ng-container *ngFor="let selector of listadoKeyObj(listados)">
+        <mat-form-field *ngIf="esArray(listados, selector) else esObjeto">
           <mat-label>{{ interfaz.selectores[selector][idioma] }}</mat-label>
-          <mat-select>
-            <ng-container *ngFor="let elemento of valObj(filtros, selector) | keyvalue">
+          <mat-select multiple
+                      (valueChange)="cambiaFiltro(selector, $event)">
+            <ng-container *ngFor="let elemento of valObj(listados, selector) | keyvalue">
               <mat-option [value]="elemento.value">{{ elemento.value }}</mat-option>
             </ng-container>
           </mat-select>
         </mat-form-field>
         <ng-template #esObjeto>
-          <mat-slider min="200"
-                      max="500">
-            <input value="300"
+          <mat-slider [min]="listados.rangoPrecios.minimo"
+                      [max]="listados.rangoPrecios.maximo"
+                      discrete
+                      step="10000"
+                      [displayWith]="aCOP">
+            <input [value]="filtros.rangoPrecios.minimo"
                    matSliderStartThumb>
-            <input value="400"
+            <input [value]="filtros.rangoPrecios.maximo"
                    matSliderEndThumb>
           </mat-slider>
         </ng-template>
@@ -26,9 +30,8 @@
   </div>
   <div class="chips"></div>
   <div class="fichas-discos">
-    <ng-container *ngFor="let disco of discos">
-      <mat-card class="disco mat-elevation-z4"
-                *ngIf="disco.visible">
+    <ng-container *ngFor="let disco of filtraDiscos()">
+      <mat-card class="disco mat-elevation-z4">
         <img mat-card-image
              *ngIf="disco.cover"
              [src]="disco.cover">

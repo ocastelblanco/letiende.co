@@ -12,6 +12,7 @@ import {
   faMusic,
   faListCheck
 } from '@fortawesome/free-solid-svg-icons';
+import { formatCurrency } from '@angular/common';
 
 interface RangoNum {
   minimo: number;
@@ -50,6 +51,15 @@ export class DiscosComponent implements OnInit {
     },
     generos: []
   };
+  listados: Filtros = {
+    artistas: [],
+    estados: [],
+    rangoPrecios: {
+      minimo: 0,
+      maximo: 0
+    },
+    generos: []
+  };
   constructor(private data: DataService) {
     effect(() => this.idioma = this.data.idioma());
   }
@@ -62,11 +72,15 @@ export class DiscosComponent implements OnInit {
           if (_discos.length > 0) {
             _getDiscos.unsubscribe();
             this.discos = _discos;
-            this.discos.sort((a: Disco, b: Disco) => {
-              if (a.artista < b.artista) return -1;
-              if (a.artista > b.artista) return 1;
-              return 0;
-            });
+            this.discos.sort((a: Disco, b: Disco) => this.ordena(a.artista, b.artista));
+            this.listados.artistas = this.generaListado('artista');
+            this.listados.estados = this.generaListado('estado');
+            console.log(this.listados.artistas);
+            this.listados.rangoPrecios = {
+              minimo: this.discos.map((d: Disco) => d.valor).sort((a: number, b: number) => this.ordena(a, b)).shift() ?? 0,
+              maximo: this.discos.map((d: Disco) => d.valor).sort((a: number, b: number) => this.ordena(a, b)).pop() ?? 0,
+            };
+            this.filtros.rangoPrecios = this.listados.rangoPrecios;
             this.discos.forEach((disco: Disco) => {
               this.data.getDiscoInfo(disco.album, disco.artista, disco.barcode.substring(0, 3) != 'LTD' ? disco.barcode : null)
                 .subscribe((resp: any) => {
@@ -80,9 +94,7 @@ export class DiscosComponent implements OnInit {
                   disco.genero = resp.genre;
                   disco.cover = _portada ? _portada.cover : undefined;
                   disco.descripcion = descripcion;
-                  this.filtros.artistas = this.generaListado('artista');
-                  this.filtros.estados = this.generaListado('estado');
-                  this.filtros.generos = this.generaListado('genero');
+                  this.listados.generos = this.generaListado('genero');
                   if (!_portada) {
                     let extension: string = resp.cover_image.substring(resp.cover_image.lastIndexOf('.') + 1);
                     extension = extension == 'jpeg' ? 'jpg' : extension;
@@ -117,11 +129,7 @@ export class DiscosComponent implements OnInit {
         }
         if (elemento && typeof elemento == 'string' && !salida.includes(elemento)) salida.push(elemento);
       });
-    return salida.sort((a: string, b: string) => {
-      if (a < b) return -1;
-      if (a > b) return 1;
-      return 0;
-    });
+    return salida.sort((a: string, b: string) => this.ordena(a, b));
   }
   listadoKeyObj(obj: any): string[] {
     return Object.keys(obj);
@@ -132,5 +140,27 @@ export class DiscosComponent implements OnInit {
   }
   esArray(obj: any, key: string): boolean {
     return this.valObj(obj, key).constructor.name == 'Array';
+  }
+  ordena(a: any, b: any): number {
+    if (a < b) return -1;
+    if (a > b) return 1;
+    return 0;
+  }
+  cambiaFiltro(campo: string, valor: string): void {
+    const _filtros: any = this.filtros as any;
+    _filtros[campo] = valor;
+  }
+  filtraDiscos(): Disco[] {
+    return this.discos
+      .filter((disco: Disco) => disco.visible)
+      .filter((disco: Disco) => this.filtros.artistas.length && !this.filtros.artistas.includes(disco.artista) ? false : true)
+      .filter((disco: Disco) => this.filtros.estados.length && !this.filtros.estados.includes(disco.estado) ? false : true)
+      .filter((disco: Disco) => this.filtros.generos.length && this.filtros.generos
+        .filter((g: string) => disco.genero?.includes(g)).length < 1 ?
+        false : true)
+      .filter((disco: Disco) => disco.valor < this.filtros.rangoPrecios.minimo || disco.valor > this.filtros.rangoPrecios.maximo ? false : true);
+  }
+  aCOP(num: number): string {
+    return formatCurrency(num, 'es-CO', '$', 'COP', '3.0');
   }
 }
