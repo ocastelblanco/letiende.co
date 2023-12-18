@@ -104,7 +104,7 @@ export class DiscosComponent implements OnInit {
             };
             this.filtros.rangoPrecios = JSON.parse(JSON.stringify(this.listados.rangoPrecios));
             this.discos.forEach((disco: Disco) => {
-              this.data.getDiscoInfo(disco.album, disco.artista, disco.barcode.substring(0, 3) != 'LTD' ? disco.barcode : null)
+              this.data.getDiscoInfo(disco.album, disco.artista, disco.barcode.toString().substring(0, 3) != 'LTD' ? disco.barcode : null)
                 .subscribe((resp: any) => {
                   const formato: any = resp.formats ?
                     resp.formats.find((frm: any) => frm.name == 'Vinyl') :

@@ -177,7 +177,7 @@
             <span class="texto">{{ disco.valor | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
           </div>
           <mat-divider></mat-divider>
-          <ng-container *ngIf="disco.origen && disco.barcode.substring(0, 3) != 'LTD'">
+          <ng-container *ngIf="disco.origen && disco.barcode.toString().substring(0, 3) != 'LTD'">
             <div class="origen">
               <fa-icon [icon]="origen"
                        class="icono"
