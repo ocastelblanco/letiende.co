@@ -8,11 +8,13 @@ import { EventosComponent } from './contenidos/eventos/eventos.component';
 import { AvesComponent } from './landing_pages/aves/aves.component';
 import { DiscosComponent } from './contenidos/discos/discos.component';
 import { MuertosComponent } from './landing_pages/muertos/muertos.component';
+import { LibrosComponent } from './contenidos/libros/libros.component';
 
 const routes: Routes = [
   { path: 'menu', component: MenuComponent, title: 'Menú · Le Tiende' },
   { path: 'eventos', component: EventosComponent, title: 'Eventos · Le Tiende' },
   { path: 'discos', component: DiscosComponent, title: 'Nuestros discos' },
+  { path: 'libros', component: LibrosComponent, title: 'Nuestros libros' },
   { path: '', redirectTo: 'eventos', pathMatch: 'full' },
   { path: '**', redirectTo: 'eventos', pathMatch: 'full' },
   { path: 'inicio', component: InicioComponent, title: 'Le Tiende' },

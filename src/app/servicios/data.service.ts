@@ -49,6 +49,22 @@ export interface Disco extends PortadaDisco {
   genero?: string[];
   descripcion?: string;
 }
+export interface Libro {
+  nombre: string;
+  barcode: string;
+  valor: number;
+  visible: boolean;
+  autores?: string[];
+  titulo?: string;
+  subtitulo?: string;
+  descripcion?: string;
+  editorial?: string;
+  fecha?: Date;
+  numPaginas?: number;
+  categorias?: string[];
+  idioma?: string;
+  portada?: string;
+}
 
 declare let gtag: any;
 
@@ -62,6 +78,7 @@ export class DataService {
   private eventos: BehaviorSubject<Evento[]> = new BehaviorSubject<Evento[]>([]);
   private SEO: BehaviorSubject<SEO[]> = new BehaviorSubject<SEO[]>([]);
   private discos: BehaviorSubject<Disco[]> = new BehaviorSubject<Disco[]>([]);
+  private libros: BehaviorSubject<Libro[]> = new BehaviorSubject<Libro[]>([]);
   private storage: Storage = inject(Storage);
   private portadas: BehaviorSubject<PortadaDisco[]> = new BehaviorSubject<PortadaDisco[]>([]);
   private interfaz: BehaviorSubject<any> = new BehaviorSubject<any>({});
@@ -206,6 +223,28 @@ export class DataService {
       uploadBytes(subida, blob).then((res: UploadResult) => getDownloadURL(res.ref).then((_ruta: string) => ruta.next(_ruta)));
     });
     return ruta;
+  }
+  getLibros(): BehaviorSubject<Libro[]> {
+    const resLibros: any = this.http.get(this.rutaJson + 'libros', { responseType: 'json' })
+      .subscribe((resp: any) => {
+        const _libros: Libro[] = [];
+        resp.forEach((libro: any[]) => {
+          const _libro: Libro = {
+            nombre: libro[0],
+            barcode: libro[1],
+            valor: libro[2],
+            visible: libro[3].toLowerCase() == 'si',
+          };
+          _libros.push(_libro);
+        });
+        this.libros.next(_libros);
+        resLibros.unsubscribe();
+      });
+    return this.libros;
+  }
+  getLibroInfo(libro: Libro): Observable<any> {
+    const query: string = libro.barcode ? 'barcode=' + libro.barcode : 'titulo=' + libro.nombre;
+    return this.http.get(this.rutaAPI + 'libros?' + query);
   }
   convertBinaryToBlob(binary: string, contentType: string = 'image/jpeg'): Blob {
     const uInt8Array: Uint8Array = new Uint8Array(binary.length);

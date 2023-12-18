@@ -1,0 +1,45 @@
+<div class="libros"
+     *ngIf="interfaz && libros.length">
+  <ng-container *ngFor="let libro of libros">
+    <mat-card class="libro mat-elevation-z4"
+              style="max-width: 320px;"
+              *ngIf="libro.visible">
+      <img mat-card-image
+           *ngIf="libro.portada"
+           [src]="libro.portada">
+      <mat-card-content class="contenido">
+        <div class="titulo"
+             *ngIf="libro.titulo">
+          {{ libro.titulo }}
+        </div>
+        <div class="autores"
+             *ngIf="libro.autores?.length">
+          <span *ngFor="let autor of libro.autores">{{ autor }}</span>
+        </div>
+        <div class="subtitulo"
+             *ngIf="libro.subtitulo">
+          {{ libro.subtitulo }}
+        </div>
+        <div class="descripcion"
+             *ngIf="libro.descripcion">
+          {{ libro.descripcion }}
+        </div>
+        <div class="editorial"
+             *ngIf="libro.editorial">
+          {{ libro.editorial }}
+        </div>
+        <div class="valor">
+          {{ libro.valor | currency:'COP':'symbol-narrow':'1.0-0' }}
+        </div>
+        <div class="num-paginas"
+             *ngIf="libro.numPaginas && libro.numPaginas > 0">
+          {{ libro.numPaginas }}
+        </div>
+        <div class="categorias"
+             *ngIf="libro.categorias?.length">
+          <span *ngFor="let categoria of libro.categorias">{{ categoria }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>

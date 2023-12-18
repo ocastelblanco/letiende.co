@@ -46,6 +46,7 @@ import { MenuDesplegableComponent } from './compartidos/navbar/menu-desplegable/
 import { DiscosComponent } from './contenidos/discos/discos.component';
 import { MuertosComponent } from './landing_pages/muertos/muertos.component';
 import { FichaEventoComponent } from './contenidos/eventos/ficha-evento/ficha-evento.component';
+import { LibrosComponent } from './contenidos/libros/libros.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -64,6 +65,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     DiscosComponent,
     MuertosComponent,
     FichaEventoComponent,
+    LibrosComponent,
   ],
   imports: [
     BrowserModule,

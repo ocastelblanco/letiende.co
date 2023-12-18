@@ -27,6 +27,13 @@
         "es": "Discos",
         "en": "Records"
       }
+    },
+    {
+      "vinculo": "libros",
+      "lang": {
+        "es": "Libros",
+        "en": "Books"
+      }
     }
   ],
   "eventos": {
@@ -104,5 +111,6 @@
         "en": "Genres"
       }
     }
-  }
+  },
+  "libros": {}
 }
