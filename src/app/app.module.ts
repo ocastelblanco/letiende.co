@@ -47,6 +47,7 @@ import { DiscosComponent } from './contenidos/discos/discos.component';
 import { MuertosComponent } from './landing_pages/muertos/muertos.component';
 import { FichaEventoComponent } from './contenidos/eventos/ficha-evento/ficha-evento.component';
 import { LibrosComponent } from './contenidos/libros/libros.component';
+import { FichaDiscoComponent } from './contenidos/discos/ficha-disco/ficha-disco.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -66,6 +67,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MuertosComponent,
     FichaEventoComponent,
     LibrosComponent,
+    FichaDiscoComponent,
   ],
   imports: [
     BrowserModule,
@@ -95,7 +97,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-CO' },
-    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' } }
+    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' } },
   ],
   bootstrap: [AppComponent]
 })

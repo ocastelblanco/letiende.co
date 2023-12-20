@@ -74,24 +74,6 @@ $min-width-select: 240px;
     padding-bottom: 32px;
     .disco {
       width: 240px;
-      .contenido {
-        margin-top: 16px;
-        font-size: 16px;
-        & > * .icono {
-          margin-right: 0.5em;
-          color: $verde;
-        }
-        .album {
-          .texto {
-            font-weight: 600;
-          }
-        }
-        .genero,
-        .descripcion {
-          display: flex;
-          align-items: center;
-        }
-      }
     }
   }
   &.xs,
@@ -102,6 +84,16 @@ $min-width-select: 240px;
       .orden {
         max-width: none !important;
         width: 100%;
+      }
+    }
+    .fichas-discos {
+      gap: 1%;
+      .disco {
+        width: 30%;
+        cursor: pointer;
+        .contenido {
+          display: none;
+        }
       }
     }
   }
