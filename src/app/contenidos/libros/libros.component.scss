@@ -12,6 +12,8 @@ $max-width-select: 360px;
 $min-width-select: 240px;
 
 .libros {
+  width: 100%;
+  background-color: $amarillo;
   .fichas-libros {
     display: flex;
     flex-wrap: wrap;
@@ -20,7 +22,7 @@ $min-width-select: 240px;
     justify-content: space-evenly;
     padding-bottom: 32px;
     .libro {
-      width: 240px;
+      width: 180px;
       .contenido {
         margin-top: 16px;
         font-size: 16px;

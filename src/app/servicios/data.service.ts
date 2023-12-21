@@ -1,5 +1,5 @@
 import { Injectable, Inject, inject, signal, WritableSignal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpUrlEncodingCodec } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { Router, NavigationEnd } from '@angular/router';
@@ -51,7 +51,7 @@ export interface Disco extends PortadaDisco {
 }
 export interface Libro {
   nombre: string;
-  barcode: string;
+  barcode: string | null;
   valor: number;
   visible: boolean;
   autores?: string[];
@@ -243,7 +243,8 @@ export class DataService {
     return this.libros;
   }
   getLibroInfo(libro: Libro): Observable<any> {
-    const query: string = libro.barcode ? 'barcode=' + libro.barcode : 'titulo=' + libro.nombre;
+    const encode: HttpUrlEncodingCodec = new HttpUrlEncodingCodec();
+    const query: string = libro.barcode ? 'barcode=' + libro.barcode : 'titulo=' + encode.encodeValue(libro.nombre);
     return this.http.get(this.rutaAPI + 'libros?' + query);
   }
   convertBinaryToBlob(binary: string, contentType: string = 'image/jpeg'): Blob {
