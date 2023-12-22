@@ -10,7 +10,8 @@
 
   .mat-mdc-chip-listbox {
     &.chips-discos,
-    &.chips-filtros {
+    &.chips-filtros,
+    &.chips-libros {
       display: inline-flex;
       .mdc-evolution-chip-set__chips {
         .mat-mdc-chip-option {
@@ -28,7 +29,8 @@
         }
       }
     }
-    &.chips-discos {
+    &.chips-discos,
+    &.chips-libros {
       .mdc-evolution-chip-set__chips {
         .mat-mdc-chip-option {
           background-color: $marron;

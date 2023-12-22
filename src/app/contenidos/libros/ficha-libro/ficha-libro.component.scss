@@ -1,0 +1,87 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "/src/styles.scss" as estilos;
+
+$typography-config: mat.get-typography-config(estilos.$letiende-theme);
+$verde: map.get(estilos.$lt-basico, verde);
+$naranja: map.get(estilos.$lt-basico, naranja);
+$amarillo: map.get(estilos.$lt-basico, amarillo);
+$marron: map.get(estilos.$lt-basico, marron);
+
+.ficha-libro {
+  max-width: 100%;
+  position: relative;
+  .cerrar {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 1;
+    background-color: $amarillo;
+    color: $marron;
+    display: none;
+    &.visible {
+      display: block;
+    }
+  }
+  .libro {
+    .encabezado {
+      .titulo,
+      .autores,
+      .valor {
+        display: flex;
+        align-items: baseline;
+        font-size: 14px;
+        .texto {
+          line-height: 1.1;
+          color: $marron;
+        }
+        .icono {
+          color: $verde;
+          margin-right: 0.5em;
+        }
+      }
+      .titulo {
+        .texto {
+          font-size: 16px;
+          overflow: hidden;
+          max-height: 2.3em;
+          text-overflow: ellipsis;
+          -webkit-line-clamp: 2;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+        }
+      }
+      .autores,
+      .valor {
+        margin-top: 8px;
+      }
+      .portada {
+        height: auto;
+      }
+    }
+    .contenido {
+      margin-top: 8px;
+      padding: 0;
+      .subtitulo,
+      .descripcion,
+      .editorial,
+      .num-paginas,
+      .categorias {
+        display: flex;
+        align-items: baseline;
+        font-size: 14px;
+        .texto {
+          line-height: 1.1;
+          color: $marron;
+        }
+        .icono {
+          color: $verde;
+          margin-right: 0.5em;
+        }
+      }
+      .categorias {
+        align-items: center;
+      }
+    }
+  }
+}

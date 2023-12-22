@@ -32,6 +32,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideStorage, getStorage } from '@angular/fire/storage';
@@ -48,6 +49,7 @@ import { MuertosComponent } from './landing_pages/muertos/muertos.component';
 import { FichaEventoComponent } from './contenidos/eventos/ficha-evento/ficha-evento.component';
 import { LibrosComponent } from './contenidos/libros/libros.component';
 import { FichaDiscoComponent } from './contenidos/discos/ficha-disco/ficha-disco.component';
+import { FichaLibroComponent } from './contenidos/libros/ficha-libro/ficha-libro.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -68,6 +70,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     FichaEventoComponent,
     LibrosComponent,
     FichaDiscoComponent,
+    FichaLibroComponent,
   ],
   imports: [
     BrowserModule,
@@ -92,6 +95,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MatFormFieldModule,
     MatSelectModule,
     MatSliderModule,
+    MatExpansionModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideStorage(() => getStorage()),
   ],

@@ -22,15 +22,7 @@ $min-width-select: 240px;
     justify-content: space-evenly;
     padding-bottom: 32px;
     .libro {
-      width: 180px;
-      .contenido {
-        margin-top: 16px;
-        font-size: 16px;
-        & > * .icono {
-          margin-right: 0.5em;
-          color: $verde;
-        }
-      }
+      width: 360px;
     }
   }
 }

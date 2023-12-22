@@ -1,6 +1,5 @@
 import { Component, OnInit, effect } from '@angular/core';
 import { DataService, Libro } from 'src/app/servicios/data.service';
-import { formatCurrency } from '@angular/common';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 @Component({
@@ -47,6 +46,7 @@ export class LibrosComponent implements OnInit {
       if (pos > -1) {
         const libroBase: any = libroInfo.items[pos].volumeInfo;
         libro.titulo = libroBase.title ?? undefined;
+        libro.autores = libroBase.authors ?? [];
         libro.subtitulo = libroBase.subtitle ?? undefined;
         libro.editorial = libroBase.publisher ?? undefined;
         libro.fecha = new Date(libroBase.publishedDate) ?? undefined;

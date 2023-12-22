@@ -1,0 +1,87 @@
+<div class="ficha-libro">
+  <mat-card class="libro mat-elevation-z4">
+    <mat-card-header>
+      <mat-card-title-group class="encabezado">
+        <mat-card-title class="titulo">
+          <fa-icon [icon]="titulo"
+                   class="icono"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <div class="texto">{{ libro.titulo }}</div>
+        </mat-card-title>
+        <mat-card-subtitle class="autores">
+          <fa-icon [icon]="autores"
+                   class="icono"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <div class="texto">{{ libro.autores?.join(', ') }}</div>
+        </mat-card-subtitle>
+        <mat-card-subtitle class="valor">
+          <fa-icon [icon]="valor"
+                   class="icono"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <div class="texto">{{ libro.valor | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+        </mat-card-subtitle>
+        <img mat-card-md-image
+             class="portada"
+             *ngIf="libro.portada"
+             [src]="libro.portada">
+      </mat-card-title-group>
+    </mat-card-header>
+    <mat-card-content class="contenido">
+      <mat-expansion-panel class="mat-elevation-z0">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            {{ interfaz.informacionAdicional[idioma] }}
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <div class="subtitulo"
+             *ngIf="libro.subtitulo">
+          <fa-icon [icon]="subtitulo"
+                   class="icono"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <div class="texto">{{ libro.subtitulo }}</div>
+        </div>
+        <div class="descripcion"
+             *ngIf="libro.descripcion">
+          <fa-icon [icon]="descripcion"
+                   class="icono"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <div class="texto">{{ libro.descripcion }}</div>
+        </div>
+        <div class="editorial"
+             *ngIf="libro.editorial">
+          <fa-icon [icon]="editorial"
+                   class="icono"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <div class="texto">{{ libro.editorial }}</div>
+        </div>
+        <div class="num-paginas"
+             *ngIf="libro.numPaginas && libro.numPaginas > 0">
+          <fa-layers [fixedWidth]="true"
+                     class="icono">
+            <fa-icon [icon]="paginas"></fa-icon>
+            <fa-layers-counter content="#"></fa-layers-counter>
+          </fa-layers>
+          <div class="texto">{{ libro.numPaginas }}</div>
+        </div>
+        <div class="categorias"
+             *ngIf="libro.categorias?.length">
+          <fa-icon [icon]="categorias"
+                   class="icono"
+                   [fixedWidth]="true">
+          </fa-icon>
+          <mat-chip-listbox class="chips-libros">
+            <mat-chip-option *ngFor="let categoria of libro.categorias">
+              {{ categoria }}
+            </mat-chip-option>
+          </mat-chip-listbox>
+        </div>
+      </mat-expansion-panel>
+    </mat-card-content>
+  </mat-card>
+</div>

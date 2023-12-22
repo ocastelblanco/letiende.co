@@ -19,7 +19,7 @@ import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
   styleUrls: ['./ficha-disco.component.scss']
 })
 export class FichaDiscoComponent {
-  @Input() disco?: Disco;
+  @Input() disco!: Disco;
   @Input() contenidoVisible: boolean = true;
   modal: boolean = false;
   album: IconDefinition = faRecordVinyl;

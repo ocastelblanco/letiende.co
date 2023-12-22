@@ -112,5 +112,10 @@
       }
     }
   },
-  "libros": {}
+  "libros": {
+    "informacionAdicional": {
+      "es": "Información adicional",
+      "en": "More info"
+    }
+  }
 }
