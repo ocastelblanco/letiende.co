@@ -10,6 +10,7 @@ import { IconDefinition, faBook, faBookOpen, faBookmark, faInfoCircle, faListChe
 })
 export class FichaLibroComponent {
   @Input() libro!: Libro;
+  @Input() xs: boolean = false;
   titulo: IconDefinition = faBook;
   autores: IconDefinition = faPenNib;
   valor: IconDefinition = faSackDollar;

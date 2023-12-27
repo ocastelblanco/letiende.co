@@ -25,4 +25,20 @@ $min-width-select: 240px;
       width: 360px;
     }
   }
+  &.sm {
+    .fichas-libros {
+      .libro {
+        width: calc(50% - map.get(estilos.$tamanos, gap));
+      }
+    }
+  }
+  &.xs {
+    .fichas-libros {
+      flex-direction: column;
+      .libro {
+        width: 100%;
+        cursor: pointer;
+      }
+    }
+  }
 }

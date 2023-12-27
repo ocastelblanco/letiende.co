@@ -1,9 +1,53 @@
 <div class="libros"
-     *ngIf="interfaz && libros.length">
+     [ngClass]="bpPantalla">
+  <div class="header"
+       *ngIf="interfaz && libros.length">
+    <div class="filtros">
+      <div class="texto">{{ interfaz.filtros[idioma] }}</div>
+      <div class="selectores">
+        <form class="autocomplete">
+          <mat-form-field>
+            <mat-label>{{ interfaz.palabraClave[idioma] }}</mat-label>
+            <input type="text"
+                   matInput
+                   [(ngModel)]="clave"
+                   (ngModelChange)="cambiaClave()"
+                   [ngModelOptions]="{ standalone: true }"
+                   [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete">
+              <ng-container *ngFor="let clave of listaClaves">
+                <mat-option [value]="clave">{{clave}}</mat-option>
+              </ng-container>
+            </mat-autocomplete>
+          </mat-form-field>
+        </form>
+        <div class="rango-precios">
+          <div class="texto">{{ interfaz.rangoPrecios[idioma] }}</div>
+          <mat-slider [min]="rangoPrecios.minimo"
+                      [max]="rangoPrecios.maximo"
+                      step="1000">
+            <input [value]="rangoPrecios.inicial"
+                   (valueChange)="cambiaRangoPrecios(0, $event)"
+                   matSliderStartThumb>
+            <input [value]="rangoPrecios.final"
+                   (valueChange)="cambiaRangoPrecios(1, $event)"
+                   matSliderEndThumb>
+          </mat-slider>
+          <div class="valores">
+            <div class="minimo">{{ aCOP(rangoPrecios.inicial) }}</div>
+            <div class="maximo">{{ aCOP(rangoPrecios.final) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="chips"></div>
   <div class="fichas-libros">
     <ng-container *ngFor="let libro of libros">
       <lt-ficha-libro class="libro"
                       *ngIf="libro.visible"
+                      [xs]="bpPantalla == 'xs'"
+                      (click)="abreModal(libro)"
                       [libro]="libro">
       </lt-ficha-libro>
     </ng-container>

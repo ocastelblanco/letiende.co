@@ -13,8 +13,8 @@ import { LibrosComponent } from './contenidos/libros/libros.component';
 const routes: Routes = [
   { path: 'menu', component: MenuComponent, title: 'Menú · Le Tiende' },
   { path: 'eventos', component: EventosComponent, title: 'Eventos · Le Tiende' },
-  { path: 'discos', component: DiscosComponent, title: 'Nuestros discos' },
-  { path: 'libros', component: LibrosComponent, title: 'Nuestros libros' },
+  { path: 'discos', component: DiscosComponent, title: 'Discos · Le Tiende' },
+  { path: 'libros', component: LibrosComponent, title: 'Libros · Le Tiende' },
   { path: '', redirectTo: 'eventos', pathMatch: 'full' },
   { path: '**', redirectTo: 'eventos', pathMatch: 'full' },
   { path: 'inicio', component: InicioComponent, title: 'Le Tiende' },

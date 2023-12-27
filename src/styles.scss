@@ -123,4 +123,21 @@ body {
       }
     }
   }
+  // Para la ficha de libros
+  .ficha-libro {
+    .libro {
+      .contenido {
+        .num-paginas {
+          .icono {
+            .fa-layers-counter {
+              background-color: $naranja;
+              transform: scale(0.5);
+              right: -4px;
+              top: -4px;
+            }
+          }
+        }
+      }
+    }
+  }
 }

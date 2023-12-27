@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, effect } from '@angular/core';
+import { Component, OnInit, effect } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { DataService, Disco, PortadaDisco } from 'src/app/servicios/data.service';
 import {
@@ -10,7 +10,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { formatCurrency } from '@angular/common';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { DIALOG_DATA, Dialog } from '@angular/cdk/dialog';
+import { Dialog } from '@angular/cdk/dialog';
 import { FichaDiscoComponent } from './ficha-disco/ficha-disco.component';
 
 @Component({
@@ -58,7 +58,7 @@ export class DiscosComponent implements OnInit {
     [Breakpoints.Large, 'lg'],
     [Breakpoints.XLarge, 'xl'],
   ]);
-  constructor(private data: DataService, private breakpoint: BreakpointObserver, public dialogoFicha: Dialog) {
+  constructor(private data: DataService, private breakpoint: BreakpointObserver, private dialogoFicha: Dialog) {
     effect(() => this.idioma = this.data.idioma());
     this.breakpoint
       .observe([
@@ -188,19 +188,6 @@ export class DiscosComponent implements OnInit {
     }
   }
   abreModal(disco: Disco): void {
-    if (this.bpPantalla == 'sm' || this.bpPantalla == 'xs') {
-      this.dialogoFicha.open(FichaDiscoComponent, {
-        data: disco
-      });
-    }
-  }
-}
-
-@Component({
-  template: '<div id="cont-modal"></div>',
-})
-export class DialogoFicha {
-  constructor(@Inject(DIALOG_DATA) public disco: Disco) {
-    console.log(disco);
+    if (this.bpPantalla == 'sm' || this.bpPantalla == 'xs') this.dialogoFicha.open(FichaDiscoComponent, { data: disco });
   }
 }

@@ -116,6 +116,22 @@
     "informacionAdicional": {
       "es": "Información adicional",
       "en": "More info"
+    },
+    "filtros": {
+      "es": "Filtrar por",
+      "en": "Filter by"
+    },
+    "palabraClave": {
+      "es": "Palabra clave",
+      "en": "Keyword"
+    },
+    "rangoPrecios": {
+      "es": "Rango de precios",
+      "en": "Price range"
+    },
+    "ordenar": {
+      "es": "Ordenar por",
+      "en": "Sort by"
     }
   }
 }

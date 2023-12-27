@@ -9,7 +9,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, } from '@angular/forms';
 import { environment } from '../environments/environment';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -33,6 +33,8 @@ import { MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule } from '@angular/mat
 import { MatSelectModule } from '@angular/material/select';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatInputModule } from '@angular/material/input';
 
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideStorage, getStorage } from '@angular/fire/storage';
@@ -96,6 +98,8 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MatSelectModule,
     MatSliderModule,
     MatExpansionModule,
+    MatAutocompleteModule,
+    MatInputModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideStorage(() => getStorage()),
   ],

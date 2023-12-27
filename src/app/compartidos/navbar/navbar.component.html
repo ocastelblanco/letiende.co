@@ -24,7 +24,7 @@
     </ng-container>
   </div>
   <div class="titulo"
-       *ngIf="!enDesarrollo.includes(vinculos[numVinculo].vinculo)">
+       *ngIf="vinculos[numVinculo] && !enDesarrollo.includes(vinculos[numVinculo].vinculo)">
     {{ vinculos[numVinculo].lang[idioma] }}
   </div>
   <span class="spacer"></span>
