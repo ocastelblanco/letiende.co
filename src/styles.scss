@@ -140,4 +140,21 @@ body {
       }
     }
   }
+  // Para las opciones del autocomplete
+  .opcion-autocomplete {
+    font-size: 16px;
+    min-height: 16px;
+    .mdc-list-item__primary-text {
+      display: flex;
+      gap: 0.75em;
+      max-height: 2em;
+      width: 100%;
+      .texto {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 100%;
+      }
+    }
+  }
 }

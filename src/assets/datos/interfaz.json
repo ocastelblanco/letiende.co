@@ -132,6 +132,28 @@
     "ordenar": {
       "es": "Ordenar por",
       "en": "Sort by"
+    },
+    "autor": {
+      "es": "Autor",
+      "en": "Author"
+    },
+    "titulo": {
+      "es": "Título",
+      "en": "Title"
+    },
+    "ordenador": {
+      "autores": {
+        "es": "Autores",
+        "en": "Authors"
+      },
+      "titulos": {
+        "es": "Títulos",
+        "en": "Titles"
+      },
+      "precios": {
+        "es": "Precios",
+        "en": "Prices"
+      }
     }
   }
 }

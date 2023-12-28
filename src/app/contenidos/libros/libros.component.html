@@ -5,22 +5,37 @@
     <div class="filtros">
       <div class="texto">{{ interfaz.filtros[idioma] }}</div>
       <div class="selectores">
-        <form class="autocomplete">
-          <mat-form-field>
-            <mat-label>{{ interfaz.palabraClave[idioma] }}</mat-label>
-            <input type="text"
-                   matInput
-                   [(ngModel)]="clave"
-                   (ngModelChange)="cambiaClave()"
-                   [ngModelOptions]="{ standalone: true }"
-                   [matAutocomplete]="auto">
-            <mat-autocomplete #auto="matAutocomplete">
-              <ng-container *ngFor="let clave of listaClaves">
-                <mat-option [value]="clave">{{clave}}</mat-option>
-              </ng-container>
-            </mat-autocomplete>
-          </mat-form-field>
-        </form>
+        <mat-form-field class="palabra-clave">
+          <mat-label>{{ interfaz.palabraClave[idioma] }}</mat-label>
+          <input type="text"
+                 matInput
+                 [(ngModel)]="clave"
+                 (ngModelChange)="cambiaClave()"
+                 [ngModelOptions]="{ standalone: true }"
+                 [matAutocomplete]="auto">
+          <mat-autocomplete #auto="matAutocomplete">
+            <ng-container *ngFor="let autor of listaSel.autores">
+              <mat-option class="opcion-autocomplete autor"
+                          [value]="autor">
+                <fa-icon [icon]="iconoAutor"
+                         class="icono"
+                         [fixedWidth]="true">
+                </fa-icon>
+                <span class="texto">{{ autor }}</span>
+              </mat-option>
+            </ng-container>
+            <ng-container *ngFor="let titulo of listaSel.titulos">
+              <mat-option class="opcion-autocomplete titulo"
+                          [value]="titulo">
+                <fa-icon [icon]="iconoTitulo"
+                         class="icono"
+                         [fixedWidth]="true">
+                </fa-icon>
+                <span class="texto">{{ titulo }}</span>
+              </mat-option>
+            </ng-container>
+          </mat-autocomplete>
+        </mat-form-field>
         <div class="rango-precios">
           <div class="texto">{{ interfaz.rangoPrecios[idioma] }}</div>
           <mat-slider [min]="rangoPrecios.minimo"
@@ -40,10 +55,59 @@
         </div>
       </div>
     </div>
+    <div class="orden">
+      <div class="texto">{{ interfaz.ordenar[idioma] }}</div>
+      <mat-form-field>
+        <mat-select [(value)]="orden"
+                    (selectionChange)="cambiaOrden()">
+          <mat-option class="ordenador"
+                      value="autor-a">
+            <fa-icon [icon]="textoA"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span>{{ interfaz.ordenador.autores[idioma] }}</span>
+          </mat-option>
+          <mat-option class="ordenador"
+                      value="autor-d">
+            <fa-icon [icon]="textoD"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span>{{ interfaz.ordenador.autores[idioma] }}</span>
+          </mat-option>
+          <mat-option class="ordenador"
+                      value="titulo-a">
+            <fa-icon [icon]="textoA"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span>{{ interfaz.ordenador.titulos[idioma] }}</span>
+          </mat-option>
+          <mat-option class="ordenador"
+                      value="titulo-d">
+            <fa-icon [icon]="textoD"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span>{{ interfaz.ordenador.titulos[idioma] }}</span>
+          </mat-option>
+          <mat-option class="ordenador"
+                      value="precios-a">
+            <fa-icon [icon]="preciosA"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span>{{ interfaz.ordenador.precios[idioma] }}</span>
+          </mat-option>
+          <mat-option class="ordenador"
+                      value="precios-d">
+            <fa-icon [icon]="preciosD"
+                     [fixedWidth]="true">
+            </fa-icon>
+            <span>{{ interfaz.ordenador.precios[idioma] }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
   </div>
-  <div class="chips"></div>
   <div class="fichas-libros">
-    <ng-container *ngFor="let libro of libros">
+    <ng-container *ngFor="let libro of librosFiltrados">
       <lt-ficha-libro class="libro"
                       *ngIf="libro.visible"
                       [xs]="bpPantalla == 'xs'"

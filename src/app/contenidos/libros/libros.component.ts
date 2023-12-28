@@ -4,12 +4,25 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Dialog } from '@angular/cdk/dialog';
 import { FichaLibroComponent } from './ficha-libro/ficha-libro.component';
 import { formatCurrency } from '@angular/common';
+import {
+  IconDefinition,
+  faBook,
+  faPenNib,
+  faArrowDownAZ,
+  faArrowDownZA,
+  faArrowDown19,
+  faArrowDown91
+} from '@fortawesome/free-solid-svg-icons';
 
 interface RangoPrecios {
   minimo: number;
   maximo: number;
   inicial: number;
   final: number;
+}
+interface ListaClave {
+  autores: string[];
+  titulos: string[];
 }
 
 @Component({
@@ -18,11 +31,20 @@ interface RangoPrecios {
   styleUrls: ['./libros.component.scss']
 })
 export class LibrosComponent implements OnInit {
+  iconoTitulo: IconDefinition = faBook;
+  iconoAutor: IconDefinition = faPenNib;
+  textoA: IconDefinition = faArrowDownAZ;
+  textoD: IconDefinition = faArrowDownZA;
+  preciosA: IconDefinition = faArrowDown19;
+  preciosD: IconDefinition = faArrowDown91;
+  orden: 'autor-a' | 'autor-d' | 'titulo-a' | 'titulo-d' | 'precios-a' | 'precios-d' = 'autor-a';
   libros: Libro[] = [];
+  librosFiltrados: Libro[] = [];
   idioma: string = 'es';
   interfaz: any;
-  listaClaves: string[] = [];
-  clave: string = 'Clave';
+  listaClaves: ListaClave = {} as ListaClave;
+  listaSel: ListaClave = {} as ListaClave;
+  clave: string = '';
   rangoPrecios: RangoPrecios = {
     minimo: 0,
     maximo: 0,
@@ -55,7 +77,10 @@ export class LibrosComponent implements OnInit {
     this.data.getInterfaz().subscribe(((interfaz: any) => interfaz.libros ? this.interfaz = interfaz.libros : null));
     this.data.getLibros().subscribe((_libros: Libro[]) => {
       this.libros = _libros;
-      this.listaClaves = [];
+      this.listaClaves = {
+        autores: [],
+        titulos: []
+      };
       this.libros.forEach((libro: Libro) => this.getLibroInfo(libro));
       this.rangoPrecios.minimo = this.libros.map((l: Libro) => l.valor).sort((a: number, b: number) => this.ordena(a, b)).shift() ?? 0;
       this.rangoPrecios.maximo = this.libros.map((l: Libro) => l.valor).sort((a: number, b: number) => this.ordena(a, b)).pop() ?? 0;
@@ -78,8 +103,10 @@ export class LibrosComponent implements OnInit {
         libro.categorias = libroBase.categories ?? undefined;
         libro.idioma = libroBase.language ?? undefined;
         libro.portada = libroBase.imageLinks ? libroBase.imageLinks.thumbnail : undefined;
-        if (libro.autores) this.listaClaves.push(...libro.autores);
-        if (libro.titulo) this.listaClaves.push(libro.titulo)
+        if (libro.autores) this.listaClaves.autores.push(...libro.autores);
+        if (libro.titulo) this.listaClaves.titulos.push(libro.titulo);
+        this.librosFiltrados.push(JSON.parse(JSON.stringify(libro)));
+        this.cambiaOrden();
       } else {
         libro.barcode = null;
         this.getLibroInfo(libro);
@@ -108,6 +135,7 @@ export class LibrosComponent implements OnInit {
   cambiaRangoPrecios(pos: 0 | 1, valor: number): void {
     if (pos == 0) this.rangoPrecios.inicial = valor;
     if (pos == 1) this.rangoPrecios.final = valor;
+    this.filtra();
   }
   ordena(a: any, b: any): number {
     if (a < b) return -1;
@@ -115,6 +143,43 @@ export class LibrosComponent implements OnInit {
     return 0;
   }
   cambiaClave(): void {
-    console.log(this.clave);
+    this.listaSel.autores = this.listaClaves.autores.filter((pal: string) => pal.toLowerCase().includes(this.clave.toLowerCase()));
+    this.listaSel.titulos = this.listaClaves.titulos.filter((pal: string) => pal.toLowerCase().includes(this.clave.toLowerCase()));
+    this.filtra();
+  }
+  filtra(): void {
+    this.librosFiltrados = this.libros.filter((l: Libro) => {
+      return (
+        l.autores?.some((a: string) => a.toLowerCase().includes(this.clave.toLowerCase())) ||
+        l.titulo?.toLowerCase().includes(this.clave.toLowerCase())
+      ) &&
+        (
+          l.valor >= this.rangoPrecios.inicial &&
+          l.valor <= this.rangoPrecios.final
+        );
+    });
+    this.cambiaOrden();
+  }
+  cambiaOrden(): void {
+    switch (this.orden) {
+      case 'autor-a':
+        this.librosFiltrados.sort((a: Libro, b: Libro) => this.ordena(a.autores ? a.autores[0] : '', b.autores ? b.autores[0] : ''));
+        break;
+      case 'autor-d':
+        this.librosFiltrados.sort((a: Libro, b: Libro) => this.ordena(b.autores ? b.autores[0] : '', a.autores ? a.autores[0] : ''));
+        break;
+      case 'titulo-a':
+        this.librosFiltrados.sort((a: Libro, b: Libro) => this.ordena(a.titulo ?? '', b.titulo ?? ''));
+        break;
+      case 'titulo-d':
+        this.librosFiltrados.sort((a: Libro, b: Libro) => this.ordena(b.titulo ?? '', a.titulo ?? ''));
+        break;
+      case 'precios-a':
+        this.librosFiltrados.sort((a: Libro, b: Libro) => this.ordena(a.valor, b.valor));
+        break;
+      case 'precios-d':
+        this.librosFiltrados.sort((a: Libro, b: Libro) => this.ordena(b.valor, a.valor));
+        break;
+    }
   }
 }

@@ -14,6 +14,58 @@ $min-width-select: 240px;
 .libros {
   width: 100%;
   background-color: $amarillo;
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px;
+    flex-wrap: wrap;
+    gap: 24px;
+    .filtros {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      & > .texto {
+        font-size: 16px;
+      }
+      .selectores {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        .palabra-clave {
+          min-width: $min-width-select;
+          max-width: $max-width-select;
+          .opcion {
+            font-size: 16px;
+            min-height: 18px;
+          }
+        }
+        .rango-precios {
+          flex: 1 1 auto;
+          max-width: $max-width-select;
+          min-width: $min-width-select;
+          margin-top: -16px;
+          & > .texto {
+            font-size: 14px;
+          }
+          .mat-mdc-slider {
+            width: calc(100% - 16px);
+          }
+          .valores {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+          }
+        }
+      }
+    }
+    .orden {
+      min-width: $min-width-select;
+      max-width: $max-width-select;
+      & > .texto {
+        font-size: 16px;
+      }
+    }
+  }
   .fichas-libros {
     display: flex;
     flex-wrap: wrap;
