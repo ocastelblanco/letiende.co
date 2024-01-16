@@ -14,13 +14,14 @@ import { Dialog } from '@angular/cdk/dialog';
   animations: [
     trigger('eventos', [
       transition(':enter', [
-        query('.evento', [
-          style({ opacity: 0, transform: 'translateY(-100px)' }),
-          stagger(350, [
-            animate('750ms cubic-bezier(0.35, 0, 0.25, 1)',
-              style({ opacity: 1, transform: 'none' }))
+        query('.evento',
+          [
+            style({ opacity: 0, transform: 'translateY(-100px)' }),
+            stagger(350, [
+              animate('750ms cubic-bezier(0.35, 0, 0.25, 1)',
+                style({ opacity: 1, transform: 'none' }))
+            ])
           ])
-        ])
       ])
     ]),
   ]

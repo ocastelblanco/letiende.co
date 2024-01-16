@@ -1,9 +1,10 @@
 <div class="ficha-evento">
   <mat-card class="evento mat-elevation-z4">
     <img mat-card-image
-         [src]="evento.portada">
+         [src]="portadaDefecto()">
     <mat-card-content>
-      <div class="cerrar">
+      <div class="cerrar"
+           *ngIf="_evento">
         <button mat-icon-button
                 (click)="cierraDialogo()">
           <mat-icon>close</mat-icon>

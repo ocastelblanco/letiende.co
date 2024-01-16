@@ -9,7 +9,7 @@
     <mat-icon>menu</mat-icon>
   </button>
   <img class="logo"
-       src="assets/logos/logo_sobre_verde.svg"
+       [src]="rutaLogos + 'logo_sobre_verde.svg'"
        alt="Logotipo de Le Tiende">
   <div class="enlaces">
     <ng-container *ngFor="let vinculo of vinculos">

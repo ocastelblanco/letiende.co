@@ -77,6 +77,10 @@
          *ngIf="eventos.length > 0"
          @eventos>
       <ng-container *ngFor="let evento of eventos">
+        <lt-ficha-evento [evento]="evento"
+                         *ngIf="evento.fecha && evento.fecha > hoy">
+        </lt-ficha-evento>
+        <!-- 
         <mat-card class="evento mat-elevation-z4"
                   *ngIf="evento.fecha && evento.fecha > hoy">
           <img mat-card-image
@@ -130,6 +134,7 @@
             </div>
           </mat-card-content>
         </mat-card>
+         -->
       </ng-container>
       <mat-card class="evento vacio mat-elevation-z4"
                 *ngIf="!hayEventos()">

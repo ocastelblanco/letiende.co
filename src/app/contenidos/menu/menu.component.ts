@@ -103,7 +103,7 @@ export class MenuComponent implements OnInit {
   }
   imagenFondo(ruta: string): string {
     return 'url(' +
-      (ruta.substring(0, 4) == 'http' || ruta.substring(0, 3) == 'www' ? '' : 'assets/menu/') +
+      (ruta.substring(0, 4) == 'http' || ruta.substring(0, 3) == 'www' ? '' : this.data.rutas.menu) +
       ruta + ')';
   }
   imagenProducto(imagen: string): TipoImagen {

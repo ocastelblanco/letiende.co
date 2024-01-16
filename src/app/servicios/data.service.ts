@@ -65,6 +65,14 @@ export interface Libro {
   idioma?: string;
   portada?: string;
 }
+export interface Rutas {
+  imgs: string;
+  flags: string;
+  datos: string;
+  logos: string;
+  menu: string;
+  otros: any;
+}
 
 declare let gtag: any;
 
@@ -83,6 +91,16 @@ export class DataService {
   private portadas: BehaviorSubject<PortadaDisco[]> = new BehaviorSubject<PortadaDisco[]>([]);
   private interfaz: BehaviorSubject<any> = new BehaviorSubject<any>({});
   public idioma: WritableSignal<string> = signal('es');
+  public rutas: Rutas = {
+    imgs: 'assets/imgs/',
+    flags: 'assets/imgs/flags/',
+    datos: 'assets/datos/',
+    logos: 'assets/logos/',
+    menu: 'assets/menu/',
+    otros: {
+      muertos: 'assets/muertos/',
+    }
+  };
   constructor(private http: HttpClient, private router: Router, @Inject(DOCUMENT) private doc: Document) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -92,7 +110,7 @@ export class DataService {
     });
   }
   init(): void {
-    this.http.get('assets/datos/interfaz.json', { responseType: 'json' })
+    this.http.get(this.rutas.datos + 'interfaz.json', { responseType: 'json' })
       .subscribe((resp: any) => this.interfaz.next(resp));
     this.http.get(this.rutaJson + 'SEO', { responseType: 'json' })
       .subscribe((resp: any) => {

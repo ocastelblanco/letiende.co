@@ -36,6 +36,7 @@ export class NavbarComponent {
     { vinculo: 'menu', lang: { 'es': 'Menú', 'en': 'Menu' } },
     { vinculo: 'discos', lang: { 'es': 'Discos', 'en': 'Records' } },
   ];
+  rutaLogos: string = '';
   numVinculo: number = 0;
   constructor(
     private breakpoint: BreakpointObserver,
@@ -46,6 +47,7 @@ export class NavbarComponent {
     private sanitizer: DomSanitizer,
     private data: DataService
   ) {
+    this.rutaLogos = this.data.rutas.logos;
     this.breakpoint
       .observe([
         Breakpoints.XSmall,
@@ -65,8 +67,8 @@ export class NavbarComponent {
             this.numVinculo = this.vinculos.findIndex((vin: Vinculo) => vin.vinculo == url[0].path)
           )
       );
-    this.iconRegistry.addSvgIcon('flag-co', this.sanitizer.bypassSecurityTrustResourceUrl('assets/imgs/flags/co.svg'));
-    this.iconRegistry.addSvgIcon('flag-gb', this.sanitizer.bypassSecurityTrustResourceUrl('assets/imgs/flags/gb.svg'));
+    this.iconRegistry.addSvgIcon('flag-co', this.sanitizer.bypassSecurityTrustResourceUrl(this.data.rutas.flags + 'co.svg'));
+    this.iconRegistry.addSvgIcon('flag-gb', this.sanitizer.bypassSecurityTrustResourceUrl(this.data.rutas.flags + 'gb.svg'));
     effect(() => this.idioma = this.data.idioma());
     this.data.getInterfaz().subscribe(((interfaz: any) => {
       interfaz.navbar ?

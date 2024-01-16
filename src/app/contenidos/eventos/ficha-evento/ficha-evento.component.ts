@@ -1,8 +1,8 @@
-import { Component, Inject, effect } from '@angular/core';
+import { Component, Inject, Input, Optional, effect } from '@angular/core';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { DataService, Evento } from 'src/app/servicios/data.service';
 import { IconDefinition, faInstagram, faTiktok } from '@fortawesome/free-brands-svg-icons';
-import { faPenToSquare, faFaceGrinBeamSweat } from '@fortawesome/free-regular-svg-icons';
+import { faPenToSquare } from '@fortawesome/free-regular-svg-icons';
 import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -11,18 +11,23 @@ import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
   styleUrls: ['./ficha-evento.component.scss']
 })
 export class FichaEventoComponent {
+  @Input() evento: Evento = {} as Evento;
   info: IconDefinition = faCircleInfo;
   ig: IconDefinition = faInstagram;
   tiktok: IconDefinition = faTiktok;
   registro: IconDefinition = faPenToSquare;
-  doh: IconDefinition = faFaceGrinBeamSweat;
   interfaz: any;
   idioma: string = 'es';
-  constructor(@Inject(DIALOG_DATA) public evento: Evento, private data: DataService, public esteDialogo: DialogRef) {
+  constructor(@Optional() @Inject(DIALOG_DATA) public _evento: Evento, private data: DataService, @Optional() public esteDialogo: DialogRef) {
+    if (this._evento) this.evento = this._evento;
     effect(() => this.idioma = this.data.idioma());
     this.data.getInterfaz().subscribe(((interfaz: any) => interfaz.eventos ? this.interfaz = interfaz.eventos : null));
   }
   cierraDialogo(): void {
     this.esteDialogo.close();
+  }
+  portadaDefecto(): string {
+    console.log(this.evento.portada);
+    return this.evento.portada.length ? this.evento.portada : this.data.rutas.imgs + 'eventos_generica.png';
   }
 }
