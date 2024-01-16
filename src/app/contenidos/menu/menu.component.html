@@ -63,7 +63,7 @@
   </ng-container>
   <div class="promociones">
     <button class="boton-promo"
-            matTooltip="Promociones de hoy"
+            matTooltip="Promos"
             matTooltipPosition="left"
             [matMenuTriggerFor]="promos"
             mat-fab>
@@ -81,13 +81,13 @@
           mat-icon-button>
     <mat-icon>close</mat-icon>
   </button>
-  <div class="promo-titulo">
-    <span>Promociones de hoy</span>
-  </div>
   <ng-container *ngFor="let cat of menu">
     <ng-container *ngFor="let subcat of cat.hijos">
       <div class="subcat"
            *ngIf="subcat.titulo.es == 'Promociones'">
+        <div class="promo-titulo">
+          <span>{{ subcat.titulo[idioma] }}</span>
+        </div>
         <ng-container *ngFor="let producto of subcat.hijos">
           <div class="producto"
                *ngIf="producto.visible">
@@ -106,6 +106,7 @@
               <div class="titulo">{{producto.titulo[idioma]}}</div>
               <div class="descripcion">{{producto.descripcion[idioma]}}</div>
             </div>
+            <span class="spacer"></span>
             <div class="valor">{{producto.valor | currency:'COP':'symbol-narrow':'1.0-0'}}</div>
           </div>
         </ng-container>
