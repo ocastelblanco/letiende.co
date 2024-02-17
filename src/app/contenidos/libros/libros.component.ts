@@ -81,7 +81,7 @@ export class LibrosComponent implements OnInit {
         autores: [],
         titulos: []
       };
-      this.libros.forEach((libro: Libro) => this.getLibroInfo(libro));
+      //this.libros.forEach((libro: Libro) => this.getLibroInfo(libro));
       this.rangoPrecios.minimo = this.libros.map((l: Libro) => l.valor).sort((a: number, b: number) => this.ordena(a, b)).shift() ?? 0;
       this.rangoPrecios.maximo = this.libros.map((l: Libro) => l.valor).sort((a: number, b: number) => this.ordena(a, b)).pop() ?? 0;
       this.rangoPrecios.inicial = this.rangoPrecios.minimo;

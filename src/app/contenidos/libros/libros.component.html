@@ -107,7 +107,8 @@
     </div>
   </div>
   <div class="fichas-libros">
-    <ng-container *ngFor="let libro of librosFiltrados">
+    <ng-container ltDetectaScroll
+                  *ngFor="let libro of librosFiltrados">
       <lt-ficha-libro class="libro"
                       *ngIf="libro.visible"
                       [xs]="bpPantalla == 'xs'"
