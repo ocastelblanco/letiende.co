@@ -34,6 +34,8 @@ $marron: map.get(estilos.$lt-basico, marron);
         .texto {
           line-height: 1.1;
           color: $marron;
+          max-height: 3.3em;
+          overflow-y: hidden;
         }
         .icono {
           color: $verde;
