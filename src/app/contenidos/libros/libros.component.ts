@@ -1,4 +1,4 @@
-import { Component, OnInit, effect } from '@angular/core';
+import { Component, OnInit, effect, ElementRef } from '@angular/core';
 import { DataService, Libro } from 'src/app/servicios/data.service';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Dialog } from '@angular/cdk/dialog';
@@ -13,6 +13,7 @@ import {
   faArrowDown19,
   faArrowDown91
 } from '@fortawesome/free-solid-svg-icons';
+import { Subscription } from 'rxjs';
 
 interface RangoPrecios {
   minimo: number;
@@ -59,7 +60,15 @@ export class LibrosComponent implements OnInit {
     [Breakpoints.Large, 'lg'],
     [Breakpoints.XLarge, 'xl'],
   ]);
-  constructor(private data: DataService, private breakpoint: BreakpointObserver, private dialogoFicha: Dialog) {
+  tamanoLibro: number[] = [0, 0];
+  numLibrosVisibles: number = 10;
+  numLibrosVisiblesTotales: number = 10;
+  numLibrosVisiblesActual: number = 10;
+  constructor(
+    private data: DataService,
+    private breakpoint: BreakpointObserver,
+    private dialogoFicha: Dialog
+  ) {
     effect(() => this.idioma = this.data.idioma());
     this.breakpoint
       .observe([
@@ -73,6 +82,25 @@ export class LibrosComponent implements OnInit {
         for (const tam of Object.keys(result.breakpoints)) if (result.breakpoints[tam]) this.bpPantalla = this.anchos.get(tam);
       });
   }
+  finalizaRenderFicha(ev: boolean): void {
+    const body: HTMLElement = document.documentElement.querySelector('body') || document.body as HTMLElement;
+    const altoDoc: number = window.innerHeight;
+    const librosComp: HTMLElement = body.querySelector('.libros') as HTMLElement;
+    const altoNavBar: number = (body.querySelector('.navbar') as HTMLElement).offsetHeight;
+    const altoHeader: number = (librosComp.querySelector('.header') as HTMLElement).offsetHeight;
+    const fichasLibros: HTMLElement = librosComp.querySelector('.fichas-libros') as HTMLElement;
+    const ficha: HTMLElement = fichasLibros.querySelector('.libro') as HTMLElement;
+    const altoDisponible: number = altoDoc - altoNavBar - altoHeader;
+    const anchoDisponible: number = window.innerWidth;
+    this.tamanoLibro = [
+      Math.max(this.tamanoLibro[0], ficha.offsetWidth),
+      Math.max(this.tamanoLibro[1], ficha.offsetHeight),
+    ];
+    this.numLibrosVisibles = Math.max(
+      Math.floor(anchoDisponible / this.tamanoLibro[0]) * Math.floor(altoDisponible / this.tamanoLibro[1]),
+      this.numLibrosVisibles
+    );
+  }
   ngOnInit(): void {
     this.data.getInterfaz().subscribe(((interfaz: any) => interfaz.libros ? this.interfaz = interfaz.libros : null));
     this.data.getLibros().subscribe((_libros: Libro[]) => {
@@ -81,16 +109,21 @@ export class LibrosComponent implements OnInit {
         autores: [],
         titulos: []
       };
-      //this.libros.forEach((libro: Libro) => this.getLibroInfo(libro));
+      // -----------------/
+      this.libros.forEach((libro: Libro, index: number) => {
+        if (index < this.numLibrosVisiblesActual) this.getLibroInfo(libro)
+      });
+      // -----------------\
       this.rangoPrecios.minimo = this.libros.map((l: Libro) => l.valor).sort((a: number, b: number) => this.ordena(a, b)).shift() ?? 0;
       this.rangoPrecios.maximo = this.libros.map((l: Libro) => l.valor).sort((a: number, b: number) => this.ordena(a, b)).pop() ?? 0;
       this.rangoPrecios.inicial = this.rangoPrecios.minimo;
       this.rangoPrecios.final = this.rangoPrecios.maximo;
     });
   }
-  getLibroInfo(libro: Libro): void {
-    this.data.getLibroInfo(libro).subscribe((libroInfo: any) => {
-      const pos: number = this.verificaInfoLibro(libroInfo);
+  getLibroInfo(libro: Libro, segundoIntento: boolean = false): void {
+    const resultado: Subscription = this.data.getLibroInfo(libro).subscribe((libroInfo: any) => {
+      resultado.unsubscribe();
+      const pos: number = this.verificaInfoLibro(libroInfo, libro);
       if (pos > -1) {
         const libroBase: any = libroInfo.items[pos].volumeInfo;
         libro.titulo = libroBase.title ?? undefined;
@@ -109,11 +142,11 @@ export class LibrosComponent implements OnInit {
         this.cambiaOrden();
       } else {
         libro.barcode = null;
-        this.getLibroInfo(libro);
+        if (!segundoIntento) this.getLibroInfo(libro, true);
       }
     });
   }
-  verificaInfoLibro(libroInfo: any): number {
+  verificaInfoLibro(libroInfo: any, libro: Libro): number {
     let num: number = -1;
     if (!libroInfo || !libroInfo.items) return num;
     num = libroInfo.items.findIndex((info: any) => {
@@ -181,5 +214,8 @@ export class LibrosComponent implements OnInit {
         this.librosFiltrados.sort((a: Libro, b: Libro) => this.ordena(b.valor, a.valor));
         break;
     }
+  }
+  scrollAlFinal(ev: boolean): void {
+    if (ev) console.log('Llegamos al final de la línea');
   }
 }

@@ -106,13 +106,15 @@
       </mat-form-field>
     </div>
   </div>
-  <div class="fichas-libros">
-    <ng-container ltDetectaScroll
-                  *ngFor="let libro of librosFiltrados">
+  <div ltDetectaScroll
+       (alFinal)="scrollAlFinal($event)"
+       class="fichas-libros">
+    <ng-container *ngFor="let libro of librosFiltrados; index as index">
       <lt-ficha-libro class="libro"
                       *ngIf="libro.visible"
                       [xs]="bpPantalla == 'xs'"
                       (click)="abreModal(libro)"
+                      (finalizaRender)="finalizaRenderFicha($event)"
                       [libro]="libro">
       </lt-ficha-libro>
     </ng-container>

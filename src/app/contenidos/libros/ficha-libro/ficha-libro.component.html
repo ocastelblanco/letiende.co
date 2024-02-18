@@ -32,6 +32,7 @@
         <img mat-card-md-image
              class="portada"
              *ngIf="libro.portada"
+             (load)="cargaImg()"
              [src]="libro.portada">
       </mat-card-title-group>
     </mat-card-header>
