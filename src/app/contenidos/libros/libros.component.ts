@@ -1,4 +1,4 @@
-import { Component, OnInit, effect, ElementRef } from '@angular/core';
+import { Component, OnInit, effect } from '@angular/core';
 import { DataService, Libro } from 'src/app/servicios/data.service';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Dialog } from '@angular/cdk/dialog';
@@ -61,9 +61,10 @@ export class LibrosComponent implements OnInit {
     [Breakpoints.XLarge, 'xl'],
   ]);
   tamanoLibro: number[] = [0, 0];
-  numLibrosVisibles: number = 10;
+  numLibrosPorFila: number = 3;
   numLibrosVisiblesTotales: number = 10;
-  numLibrosVisiblesActual: number = 10;
+  numLibrosVisiblesActual: number = 0;
+  numLibrosVisibles: number = this.numLibrosVisiblesTotales;
   constructor(
     private data: DataService,
     private breakpoint: BreakpointObserver,
@@ -82,6 +83,27 @@ export class LibrosComponent implements OnInit {
         for (const tam of Object.keys(result.breakpoints)) if (result.breakpoints[tam]) this.bpPantalla = this.anchos.get(tam);
       });
   }
+  ngOnInit(): void {
+    this.data.getInterfaz().subscribe(((interfaz: any) => interfaz.libros ? this.interfaz = interfaz.libros : null));
+    this.data.getLibros().subscribe((_libros: Libro[]) => {
+      this.libros = _libros;
+      this.listaClaves = {
+        autores: [],
+        titulos: []
+      };
+      if (this.libros[this.numLibrosVisiblesActual]) this.cargaInfoLibros();
+      this.rangoPrecios.minimo = this.libros.map((l: Libro) => l.valor).sort((a: number, b: number) => this.ordena(a, b)).shift() ?? 0;
+      this.rangoPrecios.maximo = this.libros.map((l: Libro) => l.valor).sort((a: number, b: number) => this.ordena(a, b)).pop() ?? 0;
+      this.rangoPrecios.inicial = this.rangoPrecios.minimo;
+      this.rangoPrecios.final = this.rangoPrecios.maximo;
+    });
+  }
+  cargaInfoLibros(): void {
+    while (this.numLibrosVisiblesActual < this.numLibrosVisiblesTotales) {
+      this.getLibroInfo(this.libros[this.numLibrosVisiblesActual]);
+      this.numLibrosVisiblesActual++;
+    }
+  }
   finalizaRenderFicha(ev: boolean): void {
     const body: HTMLElement = document.documentElement.querySelector('body') || document.body as HTMLElement;
     const altoDoc: number = window.innerHeight;
@@ -96,29 +118,15 @@ export class LibrosComponent implements OnInit {
       Math.max(this.tamanoLibro[0], ficha.offsetWidth),
       Math.max(this.tamanoLibro[1], ficha.offsetHeight),
     ];
+    this.numLibrosPorFila = Math.max(Math.floor(anchoDisponible / this.tamanoLibro[0]), this.numLibrosPorFila);
     this.numLibrosVisibles = Math.max(
-      Math.floor(anchoDisponible / this.tamanoLibro[0]) * Math.floor(altoDisponible / this.tamanoLibro[1]),
+      this.numLibrosPorFila * (Math.floor(altoDisponible / this.tamanoLibro[1]) + 1),
       this.numLibrosVisibles
     );
-  }
-  ngOnInit(): void {
-    this.data.getInterfaz().subscribe(((interfaz: any) => interfaz.libros ? this.interfaz = interfaz.libros : null));
-    this.data.getLibros().subscribe((_libros: Libro[]) => {
-      this.libros = _libros;
-      this.listaClaves = {
-        autores: [],
-        titulos: []
-      };
-      // -----------------/
-      this.libros.forEach((libro: Libro, index: number) => {
-        if (index < this.numLibrosVisiblesActual) this.getLibroInfo(libro)
-      });
-      // -----------------\
-      this.rangoPrecios.minimo = this.libros.map((l: Libro) => l.valor).sort((a: number, b: number) => this.ordena(a, b)).shift() ?? 0;
-      this.rangoPrecios.maximo = this.libros.map((l: Libro) => l.valor).sort((a: number, b: number) => this.ordena(a, b)).pop() ?? 0;
-      this.rangoPrecios.inicial = this.rangoPrecios.minimo;
-      this.rangoPrecios.final = this.rangoPrecios.maximo;
-    });
+    if (this.numLibrosVisibles > this.numLibrosVisiblesTotales) {
+      this.numLibrosVisiblesTotales = this.numLibrosVisibles;
+      if (this.libros[this.numLibrosVisiblesActual]) this.cargaInfoLibros();
+    }
   }
   getLibroInfo(libro: Libro, segundoIntento: boolean = false): void {
     const resultado: Subscription = this.data.getLibroInfo(libro).subscribe((libroInfo: any) => {
@@ -216,6 +224,9 @@ export class LibrosComponent implements OnInit {
     }
   }
   scrollAlFinal(ev: boolean): void {
-    if (ev) console.log('Llegamos al final de la línea');
+    if (ev && this.libros[this.numLibrosVisiblesActual]) {
+      this.numLibrosVisiblesTotales += this.numLibrosPorFila;
+      this.cargaInfoLibros();
+    }
   }
 }

@@ -11,9 +11,8 @@ export class DetectaScrollDirective {
   @HostListener('window:scroll', ["$event"]) haceScroll(): void {
     this.fichasLibros = this.cont.element.nativeElement;
     this.libro = this.fichasLibros?.querySelector('.libro');
-    console.log('Scroll: ', this.libro?.offsetHeight);
     const pos: number = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.offsetHeight;
-    const max: number = document.documentElement.scrollHeight;
+    const max: number = document.documentElement.scrollHeight - 48;
     if (pos >= max) this.alFinal.emit(true);
   }
 }
