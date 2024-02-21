@@ -111,7 +111,7 @@
        class="fichas-libros">
     <ng-container *ngFor="let libro of librosFiltrados; index as index">
       <lt-ficha-libro class="libro"
-                      *ngIf="libro.visible"
+                      *ngIf="libro.visible && index < numLibrosVisiblesTotales"
                       [xs]="bpPantalla == 'xs'"
                       (click)="abreModal(libro)"
                       (finalizaRender)="finalizaRenderFicha($event)"
