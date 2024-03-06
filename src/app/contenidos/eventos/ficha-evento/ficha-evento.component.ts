@@ -27,7 +27,6 @@ export class FichaEventoComponent {
     this.esteDialogo.close();
   }
   portadaDefecto(): string {
-    console.log(this.evento.portada);
     return this.evento.portada.length ? this.evento.portada : this.data.rutas.imgs + 'eventos_generica.png';
   }
 }

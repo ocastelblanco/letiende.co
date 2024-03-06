@@ -53,6 +53,7 @@ import { LibrosComponent } from './contenidos/libros/libros.component';
 import { FichaDiscoComponent } from './contenidos/discos/ficha-disco/ficha-disco.component';
 import { FichaLibroComponent } from './contenidos/libros/ficha-libro/ficha-libro.component';
 import { DetectaScrollDirective } from './directivas/detecta-scroll.directive';
+import { AuditorioComponent } from './contenidos/auditorio/auditorio.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -75,6 +76,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     FichaDiscoComponent,
     FichaLibroComponent,
     DetectaScrollDirective,
+    AuditorioComponent,
   ],
   imports: [
     BrowserModule,

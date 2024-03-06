@@ -11,5 +11,5 @@ export const environment = {
   },
   production: true,
   googleAnalytics: 'G-TQTGGTM26R',
-  enDesarrollo: ['inicio', 'libros']
+  enDesarrollo: ['inicio', 'libros', 'auditorio']
 };

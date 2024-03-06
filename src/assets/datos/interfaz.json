@@ -34,6 +34,13 @@
         "es": "Libros",
         "en": "Books"
       }
+    },
+    {
+      "vinculo": "auditorio",
+      "lang": {
+        "es": "Auditorio",
+        "en": "Black box theater"
+      }
     }
   ],
   "eventos": {
@@ -154,6 +161,12 @@
         "es": "Precios",
         "en": "Prices"
       }
+    }
+  },
+  "auditorio": {
+    "cotizar": {
+      "es": "Solicita una cotización",
+      "en": "Request a quote"
     }
   }
 }
