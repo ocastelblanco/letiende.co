@@ -9,13 +9,18 @@
   <mat-sidenav-container>
     <mat-sidenav [mode]="modoDrawer"
                  opened>
-      <button mat-icon-button
-              class="despliega">
-        <span class="material-symbols-outlined">
-          side_navigation
-        </span>
-      </button>
-      Start
+      <div class="despliega">
+        <button mat-icon-button>
+          <mat-icon>menu_open</mat-icon>
+        </button>
+      </div>
+      <mat-nav-list>
+        <a routerLink="../especificaciones"
+           mat-list-item>
+          <mat-icon matListItemIcon>checklist_rtl</mat-icon>
+          Especificaciones
+        </a>
+      </mat-nav-list>
     </mat-sidenav>
     <mat-sidenav-content>
       Main

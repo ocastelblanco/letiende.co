@@ -17,7 +17,6 @@
          class="enlace"
          *ngIf="!enDesarrollo.includes(vinculo.vinculo)"
          routerLinkActive="activo"
-         [routerLinkActiveOptions]="{exact: true}"
          [routerLink]="vinculo.vinculo">
         {{ vinculo.lang[idioma].toUpperCase() }}
       </a>

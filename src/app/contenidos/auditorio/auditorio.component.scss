@@ -20,10 +20,8 @@ $marron: map.get(estilos.$lt-basico, marron);
     z-index: 9;
   }
   .despliega {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 99;
+    display: flex;
+    justify-content: flex-end;
   }
   &.md,
   &.lg,
