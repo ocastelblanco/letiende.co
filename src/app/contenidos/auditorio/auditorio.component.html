@@ -1,3 +1,4 @@
+@if (interfaz) {
 <div class="auditorio"
      [ngClass]="bpPantalla">
   <button mat-fab
@@ -5,4 +6,20 @@
           class="cotizar">
     <mat-icon>request_quote</mat-icon>
   </button>
+  <mat-sidenav-container>
+    <mat-sidenav [mode]="modoDrawer"
+                 opened>
+      <button mat-icon-button
+              class="despliega">
+        <span class="material-symbols-outlined">
+          side_navigation
+        </span>
+      </button>
+      Start
+    </mat-sidenav>
+    <mat-sidenav-content>
+      Main
+    </mat-sidenav-content>
+  </mat-sidenav-container>
 </div>
+}

@@ -1,0 +1,39 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "tema" as tema;
+
+@mixin color($theme) {
+  $naranja: map.get(tema.$lt-basico, naranja);
+  $amarillo: map.get(tema.$lt-basico, amarillo);
+  $verde: map.get(tema.$lt-basico, verde);
+  $marron: map.get(tema.$lt-basico, marron);
+
+  .mat-drawer-container {
+    width: 100%;
+    height: 100%;
+    &,
+    .mat-drawer {
+      background-color: $amarillo;
+    }
+    .mat-drawer {
+      min-width: 280px;
+      padding: 32px 32px 8px 16px;
+    }
+    .mat-drawer-content {
+      padding: 32px 32px 8px 16px;
+    }
+  }
+}
+@mixin typography($theme) {
+  $typography-config: mat.get-typography-config($theme);
+}
+@mixin tema($theme) {
+  $color-config: mat.get-color-config($theme);
+  @if $color-config != null {
+    @include color($theme);
+  }
+  $typography-config: mat.get-typography-config($theme);
+  @if $typography-config != null {
+    @include typography($theme);
+  }
+}

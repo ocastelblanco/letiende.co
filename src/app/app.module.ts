@@ -35,6 +35,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
+import { MatSidenavModule } from '@angular/material/sidenav';
 
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideStorage, getStorage } from '@angular/fire/storage';
@@ -104,6 +105,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MatExpansionModule,
     MatAutocompleteModule,
     MatInputModule,
+    MatSidenavModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideStorage(() => getStorage()),
   ],

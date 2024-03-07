@@ -12,9 +12,24 @@ $marron: map.get(estilos.$lt-basico, marron);
   background-color: $amarillo;
   width: 100vw;
   position: relative;
+  display: flex;
   .cotizar {
     position: absolute;
     top: 32px;
     right: 32px;
+    z-index: 9;
+  }
+  .despliega {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 99;
+  }
+  &.md,
+  &.lg,
+  &.xl {
+    .despliega {
+      display: none;
+    }
   }
 }

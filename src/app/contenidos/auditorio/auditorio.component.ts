@@ -18,6 +18,7 @@ export class AuditorioComponent implements OnInit {
     [Breakpoints.Large, 'lg'],
     [Breakpoints.XLarge, 'xl'],
   ]);
+  modoDrawer: 'over' | 'push' | 'side' = 'side';
   constructor(
     private data: DataService,
     private breakpoint: BreakpointObserver
@@ -32,7 +33,19 @@ export class AuditorioComponent implements OnInit {
         Breakpoints.XLarge,
       ])
       .subscribe(result => {
-        for (const tam of Object.keys(result.breakpoints)) if (result.breakpoints[tam]) this.bpPantalla = this.anchos.get(tam);
+        for (const tam of Object.keys(result.breakpoints)) if (result.breakpoints[tam]) {
+          this.bpPantalla = this.anchos.get(tam);
+          switch (this.bpPantalla) {
+            case 'xs':
+              this.modoDrawer = 'over';
+              break;
+            case 'sm':
+              this.modoDrawer = 'push';
+              break;
+            default:
+              this.modoDrawer = 'side';
+          }
+        }
       });
   }
   ngOnInit(): void {
