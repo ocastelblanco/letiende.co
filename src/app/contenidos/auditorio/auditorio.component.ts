@@ -1,9 +1,18 @@
 import { AfterViewInit, Component, OnInit, ViewChild, effect } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { DataService } from 'src/app/servicios/data.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { MatSidenavContainer } from '@angular/material/sidenav';
+import { CdkScrollable } from '@angular/cdk/scrolling';
+import { animationFrameScheduler } from 'rxjs';
+
+interface SubVinculo {
+  titulo: string;
+  link: string;
+  offsetTop: number;
+  offsetBottom: number;
+}
 
 @Component({
   selector: 'lt-auditorio',
@@ -45,14 +54,18 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
   ]);
   modoDrawer: 'over' | 'push' | 'side' = 'side';
   openDrawer: boolean = true;
-  subVinculos: { titulo: string, link: string }[] = [
-    { titulo: 'Presentación', link: 'presentacion' },
-    { titulo: 'Especificaciones', link: 'especificaciones' },
+  subVinculos: SubVinculo[] = [
+    { titulo: 'Presentación', link: 'presentacion', offsetTop: 0, offsetBottom: 0 },
+    { titulo: 'Especificaciones', link: 'especificaciones', offsetTop: 0, offsetBottom: 0 },
+    { titulo: 'Equipamento', link: 'equipamento', offsetTop: 0, offsetBottom: 0 },
+    { titulo: 'Eventos', link: 'eventos', offsetTop: 0, offsetBottom: 0 },
   ];
+  subPos: number[] = [];
   constructor(
     private data: DataService,
     private breakpoint: BreakpointObserver,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     effect(() => this.idioma = this.data.idioma());
     this.breakpoint
@@ -84,10 +97,23 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
   }
   ngAfterViewInit(): void {
     setTimeout(() => {
+      const cont: HTMLElement = this.sideNavContainer?.scrollable.getElementRef().nativeElement as HTMLElement;
+      this.subVinculos.forEach((sub: SubVinculo, i: number) => {
+        sub.offsetTop = document.getElementById('auditorio-' + sub.link)?.offsetTop as number;
+        sub.offsetBottom = i == (this.subVinculos.length - 1) ?
+          document.getElementById('auditorio-' + sub.link)?.offsetHeight as number + sub.offsetTop :
+          document.getElementById('auditorio-' + this.subVinculos[i + 1].link)?.offsetTop as number
+      });
+      this.abreSubVinculo(this.subVinculos.findIndex((v: SubVinculo) => v.link == this.router.url.split('/')[2]));
       this.sideNavContainer?.scrollable.elementScrolled().subscribe((ev: Event) => {
-        console.log(this.sideNavContainer?.scrollable.measureScrollOffset('top'));
+        const pos: number = this.sideNavContainer?.scrollable.measureScrollOffset('top') as number;
+        const dest: number = this.subVinculos.findIndex((s: SubVinculo) => pos >= s.offsetTop && pos < s.offsetBottom);
+        this.navegaA(dest);
       });
     });
+  }
+  navegaA(i: number): void {
+    this.router.navigate(['..', this.subVinculos[i].link], { relativeTo: this.route, skipLocationChange: false });
   }
   ngOnInit(): void {
     this.data.getInterfaz().subscribe(((interfaz: any) => interfaz.auditorio ? this.interfaz = interfaz.auditorio : null));
@@ -95,7 +121,37 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
   subMenuActivo(subVinculo: string): boolean {
     return subVinculo == this.router.url.split('/')[2];
   }
-  abreSubVinculo(link: string): void {
+  abreSubVinculo(num: number): void {
     if (this.bpPantalla == 'xs' || this.bpPantalla == 'sm') this.openDrawer = false;
+    //this.sideNavContainer?.scrollable.scrollTo({ top: this.subVinculos[num].offsetTop });
+    this.animaScroll(this.subVinculos[num].offsetTop);
+  }
+  animaScroll(destino: number): Promise<void> {
+    // Adaptado de https://github.com/angular/components/issues/13613
+    return new Promise(resolve => {
+      const scrollable: CdkScrollable = this.sideNavContainer?.scrollable as CdkScrollable;
+      const origen: number = scrollable.measureScrollOffset('top') as number;
+      let pos: number = origen;
+      let actual: number = 0;
+      const incremento: number = 20;
+      const duracion: number = 500;
+      const animacion = () => {
+        actual += incremento;
+        pos = this.easeInOutQuad(actual, origen, destino - origen, duracion);
+        scrollable.scrollTo({ top: pos });
+        if (actual < duracion) {
+          animationFrameScheduler.schedule(animacion);
+        } else {
+          resolve();
+        }
+      };
+      animacion();
+    });
+  }
+  easeInOutQuad(t: number, b: number, c: number, d: number): number {
+    t /= d / 2;
+    if (t < 1) return (c / 2) * t * t + b;
+    t--;
+    return (-c / 2) * (t * (t - 2) - 1) + b;
   }
 }

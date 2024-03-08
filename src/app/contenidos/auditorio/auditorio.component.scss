@@ -24,6 +24,11 @@ $marron: map.get(estilos.$lt-basico, marron);
     justify-content: flex-end;
     z-index: 10;
   }
+  .sidenav-content {
+    &:last-of-type {
+      min-height: 100%;
+    }
+  }
   &.md,
   &.lg,
   &.xl {

@@ -17,7 +17,7 @@ const routes: Routes = [
   { path: 'discos', component: DiscosComponent, title: 'Discos · Le Tiende' },
   { path: 'libros', component: LibrosComponent, title: 'Libros · Le Tiende' },
   { path: 'auditorio', redirectTo: 'auditorio/presentacion', pathMatch: 'full' },
-  { path: 'auditorio/:item', component: AuditorioComponent, title: 'Auditorio · Le Tiende' },
+  { path: 'auditorio/:subnav', component: AuditorioComponent, title: 'Auditorio · Le Tiende' },
   { path: '', redirectTo: 'eventos', pathMatch: 'full' },
   { path: '**', redirectTo: 'eventos', pathMatch: 'full' },
   { path: 'inicio', component: InicioComponent, title: 'Le Tiende' },
