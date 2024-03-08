@@ -75,7 +75,7 @@ export class NavbarComponent {
         this.vinculos = interfaz.navbar :
         null;
       this.router.url.length > 1 ?
-        this.numVinculo = this.vinculos.findIndex((vin: Vinculo) => vin.vinculo == this.router.url.substring(1)) :
+        this.numVinculo = this.vinculos.findIndex((vin: Vinculo) => vin.vinculo == this.router.url.split('/')[1]) :
         null;
     }));
   }

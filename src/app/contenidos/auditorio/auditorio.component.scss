@@ -22,12 +22,19 @@ $marron: map.get(estilos.$lt-basico, marron);
   .despliega {
     display: flex;
     justify-content: flex-end;
+    z-index: 10;
   }
   &.md,
   &.lg,
   &.xl {
     .despliega {
       display: none;
+    }
+  }
+  &.sm,
+  &.xs {
+    .despliega {
+      position: absolute;
     }
   }
 }
