@@ -26,6 +26,17 @@ interface ListaClave {
   titulos: string[];
 }
 
+/* TODO
+
+En el desplegable de búsqueda deben estar TODOS los libros y cuando el usuario seleccione uno,
+si no está cargado, se debe cargar. ¿Cómo? Ese listado se logra de llamar a la API.
+
+¿Se debería espaciar en el tiempo, más bien, la carga desde la API para tener un llamado por segundo, por ejemplo?
+
+PROBAR PRIMERO: Llamar TODOS los libros a la API, pero cargar solo las imágenes visibles.
+
+*/
+
 @Component({
   selector: 'lt-libros',
   templateUrl: './libros.component.html',
