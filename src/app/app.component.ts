@@ -59,12 +59,16 @@ export class AppComponent implements OnInit {
             this.titleService.setTitle(this.seo.titulo);
           }
           // Crea una URL canónica para cada página
-          this.data.creaURLCanonica();
+          const rutaURL: string = this.data.creaURLCanonica();
           // Las opciones por defecto
           this.metaService.addTags([
             { name: 'keywords', content: this.seo.keywords.join(',') },
             { name: 'description', content: this.seo.descripcion },
-            { name: 'robots', content: 'index, follow' }
+            { name: 'robots', content: 'index, follow' },
+            { property: 'og:title', content: this.seo.titulo },
+            { property: 'og:url', content: rutaURL },
+            { property: 'og:description', content: this.seo.descripcion },
+            { property: 'og:image', content: this.seo.imagen as string },
           ]);
         });
       });

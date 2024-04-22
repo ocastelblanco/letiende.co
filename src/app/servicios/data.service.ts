@@ -33,6 +33,7 @@ export interface SEO {
   titulo: string;
   descripcion: string;
   keywords: string[];
+  imagen?: string;
 }
 export interface PortadaDisco {
   barcode: string;
@@ -101,24 +102,22 @@ export class DataService {
       muertos: 'assets/muertos/',
     }
   };
-  constructor(private http: HttpClient, private router: Router, @Inject(DOCUMENT) private doc: Document) {
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((e) => {
-      gtag('js', new Date());
-      gtag('config', environment.googleAnalytics);
-    });
-  }
-  init(): void {
-    this.http.get(this.rutas.datos + 'interfaz.json', { responseType: 'json' })
-      .subscribe((resp: any) => this.interfaz.next(resp));
-    this.http.get(this.rutaJson + 'SEO', { responseType: 'json' })
+  private initFunc: any = {
+    interfaz: () => this.http.get(this.rutas.datos + 'interfaz.json', { responseType: 'json' })
+      .subscribe((resp: any) => this.interfaz.next(resp)),
+    seo: () => this.http.get(this.rutaJson + 'SEO', { responseType: 'json' })
       .subscribe((resp: any) => {
         const seo: SEO[] = [];
-        resp.forEach((linea: string[]) => seo.push({ pagina: linea[0], titulo: linea[1], descripcion: linea[2], keywords: this.separaKeywords(linea[3]) }));
+        resp.forEach((linea: string[]) => seo.push({
+          pagina: linea[0],
+          titulo: linea[1],
+          descripcion: linea[2],
+          keywords: this.separaKeywords(linea[3]),
+          imagen: linea[4] ?? "https://live.staticflickr.com/65535/53671438822_c4170dfb91_o_d.png"
+        }));
         this.SEO.next(seo);
-      });
-    this.http.get(this.rutaJson + 'menu', { responseType: 'json' })
+      }),
+    menu: () => this.http.get(this.rutaJson + 'menu', { responseType: 'json' })
       .subscribe((resp: any) => {
         const menu: Menu[] = [];
         resp.forEach((el: any) => menu.push({
@@ -133,8 +132,8 @@ export class DataService {
           tipo: el[8]
         }));
         this.menu.next(menu);
-      });
-    this.http.get(this.rutaJson + 'eventos', { responseType: 'json' })
+      }),
+    eventos: () => this.http.get(this.rutaJson + 'eventos', { responseType: 'json' })
       .subscribe((resp: any) => {
         const eventos: Evento[] = [];
         resp.forEach((el: any) => eventos.push({
@@ -148,7 +147,21 @@ export class DataService {
           registro: el[7]
         }));
         this.eventos.next(eventos);
-      });
+      })
+  };
+  constructor(private http: HttpClient, private router: Router, @Inject(DOCUMENT) private doc: Document) {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((e) => {
+      gtag('js', new Date());
+      gtag('config', environment.googleAnalytics);
+    });
+  }
+  init(): void {
+    this.initFunc.interfaz();
+    this.initFunc.seo();
+    this.initFunc.menu();
+    this.initFunc.eventos();
     this.initGA();
   }
   getSEO(): BehaviorSubject<SEO[]> {
@@ -176,7 +189,7 @@ export class DataService {
     gtagEl.appendChild(gtagBody);
     document.body.appendChild(gtagEl);
   }
-  creaURLCanonica(): void {
+  creaURLCanonica(): string {
     const lista: NodeList = document.querySelectorAll('link[rel="canonical"]');
     for (let i: number = 0; i < lista.length; i++) {
       const elemento: HTMLLinkElement = lista[i] as HTMLLinkElement;
@@ -186,6 +199,7 @@ export class DataService {
     link.setAttribute('rel', 'canonical');
     this.doc.head.appendChild(link);
     link.setAttribute('href', this.doc.URL);
+    return this.doc.URL;
   }
   separaKeywords(cadena: string): string[] {
     const regExp: RegExp = /[,\.;:-_]/gm;
