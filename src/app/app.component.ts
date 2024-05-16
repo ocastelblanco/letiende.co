@@ -51,25 +51,30 @@ export class AppComponent implements OnInit {
     this.router.events.pipe(filter((ev: any) => ev instanceof NavigationEnd)).subscribe((ev: any) => {
       this.route.firstChild?.url.subscribe((url: UrlSegment[]) => {
         this.data.getSEO().subscribe((SEO: SEO[]) => {
+          // Crea una URL canónica para cada página
+          const rutaURL: string = this.data.creaURLCanonica();
           const _seo: SEO = SEO.find((pag: SEO) => pag.pagina == url[0].path) as SEO;
           if (_seo) {
             this.seo = _seo;
             this.metaService.updateTag({ name: 'keywords', content: this.seo.keywords.join(',') });
             this.metaService.updateTag({ name: 'description', content: this.seo.descripcion });
+            this.metaService.updateTag({ property: 'og:title', content: this.seo.titulo });
+            this.metaService.updateTag({ property: 'og:url', content: rutaURL });
+            this.metaService.updateTag({ property: 'og:description', content: this.seo.descripcion });
+            this.metaService.updateTag({ property: 'og:image', content: this.seo.imagen as string });
             this.titleService.setTitle(this.seo.titulo);
+          } else {
+            // Las opciones por defecto
+            this.metaService.addTags([
+              { name: 'keywords', content: this.seo.keywords.join(',') },
+              { name: 'description', content: this.seo.descripcion },
+              { name: 'robots', content: 'index, follow' },
+              { property: 'og:title', content: this.seo.titulo },
+              { property: 'og:url', content: rutaURL },
+              { property: 'og:description', content: this.seo.descripcion },
+              { property: 'og:image', content: this.seo.imagen as string },
+            ]);
           }
-          // Crea una URL canónica para cada página
-          const rutaURL: string = this.data.creaURLCanonica();
-          // Las opciones por defecto
-          this.metaService.addTags([
-            { name: 'keywords', content: this.seo.keywords.join(',') },
-            { name: 'description', content: this.seo.descripcion },
-            { name: 'robots', content: 'index, follow' },
-            { property: 'og:title', content: this.seo.titulo },
-            { property: 'og:url', content: rutaURL },
-            { property: 'og:description', content: this.seo.descripcion },
-            { property: 'og:image', content: this.seo.imagen as string },
-          ]);
         });
       });
     });
