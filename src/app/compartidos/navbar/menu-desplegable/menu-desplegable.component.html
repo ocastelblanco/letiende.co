@@ -1,7 +1,8 @@
 <mat-nav-list class="menu-desplegable">
+  @for (vinculo of data.vinculos; track vinculo) {
   <a mat-list-item
-     [href]="vinculo.vinculo"
-     *ngFor="let vinculo of data.vinculos">
+     [href]="vinculo.vinculo">
     {{ vinculo.lang[data.idioma] }}
   </a>
+  }
 </mat-nav-list>

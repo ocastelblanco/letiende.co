@@ -58,6 +58,8 @@ import { AuditorioComponent } from './contenidos/auditorio/auditorio.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -106,10 +108,10 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MatAutocompleteModule,
     MatInputModule,
     MatSidenavModule,
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideStorage(() => getStorage()),
   ],
   providers: [
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideStorage(() => getStorage()),
     { provide: LOCALE_ID, useValue: 'es-CO' },
     { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' } },
   ],

@@ -12,20 +12,21 @@
        [src]="rutaLogos + 'logo_sobre_verde.svg'"
        alt="Logotipo de Le Tiende">
   <div class="enlaces">
-    <ng-container *ngFor="let vinculo of vinculos">
-      <a mat-button
-         class="enlace"
-         *ngIf="!enDesarrollo.includes(vinculo.vinculo)"
-         routerLinkActive="activo"
-         [routerLink]="vinculo.vinculo">
-        {{ vinculo.lang[idioma].toUpperCase() }}
-      </a>
-    </ng-container>
+    @for (vinculo of vinculos; track vinculo){
+    <a mat-button
+       class="enlace"
+       *ngIf="!enDesarrollo.includes(vinculo.vinculo)"
+       routerLinkActive="activo"
+       [routerLink]="vinculo.vinculo">
+      {{ vinculo.lang[idioma].toUpperCase() }}
+    </a>
+    }
   </div>
-  <div class="titulo"
-       *ngIf="vinculos[numVinculo] && !enDesarrollo.includes(vinculos[numVinculo].vinculo)">
+  @if (vinculos[numVinculo] && !enDesarrollo.includes(vinculos[numVinculo].vinculo)){
+  <div class="titulo">
     {{ vinculos[numVinculo].lang[idioma] }}
   </div>
+  }
   <span class="spacer"></span>
   <div class="idioma">
     <button mat-icon-button
