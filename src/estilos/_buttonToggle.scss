@@ -23,6 +23,9 @@
           background-color: $verde;
           .mat-button-toggle-button {
             .mat-button-toggle-label-content {
+              .mat-mdc-option-pseudo-checkbox {
+                display: none;
+              }
               gap: 8px;
               &::after {
                 content: "\e5ca";
