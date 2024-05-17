@@ -14,7 +14,8 @@
           <div class="calaquita"
                [ngClass]="'calaquita' + indexCalaquita"
                *ngFor="let numCalaquita of calaquitas[0]; index as indexCalaquita">
-            <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'">
+            <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'"
+                 alt="Calaquita">
           </div>
         </div>
         <div class="velas"
@@ -24,7 +25,8 @@
           <div class="vela"
                [ngClass]="'vela' + indexVela"
                *ngFor="let numVela of velas[0]; index as indexVela">
-            <img [src]="'assets/muertos/img/vela0' + numVela + '.png'">
+            <img [src]="'assets/muertos/img/vela0' + numVela + '.png'"
+                 alt="Calaquita">
           </div>
         </div>
         <div class="flores"
@@ -34,13 +36,15 @@
           <div class="flor"
                [ngClass]="'flor' + indexFlor"
                *ngFor="let numFlor of flores[0]; index as indexFlor">
-            <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'">
+            <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'"
+                 alt="Calaquita">
           </div>
         </div>
         <div class="picado"
              [@picado]="animaPicados[0]"
              (@picado.done)="finalizaAnimacion('picado0', $event)">
-          <img src="assets/muertos/img/picado01.svg">
+          <img src="assets/muertos/img/picado01.svg"
+               alt="Papel picado">
         </div>
       </div>
       <div class="capa capa2">
@@ -50,13 +54,16 @@
                *ngIf="animaFotos"
                (@fotos.done)="finalizaAnimacion('fotos', $event)">
             <div class="foto abuela">
-              <img src="assets/muertos/img/abuela.png">
+              <img src="assets/muertos/img/abuela.png"
+                   alt="Abuela">
             </div>
             <div class="foto abuelo">
-              <img src="assets/muertos/img/abuelo.png">
+              <img src="assets/muertos/img/abuelo.png"
+                   alt="Abuelo">
             </div>
             <div class="foto perro">
-              <img src="assets/muertos/img/perro.png">
+              <img src="assets/muertos/img/perro.png"
+                   alt="Perro">
             </div>
           </div>
         </div>
@@ -67,7 +74,8 @@
           <div class="calaquita"
                [ngClass]="'calaquita' + indexCalaquita"
                *ngFor="let numCalaquita of calaquitas[1]; index as indexCalaquita">
-            <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'">
+            <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'"
+                 alt="Calaquita">
           </div>
         </div>
         <div class="velas"
@@ -77,7 +85,8 @@
           <div class="vela"
                [ngClass]="'vela' + indexVela"
                *ngFor="let numVela of velas[1]; index as indexVela">
-            <img [src]="'assets/muertos/img/vela0' + numVela + '.png'">
+            <img [src]="'assets/muertos/img/vela0' + numVela + '.png'"
+                 alt="Vela">
           </div>
         </div>
         <div class="flores"
@@ -87,13 +96,15 @@
           <div class="flor"
                [ngClass]="'flor' + indexFlor"
                *ngFor="let numFlor of flores[1]; index as indexFlor">
-            <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'">
+            <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'"
+                 alt="Flor">
           </div>
         </div>
         <div class="picado"
              [@picado]="animaPicados[1]"
              (@picado.done)="finalizaAnimacion('picado1', $event)">
-          <img src="assets/muertos/img/picado02.svg">
+          <img src="assets/muertos/img/picado02.svg"
+               alt="Papel picado">
         </div>
       </div>
       <div class="capa capa3">
@@ -105,11 +116,13 @@
             <div class="comida"
                  [ngClass]="'comida' + numComida"
                  *ngFor="let numComida of [1, 3, 5, 2, 4, 6]">
-              <img [src]="'assets/muertos/img/comida0' + numComida + '.png'">
+              <img [src]="'assets/muertos/img/comida0' + numComida + '.png'"
+                   alt="Comida">
             </div>
             <div class="spacer"></div>
             <div class="comida perro">
-              <img src="assets/muertos/img/comida_perro.png">
+              <img src="assets/muertos/img/comida_perro.png"
+                   alt="Perro">
             </div>
           </div>
         </div>
@@ -120,7 +133,8 @@
           <div class="calaquita"
                [ngClass]="'calaquita' + indexCalaquita"
                *ngFor="let numCalaquita of calaquitas[2]; index as indexCalaquita">
-            <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'">
+            <img [src]="'assets/muertos/img/calaquita0' + numCalaquita + '.svg'"
+                 alt="Calaquita">
           </div>
         </div>
         <div class="velas"
@@ -130,7 +144,8 @@
           <div class="vela"
                [ngClass]="'vela' + indexVela"
                *ngFor="let numVela of velas[2]; index as indexVela">
-            <img [src]="'assets/muertos/img/vela0' + numVela + '.png'">
+            <img [src]="'assets/muertos/img/vela0' + numVela + '.png'"
+                 alt="Vela">
           </div>
         </div>
         <div class="flores"
@@ -140,13 +155,15 @@
           <div class="flor"
                [ngClass]="'flor' + indexFlor"
                *ngFor="let numFlor of flores[2]; index as indexFlor">
-            <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'">
+            <img [src]="'assets/muertos/img/flor0' + numFlor + '.png'"
+                 alt="Flor">
           </div>
         </div>
         <div class="picado"
              [@picado]="animaPicados[2]"
              (@picado.done)="finalizaAnimacion('picado2', $event)">
-          <img src="assets/muertos/img/picado03.svg">
+          <img src="assets/muertos/img/picado03.svg"
+               alt="Papel picado">
         </div>
       </div>
     </div>

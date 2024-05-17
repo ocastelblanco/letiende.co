@@ -2,13 +2,15 @@
           *ngIf="disco">
   <button mat-icon-button
           class="cerrar"
+          aria-label="Cerrar"
           (click)="esteDialogo.close()"
           [class.visible]="modal">
     <mat-icon>close</mat-icon>
   </button>
   <img mat-card-image
        *ngIf="disco.cover"
-       [src]="disco.cover">
+       [src]="disco.cover"
+       [alt]="disco.album + ' - ' + disco.artista">
   <mat-card-content class="contenido"
                     [class.visible]="contenidoVisible">
     <div class="album">

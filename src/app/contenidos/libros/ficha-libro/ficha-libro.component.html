@@ -3,6 +3,7 @@
     <button mat-icon-button
             class="cerrar"
             (click)="esteDialogo.close()"
+            aria-label="Cerrar"
             [class.visible]="modal">
       <mat-icon>close</mat-icon>
     </button>
@@ -33,6 +34,7 @@
              class="portada"
              *ngIf="libro.portada"
              (load)="cargaImg()"
+             [alt]="libro.titulo"
              [src]="libro.portada">
       </mat-card-title-group>
     </mat-card-header>

@@ -109,6 +109,7 @@
         <mat-chip-option (click)="cambiaFiltro('artistas', true, chip)">
           {{ chip }}
           <button matChipRemove
+                  aria-label="Eliminar filtro"
                   (click)="cambiaFiltro('artistas', true, chip)">
             <mat-icon>cancel</mat-icon>
           </button>
@@ -120,6 +121,7 @@
         <mat-chip-option (click)="cambiaFiltro('estados', true, chip)">
           {{ chip }}
           <button matChipRemove
+                  aria-label="Eliminar filtro"
                   (click)="cambiaFiltro('estados', true, chip)">
             <mat-icon>cancel</mat-icon>
           </button>
@@ -131,6 +133,7 @@
         <mat-chip-option (click)="cambiaFiltro('generos', true, chip)">
           {{ chip }}
           <button matChipRemove
+                  aria-label="Eliminar filtro"
                   (click)="cambiaFiltro('generos', true, chip)">
             <mat-icon>cancel</mat-icon>
           </button>

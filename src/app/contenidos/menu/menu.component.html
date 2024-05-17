@@ -39,6 +39,7 @@
                            [icon]="imagenProducto(producto.imagen).icono">
                   </fa-icon>
                   <img *ngIf="imagenProducto(producto.imagen).tipo == 'imagen'"
+                       [alt]="producto.titulo[idioma]"
                        [src]="imagenProducto(producto.imagen).ruta">
                 </div>
                 <div class="texto">
@@ -66,6 +67,7 @@
             matTooltip="Promos"
             matTooltipPosition="left"
             [matMenuTriggerFor]="promos"
+            aria-label="Abrir promociones"
             mat-fab>
       <fa-icon [icon]="promo"
                size="lg"></fa-icon>
@@ -78,6 +80,7 @@
           yPosition="below"
           #promos="matMenu">
   <button class="cerrar"
+          aria-label="Cerrar"
           mat-icon-button>
     <mat-icon>close</mat-icon>
   </button>
@@ -100,6 +103,7 @@
                        [icon]="imagenProducto(producto.imagen).icono">
               </fa-icon>
               <img *ngIf="imagenProducto(producto.imagen).tipo == 'imagen'"
+                   [alt]="producto.titulo[idioma]"
                    [src]="imagenProducto(producto.imagen).ruta">
             </div>
             <div class="texto">

@@ -20,6 +20,7 @@
     <nav class="navegacion">
       <div class="atras">
         <button mat-icon-button
+                aria-label="Mes anterior"
                 (click)="calculaCalendario(-1)">
           <mat-icon>chevron_left</mat-icon>
         </button>
@@ -30,6 +31,7 @@
       </div>
       <div class="adelante">
         <button mat-icon-button
+                aria-label="Mes siguiente"
                 (click)="calculaCalendario(1)">
           <mat-icon>chevron_right</mat-icon>
         </button>
@@ -84,6 +86,7 @@
         <mat-card class="evento mat-elevation-z4"
                   *ngIf="evento.fecha && evento.fecha > hoy">
           <img mat-card-image
+          [alt]="evento.nombre"
                [src]="evento.portada">
           <mat-card-content>
             <div class="fecha">

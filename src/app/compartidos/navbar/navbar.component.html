@@ -30,6 +30,7 @@
   <span class="spacer"></span>
   <div class="idioma">
     <button mat-icon-button
+            aria-label="Menú idioma"
             [matMenuTriggerFor]="menuIdioma">
       <mat-icon [svgIcon]="bandera"></mat-icon>
     </button>
@@ -37,11 +38,13 @@
 </mat-toolbar>
 <mat-menu #menuIdioma="matMenu">
   <button mat-menu-item
+          aria-label="Español de Colombia"
           (click)="cambiaIdioma('es')">
     <mat-icon svgIcon="flag-co"></mat-icon>
     <span>Español</span>
   </button>
   <button mat-menu-item
+          aria-label="UK English"
           (click)="cambiaIdioma('en')">
     <mat-icon svgIcon="flag-gb"></mat-icon>
     <span>English</span>
