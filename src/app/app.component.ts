@@ -18,7 +18,7 @@ export class AppComponent implements OnInit {
   schema = {
     '@context': 'http://schema.org',
     '@type': 'CulturalCenter',
-    'hasMenu': 'http://letiende.co/menu',
+    'hasMenu': 'http://www.letiende.co/menu',
     'address': {
       '@type': 'PostalAddress',
       'addressCountry': 'Colombia',
@@ -27,14 +27,15 @@ export class AppComponent implements OnInit {
       'streetAddress': 'Carrera 24 #37-44'
     },
     'openingHours': [
-      'Mo-Th 13:00-21:00',
-      'Fr-Sa 13:00-22:30',
+      'Mo-Th 8:00-21:00',
+      'Fr 8:00-22:30',
+      'Sa 13:00-22:30',
       'Su 13:00-20:00'
     ],
-    'priceRange': '$$',
+    'priceRange': '$$$',
     'paymentAccepted': ['Cash', 'Credit Card', 'Debit Card', 'Nequi', 'Daviplata'],
     'name': this.seo.titulo,
-    'url': 'https://letiende.co/',
+    'url': 'https://www.letiende.co/',
     'description': this.seo.descripcion
   };
   constructor(

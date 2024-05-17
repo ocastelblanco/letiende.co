@@ -198,8 +198,8 @@ export class DataService {
     const link: HTMLLinkElement = this.doc.createElement('link');
     link.setAttribute('rel', 'canonical');
     this.doc.head.appendChild(link);
-    link.setAttribute('href', this.doc.URL);
-    return this.doc.URL;
+    link.setAttribute('href', this.addWWW(this.doc.URL));
+    return this.addWWW(this.doc.URL);
   }
   separaKeywords(cadena: string): string[] {
     const regExp: RegExp = /[,\.;:-_]/gm;
@@ -283,5 +283,9 @@ export class DataService {
     const uInt8Array: Uint8Array = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) uInt8Array[i] = binary.charCodeAt(i);
     return new Blob([uInt8Array], { type: contentType });
-  };
+  }
+  addWWW(url: string): string {
+    const partes: RegExp = /(https?:\/\/)(.*)/g;
+    return url.replace(partes, '$1www.$2');
+  }
 }
