@@ -15,7 +15,7 @@ export const environment = {
   },
   production: false,
   googleAnalytics: '',
-  enDesarrollo: []
+  enDesarrollo: ['inicio', 'discos', 'libros']
 };
 
 /*

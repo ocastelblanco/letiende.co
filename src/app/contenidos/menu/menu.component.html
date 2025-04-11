@@ -21,7 +21,13 @@
           <div class="subcategoria"
                *ngIf="subcategoria.visible && subcategoria.titulo.es != 'Promociones'">
             <div class="texto">
-              <div class="titulo">{{subcategoria.titulo[idioma]}}</div>
+              <div class="titulo">
+                @if (subcategoria.titulo[idioma] == 'Rústica DC') {
+                <img class="logo_rustica"
+                     src="assets/menu/rustica_blanco.png">
+                }
+                <span>{{subcategoria.titulo[idioma]}}</span>
+              </div>
               <div *ngIf="subcategoria.descripcion[idioma]"
                    class="descripcion">
                 {{subcategoria.descripcion[idioma]}}
@@ -69,7 +75,7 @@
             [matMenuTriggerFor]="promos"
             aria-label="Abrir promociones"
             mat-fab>
-      <fa-icon [icon]="promo"
+      <fa-icon [icon]="iconoDefault"
                size="lg"></fa-icon>
     </button>
   </div>

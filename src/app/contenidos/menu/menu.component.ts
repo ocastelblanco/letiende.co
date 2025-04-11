@@ -1,7 +1,17 @@
 import { Component, OnInit, ViewChild, effect } from '@angular/core';
 import { DataService, Menu } from 'src/app/servicios/data.service';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { IconDefinition, faBullhorn, faHeart, faCertificate } from '@fortawesome/free-solid-svg-icons';
+import {
+  IconDefinition,
+  faBullhorn,
+  faHeart,
+  faCertificate,
+  faMoon,
+  faWandSparkles,
+  faGhost,
+  faBomb,
+  faCandyCane,
+} from '@fortawesome/free-solid-svg-icons';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { trigger, stagger, query, style, animate, transition } from '@angular/animations';
 
@@ -41,9 +51,17 @@ interface TipoImagen {
 })
 export class MenuComponent implements OnInit {
   @ViewChild(MatMenuTrigger) menuProm: MatMenuTrigger = {} as MatMenuTrigger;
-  promo: IconDefinition = faBullhorn;
-  heart: IconDefinition = faHeart;
-  certificate: IconDefinition = faCertificate;
+  iconos: { nombre: string, icono: IconDefinition }[] = [
+    { nombre: 'promo', icono: faBullhorn },
+    { nombre: 'heart', icono: faHeart },
+    { nombre: 'certificate', icono: faCertificate },
+    { nombre: 'moon', icono: faMoon },
+    { nombre: 'witch', icono: faWandSparkles },
+    { nombre: 'ghost', icono: faGhost },
+    { nombre: 'bomb', icono: faBomb },
+    { nombre: 'candy', icono: faCandyCane },
+  ];
+  iconoDefault: IconDefinition = faBullhorn;
   bpPantalla!: string | undefined;
   anchos = new Map([
     [Breakpoints.XSmall, 'xs'],
@@ -115,18 +133,9 @@ export class MenuComponent implements OnInit {
     if (imagen) {
       salida.tipo = 'imagen';
       salida.ruta = imagen;
-      if (!imagen.includes('.')) {
+      if (!imagen.includes('.')) { // No es un PNG o imagen, es un ícono
         salida.tipo = 'icono';
-        switch (imagen) {
-          case 'heart':
-            salida.icono = this.heart;
-            break;
-          case 'certificate':
-            salida.icono = this.certificate;
-            break;
-          default:
-            salida.icono = this.promo;
-        }
+        salida.icono = this.iconos.find((ico: { nombre: string, icono: IconDefinition }) => ico.nombre == imagen)?.icono ?? this.iconoDefault;
       }
     }
     return salida;

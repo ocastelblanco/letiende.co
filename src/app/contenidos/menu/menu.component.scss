@@ -68,6 +68,7 @@ $marron: map.get(estilos.$lt-basico, marron);
         border-radius: map.get(estilos.$tamanos, border-radius);
         display: flex;
         flex-direction: column;
+        height: fit-content;
         & > * {
           margin-left: 16px;
           margin-right: 16px;
@@ -78,6 +79,12 @@ $marron: map.get(estilos.$lt-basico, marron);
           flex-direction: column;
           .titulo {
             @include mat.typography-level($typography-config, "heading-3");
+            display: flex;
+            align-items: center;
+            .logo_rustica {
+              height: 3.5em;
+              margin-right: 1em;
+            }
           }
           .descripcion {
             @include mat.typography-level($typography-config, "body-5");

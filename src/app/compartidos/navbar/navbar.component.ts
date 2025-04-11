@@ -34,7 +34,7 @@ export class NavbarComponent {
   vinculos: Vinculo[] = [
     { vinculo: 'eventos', lang: { 'es': 'Eventos', 'en': 'Events' } },
     { vinculo: 'menu', lang: { 'es': 'Menú', 'en': 'Menu' } },
-    { vinculo: 'discos', lang: { 'es': 'Discos', 'en': 'Records' } },
+    { vinculo: 'auditorio', lang: { 'es': 'Auditorio', 'en': 'Black box theater' } },
   ];
   rutaLogos: string = '';
   numVinculo: number = 0;
