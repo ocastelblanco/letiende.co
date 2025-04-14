@@ -14,7 +14,7 @@ import { AuditorioComponent } from './contenidos/auditorio/auditorio.component';
 const routes: Routes = [
   { path: 'menu', component: MenuComponent, title: 'Menú · Le Tiende' },
   { path: 'eventos', component: EventosComponent, title: 'Eventos · Le Tiende' },
-  { path: 'auditorio', redirectTo: 'auditorio/presentacion', pathMatch: 'full' },
+  { path: 'auditorio', redirectTo: 'auditorio/auditorio', pathMatch: 'full' },
   { path: 'auditorio/:subnav', component: AuditorioComponent, title: 'Auditorio · Le Tiende' },
   { path: '', redirectTo: 'eventos', pathMatch: 'full' },
   { path: '**', redirectTo: 'eventos', pathMatch: 'full' },

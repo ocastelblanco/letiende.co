@@ -167,6 +167,20 @@
     "cotizar": {
       "es": "Solicita una cotización",
       "en": "Request a quote"
+    },
+    "subVinculos": {
+      "auditorio": {
+        "es": "Nuestro auditorio",
+        "en": "Our black box theater"
+      },
+      "especificaciones": {
+        "es": "Especificaciones",
+        "en": "Specifications"
+      },
+      "eventos": {
+        "es": "Eventos",
+        "en": "Events"
+      }
     }
   }
 }

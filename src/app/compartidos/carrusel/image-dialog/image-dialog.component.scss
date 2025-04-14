@@ -1,0 +1,117 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+@use "/src/styles.scss" as estilos;
+
+$typography-config: mat.get-typography-config(estilos.$letiende-theme);
+$verde: map.get(estilos.$lt-basico, verde);
+$naranja: map.get(estilos.$lt-basico, naranja);
+$amarillo: map.get(estilos.$lt-basico, amarillo);
+$marron: map.get(estilos.$lt-basico, marron);
+$gap: map.get(estilos.$tamanos, gap);
+$border-radius: map.get(estilos.$tamanos, border-radius);
+
+@mixin en-columna {
+  height: calc(100% - ($gap * 2 + 30px));
+  flex-direction: column;
+  .image {
+    height: 85%;
+  }
+  .textos {
+    flex: 1 1 auto;
+    padding-bottom: $gap;
+    .titulo {
+      width: 12em;
+      max-width: 40%;
+    }
+    .descripcion {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+.image-dialog {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  .dialog {
+    position: relative;
+    background-color: $amarillo;
+    border-radius: $border-radius;
+    display: flex;
+    flex-direction: column;
+    .close-button {
+      display: flex;
+      justify-content: flex-end;
+      width: calc(100% - $gap);
+      margin: calc($gap / 2);
+    }
+    .dialog-content {
+      display: flex;
+      gap: $gap;
+      //width: calc(100% - ($gap * 2));
+      margin: 0 $gap;
+      .image {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        //max-width: 80%;
+        max-height: 100%;
+        img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+          object-position: center;
+          border-radius: $border-radius;
+        }
+      }
+      .textos {
+        display: flex;
+        gap: $gap;
+        max-width: 30em;
+        .titulo {
+          @include mat.typography-level($typography-config, "heading-3");
+          color: $marron;
+        }
+        .descripcion {
+          @include mat.typography-level($typography-config, "body-3");
+        }
+      }
+    }
+    &.landscape {
+      height: 100%;
+      .dialog-content {
+        &.landscape {
+          @include en-columna();
+        }
+        &.portrait {
+          height: calc(100% - ($gap * 2 + 50px));
+          .image {
+            height: 100%;
+          }
+          .textos {
+            flex-direction: column;
+            min-width: 20em;
+            justify-content: flex-end;
+          }
+        }
+      }
+    }
+    &.portrait {
+      height: initial;
+      max-height: 100%;
+      .dialog-content {
+        &.landscape {
+          @include en-columna();
+          height: fit-content;
+        }
+        &.portrait {
+          @include en-columna();
+          .image {
+            height: calc(100vh - 160px);
+          }
+        }
+      }
+    }
+  }
+}

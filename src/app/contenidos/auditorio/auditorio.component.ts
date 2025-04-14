@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild, effect } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnInit, ViewChild, effect } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { DataService } from 'src/app/servicios/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { animationFrameScheduler } from 'rxjs';
 interface SubVinculo {
   titulo: string;
   link: string;
+  icono?: string;
   offsetTop: number;
   offsetBottom: number;
 }
@@ -55,19 +56,22 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
   modoDrawer: 'over' | 'push' | 'side' = 'side';
   openDrawer: boolean = true;
   subVinculos: SubVinculo[] = [
-    { titulo: 'Presentación', link: 'presentacion', offsetTop: 0, offsetBottom: 0 },
-    { titulo: 'Especificaciones', link: 'especificaciones', offsetTop: 0, offsetBottom: 0 },
-    { titulo: 'Equipamento', link: 'equipamento', offsetTop: 0, offsetBottom: 0 },
-    { titulo: 'Eventos', link: 'eventos', offsetTop: 0, offsetBottom: 0 },
+    { titulo: 'Nuestro auditorio', link: 'auditorio', icono: 'theater_comedy', offsetTop: 0, offsetBottom: 0 },
+    { titulo: 'Especificaciones', link: 'especificaciones', icono: 'settings_input_component', offsetTop: 0, offsetBottom: 0 },
+    { titulo: 'Eventos', link: 'eventos', icono: 'local_activity', offsetTop: 0, offsetBottom: 0 },
   ];
   subPos: number[] = [];
   constructor(
     private data: DataService,
     private breakpoint: BreakpointObserver,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private ngZone: NgZone,
   ) {
-    effect(() => this.idioma = this.data.idioma());
+    effect(() => {
+      this.idioma = this.data.idioma();
+      this.titulaSubVinculos();
+    });
     this.breakpoint
       .observe([
         Breakpoints.XSmall,
@@ -97,26 +101,42 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
   }
   ngAfterViewInit(): void {
     setTimeout(() => {
-      const cont: HTMLElement = this.sideNavContainer?.scrollable.getElementRef().nativeElement as HTMLElement;
-      this.subVinculos.forEach((sub: SubVinculo, i: number) => {
-        sub.offsetTop = document.getElementById('auditorio-' + sub.link)?.offsetTop as number;
-        sub.offsetBottom = i == (this.subVinculos.length - 1) ?
-          document.getElementById('auditorio-' + sub.link)?.offsetHeight as number + sub.offsetTop :
-          document.getElementById('auditorio-' + this.subVinculos[i + 1].link)?.offsetTop as number
-      });
+      //const cont: HTMLElement = this.sideNavContainer?.scrollable.getElementRef().nativeElement as HTMLElement;
+      this.calculaOffset();
       this.abreSubVinculo(this.subVinculos.findIndex((v: SubVinculo) => v.link == this.router.url.split('/')[2]));
       this.sideNavContainer?.scrollable.elementScrolled().subscribe((ev: Event) => {
         const pos: number = this.sideNavContainer?.scrollable.measureScrollOffset('top') as number;
-        const dest: number = this.subVinculos.findIndex((s: SubVinculo) => pos >= s.offsetTop && pos < s.offsetBottom);
-        this.navegaA(dest);
+        this.ngZone.run(() => {
+          const dest: number = this.subVinculos.findIndex((s: SubVinculo) => pos >= s.offsetTop && pos < s.offsetBottom);
+          this.navegaA(dest);
+        });
       });
+    }, 50);
+  }
+  calculaOffset(): void {
+    this.subVinculos.forEach((sub: SubVinculo, i: number) => {
+      sub.offsetTop = document.getElementById('auditorio-' + sub.link)?.offsetTop as number;
+      sub.offsetBottom = i == (this.subVinculos.length - 1) ?
+        document.getElementById('auditorio-' + sub.link)?.offsetHeight as number + sub.offsetTop :
+        document.getElementById('auditorio-' + this.subVinculos[i + 1].link)?.offsetTop as number
     });
   }
   navegaA(i: number): void {
     this.router.navigate(['..', this.subVinculos[i].link], { relativeTo: this.route, skipLocationChange: false });
   }
   ngOnInit(): void {
-    this.data.getInterfaz().subscribe(((interfaz: any) => interfaz.auditorio ? this.interfaz = interfaz.auditorio : null));
+    this.data.getInterfaz().subscribe((interfaz: any) => {
+      interfaz.auditorio ? this.interfaz = interfaz.auditorio : null;
+      this.titulaSubVinculos();
+      this.calculaOffset();
+    });
+  }
+  titulaSubVinculos(): void {
+    if (this.interfaz) {
+      this.subVinculos.forEach((sv: SubVinculo) => sv.titulo = this.interfaz.subVinculos[sv.link][this.idioma]);
+      this.openDrawer = false;
+      setTimeout(() => this.openDrawer = true);
+    }
   }
   subMenuActivo(subVinculo: string): boolean {
     return subVinculo == this.router.url.split('/')[2];

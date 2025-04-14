@@ -55,6 +55,8 @@ import { FichaDiscoComponent } from './contenidos/discos/ficha-disco/ficha-disco
 import { FichaLibroComponent } from './contenidos/libros/ficha-libro/ficha-libro.component';
 import { DetectaScrollDirective } from './directivas/detecta-scroll.directive';
 import { AuditorioComponent } from './contenidos/auditorio/auditorio.component';
+import { CarruselComponent } from "./compartidos/carrusel/carrusel.component";
+import { ImageDialogComponent } from './compartidos/carrusel/image-dialog/image-dialog.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -80,6 +82,8 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     FichaLibroComponent,
     DetectaScrollDirective,
     AuditorioComponent,
+    CarruselComponent,
+    ImageDialogComponent,
   ],
   imports: [
     BrowserModule,

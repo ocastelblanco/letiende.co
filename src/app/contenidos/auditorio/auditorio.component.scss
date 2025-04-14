@@ -7,6 +7,9 @@ $verde: map.get(estilos.$lt-basico, verde);
 $naranja: map.get(estilos.$lt-basico, naranja);
 $amarillo: map.get(estilos.$lt-basico, amarillo);
 $marron: map.get(estilos.$lt-basico, marron);
+$alto-navbar: map.get(estilos.$tamanos, alto-navbar);
+$alto-pie: map.get(estilos.$tamanos, alto-pie);
+$gap: map.get(estilos.$tamanos, gap);
 
 .auditorio {
   background-color: $amarillo;
@@ -25,6 +28,11 @@ $marron: map.get(estilos.$lt-basico, marron);
     z-index: 10;
   }
   .sidenav-content {
+    height: calc(100vh - $alto-navbar - $alto-pie);
+    .contenido {
+      height: calc(100% - ($gap * 2));
+      padding: $gap;
+    }
     &:last-of-type {
       min-height: calc(100% + 32px);
     }

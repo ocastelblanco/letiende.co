@@ -1,0 +1,28 @@
+<div class="image-dialog">
+  <div class="dialog"
+       [ngClass]="orPan">
+    <div class="close-button">
+      <button mat-icon-button
+              color="accent"
+              (click)="dialogRef.close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="dialog-content"
+         [ngClass]="orImg">
+      <div class="image">
+        <img #img
+             [src]="imagen.url"
+             [alt]="imagen.titulo">
+      </div>
+      <div class="textos">
+        <div class="titulo">
+          <span [innerHTML]="imagen.titulo"></span>
+        </div>
+        <div class="descripcion">
+          <span [innerHTML]="imagen.descripcion"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

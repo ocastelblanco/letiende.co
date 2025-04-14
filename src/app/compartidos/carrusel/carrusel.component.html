@@ -1,0 +1,31 @@
+<div class="carrusel">
+  <div class="contenedor"
+       #contenedor>
+    <div class="imagenes"
+         (pointerdown)="onPointerDown($event)"
+         #imgs>
+      @for (imagen of imagenes; track $index) {
+      <div class="imagen"
+           (click)="abreImagen($index)">
+        <img [src]="imagen.url"
+             [alt]="imagen.titulo">
+        <div class="titulo">
+          <span [innerHTML]="imagen.titulo"></span>
+        </div>
+      </div>
+      }
+    </div>
+    <button class="navegacion izq"
+            color="primary"
+            (click)="mueve(-1)"
+            mat-mini-fab>
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <button class="navegacion der"
+            color="primary"
+            (click)="mueve(1)"
+            mat-mini-fab>
+      <mat-icon>arrow_forward</mat-icon>
+    </button>
+  </div>
+</div>
