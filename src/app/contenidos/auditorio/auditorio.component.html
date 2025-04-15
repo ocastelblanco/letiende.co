@@ -4,6 +4,7 @@
   <button mat-fab
           aria-label="Cotizar el auditorio"
           [matTooltip]="interfaz.cotizar[idioma]"
+          (click)="abreCotizacion()"
           class="cotizar">
     <mat-icon>request_quote</mat-icon>
   </button>
@@ -42,6 +43,15 @@
         <div class="contenido">
           @if (subVinculo.link == 'auditorio'){
           <lt-carrusel />
+          }
+          @if (subVinculo.link == 'eventos'){
+          <div class="eventos">
+            <div class="titulo">
+              <span [innerHTML]="interfaz.titulos.eventos[idioma]"></span>
+            </div>
+            <div class="selector-fecha"></div>
+            <lt-slider-eventos style="flex: 1 1 auto" />
+          </div>
           }
         </div>
       </div>

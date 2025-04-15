@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, NgZone, OnInit, ViewChild, effect } from '@angular/core';
+import { AfterViewInit, Component, Inject, NgZone, OnInit, ViewChild, effect } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { DataService } from 'src/app/servicios/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -6,6 +6,8 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { MatSidenavContainer } from '@angular/material/sidenav';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { animationFrameScheduler } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { CotizacionComponent } from './cotizacion/cotizacion.component';
 
 interface SubVinculo {
   titulo: string;
@@ -67,6 +69,7 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
     private router: Router,
     private route: ActivatedRoute,
     private ngZone: NgZone,
+    public dialog: MatDialog,
   ) {
     effect(() => {
       this.idioma = this.data.idioma();
@@ -99,6 +102,13 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
         }
       });
   }
+  ngOnInit(): void {
+    this.data.getInterfaz().subscribe((interfaz: any) => {
+      interfaz.auditorio ? this.interfaz = interfaz.auditorio : null;
+      this.titulaSubVinculos();
+      this.calculaOffset();
+    });
+  }
   ngAfterViewInit(): void {
     setTimeout(() => {
       //const cont: HTMLElement = this.sideNavContainer?.scrollable.getElementRef().nativeElement as HTMLElement;
@@ -123,13 +133,6 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
   }
   navegaA(i: number): void {
     this.router.navigate(['..', this.subVinculos[i].link], { relativeTo: this.route, skipLocationChange: false });
-  }
-  ngOnInit(): void {
-    this.data.getInterfaz().subscribe((interfaz: any) => {
-      interfaz.auditorio ? this.interfaz = interfaz.auditorio : null;
-      this.titulaSubVinculos();
-      this.calculaOffset();
-    });
   }
   titulaSubVinculos(): void {
     if (this.interfaz) {
@@ -173,5 +176,8 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
     if (t < 1) return (c / 2) * t * t + b;
     t--;
     return (-c / 2) * (t * (t - 2) - 1) + b;
+  }
+  abreCotizacion(): void {
+    const dialogRef = this.dialog.open(CotizacionComponent);
   }
 }

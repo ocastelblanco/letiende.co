@@ -45,6 +45,9 @@ $marron: map.get(estilos.$lt-basico, marron);
           @include mat.typography-level($typography-config, "body-4");
           min-width: 5em;
         }
+        .year {
+          @include mat.typography-level($typography-config, "heading-2");
+        }
       }
       .info {
         display: flex;

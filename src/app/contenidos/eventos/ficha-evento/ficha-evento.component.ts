@@ -12,6 +12,7 @@ import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 })
 export class FichaEventoComponent {
   @Input() evento: Evento = {} as Evento;
+  @Input() year: boolean = false;
   info: IconDefinition = faCircleInfo;
   ig: IconDefinition = faInstagram;
   tiktok: IconDefinition = faTiktok;

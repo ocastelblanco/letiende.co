@@ -1,0 +1,32 @@
+<h2 mat-dialog-title
+    [innerHTML]="interfaz.titulo[idioma]">
+</h2>
+<mat-dialog-content class="contenido">
+  <div class="descripcion">
+    <span [innerHTML]="interfaz.descripcion[idioma]"></span>
+  </div>
+  <div class="mas-info">
+    <span [innerHTML]="interfaz.masInfo[idioma]"></span>
+  </div>
+  <div class="chat">
+    <a aria-label="Escríbenos"
+       mat-flat-button
+       color="primary"
+       href="https://wa.me/573247695957?text=%C2%A1Hola%21%20Me%20interesa%20alquilar%20su%20auditorio."
+       target="_blank">
+      <div class="texto-chat">
+        <fa-icon [icon]="wa"
+                 size="2x">
+        </fa-icon>
+        <span [innerHTML]="interfaz.whatsapp[idioma]"></span>
+      </div>
+    </a>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions class="acciones">
+  <button mat-button
+          color="primary"
+          mat-dialog-close>
+    <span [innerHTML]="interfaz.cerrar[idioma]"></span>
+  </button>
+</mat-dialog-actions>

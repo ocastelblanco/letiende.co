@@ -16,6 +16,9 @@
         <div class="mes">{{ evento.fecha | date: 'MMM':'GMT-5:00':interfaz.fecha[idioma] }}</div>
         <div class="dia">{{ evento.fecha | date: 'd':'GMT-5:00':interfaz.fecha[idioma] }}</div>
         <div class="hora">{{ evento.fecha | date: 'h:mm a':'GMT-5:00':interfaz.fecha[idioma] }}</div>
+        @if (year){
+        <div class="year">{{ evento.fecha | date: 'y':'GMT-5:00':interfaz.fecha[idioma] }}</div>
+        }
       </div>
       <div class="info">
         <div class="texto">

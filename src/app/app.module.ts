@@ -36,6 +36,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialogModule } from '@angular/material/dialog';
 
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideStorage, getStorage } from '@angular/fire/storage';
@@ -57,6 +59,8 @@ import { DetectaScrollDirective } from './directivas/detecta-scroll.directive';
 import { AuditorioComponent } from './contenidos/auditorio/auditorio.component';
 import { CarruselComponent } from "./compartidos/carrusel/carrusel.component";
 import { ImageDialogComponent } from './compartidos/carrusel/image-dialog/image-dialog.component';
+import { SliderEventosComponent } from './compartidos/slider-eventos/slider-eventos.component';
+import { CotizacionComponent } from './contenidos/auditorio/cotizacion/cotizacion.component';
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -84,6 +88,8 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     AuditorioComponent,
     CarruselComponent,
     ImageDialogComponent,
+    SliderEventosComponent,
+    CotizacionComponent,
   ],
   imports: [
     BrowserModule,
@@ -112,6 +118,8 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     MatAutocompleteModule,
     MatInputModule,
     MatSidenavModule,
+    MatProgressSpinnerModule,
+    MatDialogModule,
   ],
   providers: [
     provideFirebaseApp(() => initializeApp(environment.firebase)),
