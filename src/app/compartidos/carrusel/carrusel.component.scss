@@ -28,11 +28,9 @@ $transition-duration: 0.4s; // Duración de la animación
     height: $alto-imagen;
     overflow: hidden;
     cursor: grab; // Indica que se puede arrastrar
-
     &:active {
       cursor: grabbing; // Cambia el cursor mientras se arrastra
     }
-
     .imagenes {
       position: absolute;
       top: 0;
@@ -45,7 +43,6 @@ $transition-duration: 0.4s; // Duración de la animación
       touch-action: pan-y; // Permite scroll vertical, previene horizontal durante drag
       user-select: none; // Evita selección de texto
       // --- Fin Añadido/Modificado ---
-
       .imagen {
         position: relative;
         display: inline-block;
@@ -57,10 +54,18 @@ $transition-duration: 0.4s; // Duración de la animación
         border: 2px solid $naranja;
         img {
           height: 100%;
-          width: 100%;
+          width: calc($ancho-imagen * 2);
           object-fit: cover;
           object-position: 50%;
+          margin-left: calc($ancho-imagen * -1);
           pointer-events: none; // Evita que la imagen interfiera con el drag
+          // 👇 --- Parallax styles ---
+          --parallax-img-factor: 0.15; // Adjust this value (e.g., 0.1 to 0.5) for desired parallax intensity.
+          // This means the image will move 20% "slower" than its frame.
+          transform: translateX(calc(var(--carousel-translate-x-abs, 0px) * var(--parallax-img-factor) * -1));
+          transition: transform $transition-duration ease-out; // Sync with parent's transition for smoothness
+          will-change: transform; // Optimize for animation
+          // --- End Parallax styles ---
         }
         .titulo {
           position: absolute;

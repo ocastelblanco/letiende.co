@@ -191,6 +191,7 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
   // Aplica la transformación translateX al contenedor de imágenes
   private applyTransform(translateX: number, useTransition: boolean): void {
     if (!this.imagenesRef?.nativeElement) return;
+    this.imagenesRef.nativeElement.style.setProperty('--carousel-translate-x-abs', `${translateX}px`);
     this.imagenesRef.nativeElement.style.transition = useTransition ? this.transitionStyle : 'none';
     this.imagenesRef.nativeElement.style.transform = `translateX(${translateX}px)`;
   }
