@@ -61,6 +61,7 @@ import { CarruselComponent } from "./compartidos/carrusel/carrusel.component";
 import { ImageDialogComponent } from './compartidos/carrusel/image-dialog/image-dialog.component';
 import { SliderEventosComponent } from './compartidos/slider-eventos/slider-eventos.component';
 import { CotizacionComponent } from './contenidos/auditorio/cotizacion/cotizacion.component';
+import { PanelesComponent } from "./compartidos/paneles/paneles.component";
 
 registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
 
@@ -90,6 +91,7 @@ registerLocaleData(localeEsCO, 'es-CO', localeEsCOExtra);
     ImageDialogComponent,
     SliderEventosComponent,
     CotizacionComponent,
+    PanelesComponent,
   ],
   imports: [
     BrowserModule,

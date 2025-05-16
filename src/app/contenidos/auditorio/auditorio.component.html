@@ -42,7 +42,16 @@
            [id]="'auditorio-' + subVinculo.link">
         <div class="contenido">
           @if (subVinculo.link == 'auditorio'){
-          <lt-carrusel />
+          <div class="carrusel">
+            <div class="titulo">{{interfaz.titulos.auditorio[idioma]}}</div>
+            <lt-carrusel />
+          </div>
+          }
+          @if (subVinculo.link == 'especificaciones'){
+          <div class="especificaciones">
+            <div class="titulo">{{interfaz.titulos.especificaciones[idioma]}}</div>
+            <lt-paneles />
+          </div>
           }
           @if (subVinculo.link == 'eventos'){
           <div class="eventos">

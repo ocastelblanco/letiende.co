@@ -1,0 +1,50 @@
+<div class="paneles"
+     [ngClass]="currentScreenSize">
+  <mat-grid-list class="panel-grid-list"
+                 [cols]="cols"
+                 gutterSize="20px"
+                 [rowHeight]="rowHeight">
+    @for (panel of paneles; track $index) {
+    <mat-grid-tile class="panel-tile"
+                   [id]="'panel-tile-' + $index">
+      <div class="panel">
+        <div class="imagen">
+          <img [src]="panel.imagen"
+               [alt]="panel.titulo[idioma]">
+        </div>
+        <div class="contenido">
+          <div class="titulo">
+            <span [innerHTML]="panel.titulo[idioma]"></span>
+            <button mat-icon-button
+                    (click)="togglePanel($event, $index)"
+                    aria-label="Abrir / cerrar info">
+              @if (panelesAbiertos[$index]){
+              <mat-icon>unfold_less</mat-icon>
+              } @else {
+              <mat-icon>unfold_more</mat-icon>
+              }
+            </button>
+          </div>
+          <div class="descripcion">
+            <div class="texto">
+              <div class="texto-contenido"
+                   [innerHTML]="panel.descripcion[idioma] | safe: 'html'">
+              </div>
+              @if (panel.link && verMas) {
+              <div class="link">
+                <a mat-raised-button
+                   color="accent"
+                   [href]="panel.link"
+                   target="_blank">
+                  {{verMas[idioma]}}
+                </a>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-grid-tile>
+    }
+  </mat-grid-list>
+</div>

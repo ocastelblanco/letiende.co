@@ -51,18 +51,23 @@ $gap: map.get(estilos.$tamanos, gap);
     }
   }
   .contenido {
+    .carrusel > .titulo,
+    .especificaciones > .titulo {
+      margin-bottom: 1em;
+    }
     .eventos {
       display: flex;
       flex-direction: column;
       overflow: hidden;
       height: 100%;
-      .titulo {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        @include mat.typography-level($typography-config, "heading-2");
-        color: $verde;
-      }
+    }
+    // Aplica a todos los elementos con class="titulo"
+    .titulo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      @include mat.typography-level($typography-config, "heading-2");
+      color: $verde;
     }
   }
 }

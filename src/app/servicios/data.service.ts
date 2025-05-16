@@ -74,6 +74,12 @@ export interface Rutas {
   menu: string;
   otros: any;
 }
+export interface Panel {
+  titulo: { [key: string]: string };
+  descripcion: { [key: string]: string };
+  imagen: string;
+  link?: string;
+}
 
 declare let gtag: any;
 

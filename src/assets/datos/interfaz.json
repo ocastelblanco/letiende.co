@@ -183,6 +183,14 @@
       }
     },
     "titulos": {
+      "auditorio": {
+        "es": "Auditorio Le Tiende",
+        "en": "Le Tiende black box theater"
+      },
+      "especificaciones": {
+        "es": "Especificaciones del auditorio",
+        "en": "Black box theater specifications"
+      },
       "eventos": {
         "es": "Todos nuestros eventos",
         "en": "All our events"
@@ -208,6 +216,12 @@
       "cerrar": {
         "es": "Cerrar",
         "en": "Close"
+      }
+    },
+    "generales": {
+      "verMas": {
+        "es": "Ver más",
+        "en": "See more"
       }
     }
   }

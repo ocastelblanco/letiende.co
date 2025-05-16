@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Inject, NgZone, OnInit, ViewChild, effect } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnInit, ViewChild, effect } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { DataService } from 'src/app/servicios/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
