@@ -1,6 +1,6 @@
-import { AfterViewInit, Component, NgZone, OnInit, ViewChild, effect } from '@angular/core';
+import { Component, NgZone, OnInit, ViewChild, effect } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { DataService } from 'src/app/servicios/data.service';
+import { Auditorio, DataService } from 'src/app/servicios/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { MatSidenavContainer } from '@angular/material/sidenav';
@@ -43,7 +43,7 @@ interface SubVinculo {
     ])
   ]
 })
-export class AuditorioComponent implements OnInit, AfterViewInit {
+export class AuditorioComponent implements OnInit {
   @ViewChild("sidenavContainer", { static: false }) sideNavContainer?: MatSidenavContainer;
   idioma: string = 'es';
   interfaz: any;
@@ -63,6 +63,7 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
     { titulo: 'Eventos', link: 'eventos', icono: 'local_activity', offsetTop: 0, offsetBottom: 0 },
   ];
   subPos: number[] = [];
+  dataAuditorio: Auditorio | undefined;
   constructor(
     private data: DataService,
     private breakpoint: BreakpointObserver,
@@ -108,20 +109,27 @@ export class AuditorioComponent implements OnInit, AfterViewInit {
       this.titulaSubVinculos();
       this.calculaOffset();
     });
-  }
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      //const cont: HTMLElement = this.sideNavContainer?.scrollable.getElementRef().nativeElement as HTMLElement;
-      this.calculaOffset();
-      this.abreSubVinculo(this.subVinculos.findIndex((v: SubVinculo) => v.link == this.router.url.split('/')[2]));
-      this.sideNavContainer?.scrollable.elementScrolled().subscribe((ev: Event) => {
-        const pos: number = this.sideNavContainer?.scrollable.measureScrollOffset('top') as number;
-        this.ngZone.run(() => {
-          const dest: number = this.subVinculos.findIndex((s: SubVinculo) => pos >= s.offsetTop && pos < s.offsetBottom);
-          this.navegaA(dest);
-        });
+    this.data.getAuditorio().subscribe((auditorio: Auditorio | undefined) => {
+      this.dataAuditorio = auditorio;
+      const int = setInterval(() => {
+        if (this.sideNavContainer) {
+          clearInterval(int);
+          this.iniciaMedidaScroll();
+        }
       });
-    }, 50);
+    });
+  }
+  iniciaMedidaScroll(): void {
+    //const cont: HTMLElement = this.sideNavContainer?.scrollable.getElementRef().nativeElement as HTMLElement;
+    this.calculaOffset();
+    this.abreSubVinculo(this.subVinculos.findIndex((v: SubVinculo) => v.link == this.router.url.split('/')[2]));
+    this.sideNavContainer?.scrollable.elementScrolled().subscribe((ev: Event) => {
+      const pos: number = this.sideNavContainer?.scrollable.measureScrollOffset('top') as number;
+      this.ngZone.run(() => {
+        const dest: number = this.subVinculos.findIndex((s: SubVinculo) => pos >= s.offsetTop && pos < s.offsetBottom);
+        this.navegaA(dest);
+      });
+    });
   }
   calculaOffset(): void {
     this.subVinculos.forEach((sub: SubVinculo, i: number) => {

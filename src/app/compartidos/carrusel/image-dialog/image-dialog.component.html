@@ -12,15 +12,15 @@
          [ngClass]="orImg">
       <div class="image">
         <img #img
-             [src]="imagen.url"
-             [alt]="imagen.titulo">
+             [src]="imagen.imagen"
+             [alt]="imagen.titulo[idioma]">
       </div>
       <div class="textos">
         <div class="titulo">
-          <span [innerHTML]="imagen.titulo"></span>
+          <span [innerHTML]="imagen.titulo[idioma]"></span>
         </div>
         <div class="descripcion">
-          <span [innerHTML]="imagen.descripcion"></span>
+          <span [innerHTML]="imagen.descripcion[idioma]"></span>
         </div>
       </div>
     </div>

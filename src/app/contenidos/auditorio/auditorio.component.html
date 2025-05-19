@@ -1,4 +1,4 @@
-@if (interfaz) {
+@if (interfaz && dataAuditorio) {
 <div class="auditorio"
      [ngClass]="bpPantalla">
   <button mat-fab
@@ -44,13 +44,13 @@
           @if (subVinculo.link == 'auditorio'){
           <div class="carrusel">
             <div class="titulo">{{interfaz.titulos.auditorio[idioma]}}</div>
-            <lt-carrusel />
+            <lt-carrusel [imagenes]="dataAuditorio.imagenes" />
           </div>
           }
           @if (subVinculo.link == 'especificaciones'){
           <div class="especificaciones">
             <div class="titulo">{{interfaz.titulos.especificaciones[idioma]}}</div>
-            <lt-paneles />
+            <lt-paneles [paneles]="dataAuditorio.especificaciones" />
           </div>
           }
           @if (subVinculo.link == 'eventos'){
@@ -67,5 +67,9 @@
       }
     </mat-sidenav-content>
   </mat-sidenav-container>
+</div>
+} @else {
+<div class="loading">
+  <mat-spinner></mat-spinner>
 </div>
 }

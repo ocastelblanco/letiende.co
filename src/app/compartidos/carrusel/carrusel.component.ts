@@ -1,12 +1,7 @@
 import { Dialog } from '@angular/cdk/dialog';
-import { Component, ElementRef, Input, ViewChild, OnDestroy, AfterViewInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild, OnDestroy, AfterViewInit, ChangeDetectorRef, inject, effect } from '@angular/core';
 import { ImageDialogComponent } from './image-dialog/image-dialog.component';
-
-export interface Imagen {
-  url: string;
-  titulo: string;
-  descripcion: string; // Aunque no se usa en el template actual, mantenemos la interfaz
-}
+import { ElementoAuditorio, DataService } from 'src/app/servicios/data.service';
 
 @Component({
   selector: 'lt-carrusel',
@@ -15,16 +10,17 @@ export interface Imagen {
 })
 export class CarruselComponent implements AfterViewInit, OnDestroy {
   // --- Imágenes de ejemplo (igual que antes) ---
-  @Input() imagenes: Imagen[] = [
-    { titulo: 'Título 1', descripcion: 'Descripción 1', url: 'https://live.staticflickr.com/8448/7928254948_24fe7fc65f_o_d.jpg' },
-    { titulo: 'Título 2', descripcion: 'Descripción 2', url: 'https://live.staticflickr.com/1810/28475735877_cca536675f_o_d.jpg' },
-    { titulo: 'Título 3 Largo Largo', descripcion: 'Descripción 3', url: 'https://live.staticflickr.com/65535/54403095935_99545545a9_o_d.jpg' },
-    { titulo: 'Título 4', descripcion: 'Descripción 4', url: 'https://live.staticflickr.com/2093/2426852471_8a5355c89a_o_d.jpg' },
-    { titulo: 'Título 5', descripcion: 'Descripción 5', url: 'https://live.staticflickr.com/65535/51537111468_067cde6b60_o_d.jpg' },
-    { titulo: 'Título 6', descripcion: 'Descripción 6', url: 'https://live.staticflickr.com/65535/52300345468_7f710ef9d8_o_d.jpg' },
-    { titulo: 'Título 7', descripcion: 'Descripción 7', url: 'https://live.staticflickr.com/65535/52119674479_1f395db297_o_d.jpg' },
-    { titulo: 'Título 8', descripcion: 'Descripción 8', url: 'https://live.staticflickr.com/45/146611541_f76b7a4205_o_d.jpg' },
+  @Input() imagenes: ElementoAuditorio[] = [
+    { titulo: { 'es': 'Título 1', 'en': 'Title 1' }, descripcion: { 'es': 'Descripción 1', 'en': 'Description 1' }, imagen: 'https://live.staticflickr.com/8448/7928254948_24fe7fc65f_o_d.jpg' },
+    { titulo: { 'es': 'Título 2', 'en': 'Title 2' }, descripcion: { 'es': 'Descripción 2', 'en': 'Description 2' }, imagen: 'https://live.staticflickr.com/1810/28475735877_cca536675f_o_d.jpg' },
+    { titulo: { 'es': 'Título 3', 'en': 'Title 3' }, descripcion: { 'es': 'Descripción 3', 'en': 'Description 3' }, imagen: 'https://live.staticflickr.com/65535/54403095935_99545545a9_o_d.jpg' },
+    { titulo: { 'es': 'Título 4', 'en': 'Title 4' }, descripcion: { 'es': 'Descripción 4', 'en': 'Description 4' }, imagen: 'https://live.staticflickr.com/2093/2426852471_8a5355c89a_o_d.jpg' },
+    { titulo: { 'es': 'Título 5', 'en': 'Title 5' }, descripcion: { 'es': 'Descripción 5', 'en': 'Description 5' }, imagen: 'https://live.staticflickr.com/65535/51537111468_067cde6b60_o_d.jpg' },
+    { titulo: { 'es': 'Título 6', 'en': 'Title 6' }, descripcion: { 'es': 'Descripción 6', 'en': 'Description 6' }, imagen: 'https://live.staticflickr.com/65535/52300345468_7f710ef9d8_o_d.jpg' },
+    { titulo: { 'es': 'Título 7', 'en': 'Title 7' }, descripcion: { 'es': 'Descripción 7', 'en': 'Description 7' }, imagen: 'https://live.staticflickr.com/65535/52119674479_1f395db297_o_d.jpg' },
+    { titulo: { 'es': 'Título 8', 'en': 'Title 8' }, descripcion: { 'es': 'Descripción 8', 'en': 'Description 8' }, imagen: 'https://live.staticflickr.com/45/146611541_f76b7a4205_o_d.jpg' },
   ];
+  idioma: string = 'es';
 
   @ViewChild('contenedor') private contenedorRef?: ElementRef<HTMLDivElement>;
   @ViewChild('imgs') private imagenesRef?: ElementRef<HTMLDivElement>;
@@ -45,7 +41,12 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
 
   private dialog: Dialog = inject(Dialog);
 
-  constructor(private cdr: ChangeDetectorRef) { }
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private dataServicio: DataService,
+  ) {
+    effect(() => this.idioma = this.dataServicio.idioma());
+  }
 
   ngAfterViewInit(): void {
     // Es importante calcular las dimensiones después de que la vista se inicialice

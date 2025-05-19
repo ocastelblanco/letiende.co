@@ -1,6 +1,6 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { OnDestroy, Component, effect, ElementRef, Input, OnInit, AfterViewInit, NgZone } from '@angular/core';
-import { DataService, Panel } from 'src/app/servicios/data.service';
+import { DataService, ElementoAuditorio } from 'src/app/servicios/data.service';
 import { fromEvent, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -10,7 +10,7 @@ import { takeUntil } from 'rxjs/operators';
   styleUrl: './paneles.component.scss',
 })
 export class PanelesComponent implements OnInit, OnDestroy, AfterViewInit {
-  @Input() paneles: Panel[] = [
+  @Input() paneles: ElementoAuditorio[] = [
     {
       imagen: 'https://www.mediatekis.com.co/media/catalog/product/cache/7c37608a0ced941863e2dadf4d54b13d/x/2/x2222usb_3.jpg',
       titulo: {
@@ -123,7 +123,7 @@ export class PanelesComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
   ngOnInit(): void {
-    this.panelesAbiertos = this.paneles.map((p: Panel, i: number) => false);
+    this.panelesAbiertos = this.paneles.map((p: ElementoAuditorio, i: number) => false);
     this.data.getInterfaz().subscribe((interfaz: any) => this.verMas = interfaz.auditorio.generales.verMas);
   }
   ngAfterViewInit(): void {

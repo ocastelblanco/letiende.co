@@ -74,11 +74,15 @@ export interface Rutas {
   menu: string;
   otros: any;
 }
-export interface Panel {
+export interface ElementoAuditorio {
   titulo: { [key: string]: string };
   descripcion: { [key: string]: string };
   imagen: string;
   link?: string;
+}
+export interface Auditorio {
+  imagenes: ElementoAuditorio[];
+  especificaciones: ElementoAuditorio[];
 }
 
 declare let gtag: any;
@@ -94,6 +98,7 @@ export class DataService {
   private SEO: BehaviorSubject<SEO[]> = new BehaviorSubject<SEO[]>([]);
   private discos: BehaviorSubject<Disco[]> = new BehaviorSubject<Disco[]>([]);
   private libros: BehaviorSubject<Libro[]> = new BehaviorSubject<Libro[]>([]);
+  private auditorio: BehaviorSubject<Auditorio | undefined> = new BehaviorSubject<Auditorio | undefined>(undefined);
   private storage: Storage = inject(Storage);
   private portadas: BehaviorSubject<PortadaDisco[]> = new BehaviorSubject<PortadaDisco[]>([]);
   private interfaz: BehaviorSubject<any> = new BehaviorSubject<any>({});
@@ -153,7 +158,15 @@ export class DataService {
           registro: el[7]
         }));
         this.eventos.next(eventos);
-      })
+      }),
+    auditorio: () => this.http.get(this.rutaJson + 'auditorio', { responseType: 'json' })
+      .subscribe((resp: any) => {
+        const auditorio: Auditorio = {
+          imagenes: this.generaElementoAuditorio(resp, 'Imágenes'),
+          especificaciones: this.generaElementoAuditorio(resp, 'Especificaciones'),
+        };
+        this.auditorio.next(auditorio);
+      }),
   };
   constructor(private http: HttpClient, private router: Router, @Inject(DOCUMENT) private doc: Document) {
     this.router.events.pipe(
@@ -168,6 +181,7 @@ export class DataService {
     this.initFunc.seo();
     this.initFunc.menu();
     this.initFunc.eventos();
+    this.initFunc.auditorio();
     this.initGA();
   }
   getSEO(): BehaviorSubject<SEO[]> {
@@ -285,6 +299,10 @@ export class DataService {
     const query: string = libro.barcode ? 'barcode=' + libro.barcode : 'titulo=' + encode.encodeValue(libro.nombre);
     return this.http.get(this.rutaAPI + 'libros?' + query);
   }
+  getAuditorio(): BehaviorSubject<Auditorio | undefined> {
+    return this.auditorio;
+  }
+  // Funciones utilitarias
   convertBinaryToBlob(binary: string, contentType: string = 'image/jpeg'): Blob {
     const uInt8Array: Uint8Array = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) uInt8Array[i] = binary.charCodeAt(i);
@@ -293,5 +311,20 @@ export class DataService {
   addWWW(url: string): string {
     const partes: RegExp = /(https?:\/\/)(.*)/g;
     return url.replace(partes, '$1www.$2');
+  }
+  generaElementoAuditorio(resp: string[][], tipo: 'Imágenes' | 'Especificaciones'): ElementoAuditorio[] {
+    return resp
+      .filter((img: string[]) => img[0] == tipo)
+      .map((img: string[]) => {
+        return {
+          titulo: { es: img[1], en: img[2] },
+          descripcion: { es: this.addSaltoLinea(img[3]), en: this.addSaltoLinea(img[4]) },
+          imagen: img[5],
+          link: img[6]
+        }
+      });
+  }
+  addSaltoLinea(texto: string): string {
+    return texto.replace(/\\n/g, '<br>');
   }
 }

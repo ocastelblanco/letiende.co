@@ -7,10 +7,10 @@
       @for (imagen of imagenes; track $index) {
       <div class="imagen"
            (click)="abreImagen($index)">
-        <img [src]="imagen.url"
-             [alt]="imagen.titulo">
+        <img [src]="imagen.imagen"
+             [alt]="imagen.titulo[idioma]">
         <div class="titulo">
-          <span [innerHTML]="imagen.titulo"></span>
+          <span [innerHTML]="imagen.titulo[idioma]"></span>
         </div>
       </div>
       }

@@ -1,7 +1,7 @@
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
-import { AfterViewInit, Component, ElementRef, inject, ViewChild } from '@angular/core';
-import { Imagen } from '../carrusel.component';
+import { AfterViewInit, Component, effect, ElementRef, inject, ViewChild } from '@angular/core';
 import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
+import { ElementoAuditorio, DataService } from 'src/app/servicios/data.service';
 
 type Orientation = 'portrait' | 'landscape';
 
@@ -12,11 +12,16 @@ type Orientation = 'portrait' | 'landscape';
 })
 export class ImageDialogComponent implements AfterViewInit {
   @ViewChild('img') private imgRef?: ElementRef<HTMLImageElement>;
-  dialogRef: DialogRef<Imagen> = inject<DialogRef<Imagen>>(DialogRef<Imagen>);
-  imagen: Imagen = inject(DIALOG_DATA);
+  dialogRef: DialogRef<ElementoAuditorio> = inject<DialogRef<ElementoAuditorio>>(DialogRef<ElementoAuditorio>);
+  imagen: ElementoAuditorio = inject(DIALOG_DATA);
   orImg: Orientation = 'portrait';
   orPan: Orientation = 'portrait';
-  constructor(private breakpoint: BreakpointObserver) {
+  idioma: string = 'es';
+  constructor(
+    private breakpoint: BreakpointObserver,
+    private dataServicio: DataService,
+  ) {
+    effect(() => this.idioma = this.dataServicio.idioma());
     this.breakpoint
       .observe(['(orientation: portrait)', '(orientation: landscape)'])
       .subscribe((result: BreakpointState) => {
