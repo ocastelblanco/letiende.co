@@ -11,15 +11,80 @@ import { ElementoAuditorio, DataService } from 'src/app/servicios/data.service';
 export class CarruselComponent implements AfterViewInit, OnDestroy {
   // --- Imágenes de ejemplo (igual que antes) ---
   @Input() imagenes: ElementoAuditorio[] = [
-    { titulo: { 'es': 'Título 1', 'en': 'Title 1' }, descripcion: { 'es': 'Descripción 1', 'en': 'Description 1' }, imagen: 'https://live.staticflickr.com/8448/7928254948_24fe7fc65f_o_d.jpg' },
-    { titulo: { 'es': 'Título 2', 'en': 'Title 2' }, descripcion: { 'es': 'Descripción 2', 'en': 'Description 2' }, imagen: 'https://live.staticflickr.com/1810/28475735877_cca536675f_o_d.jpg' },
-    { titulo: { 'es': 'Título 3', 'en': 'Title 3' }, descripcion: { 'es': 'Descripción 3', 'en': 'Description 3' }, imagen: 'https://live.staticflickr.com/65535/54403095935_99545545a9_o_d.jpg' },
-    { titulo: { 'es': 'Título 4', 'en': 'Title 4' }, descripcion: { 'es': 'Descripción 4', 'en': 'Description 4' }, imagen: 'https://live.staticflickr.com/2093/2426852471_8a5355c89a_o_d.jpg' },
-    { titulo: { 'es': 'Título 5', 'en': 'Title 5' }, descripcion: { 'es': 'Descripción 5', 'en': 'Description 5' }, imagen: 'https://live.staticflickr.com/65535/51537111468_067cde6b60_o_d.jpg' },
-    { titulo: { 'es': 'Título 6', 'en': 'Title 6' }, descripcion: { 'es': 'Descripción 6', 'en': 'Description 6' }, imagen: 'https://live.staticflickr.com/65535/52300345468_7f710ef9d8_o_d.jpg' },
-    { titulo: { 'es': 'Título 7', 'en': 'Title 7' }, descripcion: { 'es': 'Descripción 7', 'en': 'Description 7' }, imagen: 'https://live.staticflickr.com/65535/52119674479_1f395db297_o_d.jpg' },
-    { titulo: { 'es': 'Título 8', 'en': 'Title 8' }, descripcion: { 'es': 'Descripción 8', 'en': 'Description 8' }, imagen: 'https://live.staticflickr.com/45/146611541_f76b7a4205_o_d.jpg' },
+    {
+      "titulo": {
+        "es": "Consola",
+        "en": "Mixer"
+      },
+      "descripcion": {
+        "es": "<strong>Modelo:</strong> XENYX X2222USB",
+        "en": "<strong>Model:</strong> XENYX X2222USB"
+      },
+      "imagen": "https://www.mediatekis.com.co/media/catalog/product/cache/7c37608a0ced941863e2dadf4d54b13d/x/2/x2222usb_3.jpg",
+      "link": "https://www.behringer.com/product.html?modelCode=0601-ADA"
+    },
+    {
+      "titulo": {
+        "es": "Parlantes activos",
+        "en": "Active loudspeakers"
+      },
+      "descripcion": {
+        "es": "<strong>Modelo:</strong> EUROLIVE B215D",
+        "en": "<strong>Model:</strong> EUROLIVE B215D"
+      },
+      "imagen": "https://superaudio.com.co/wp-content/uploads/2024/10/B215D-BEHRINGER-CABINAACTIVA-3-1.jpg",
+      "link": "https://www.behringer.com/product.html?modelCode=0313-ADG"
+    },
+    {
+      "titulo": {
+        "es": "Tarima",
+        "en": "Platform"
+      },
+      "descripcion": {
+        "es": "<strong>Tamaño:</strong> 16m2",
+        "en": "<strong>Size:</strong> 16m2"
+      },
+      "imagen": "https://live.staticflickr.com/7167/6770113909_07430e9b44_c_d.jpg",
+      "link": ""
+    },
+    {
+      "titulo": {
+        "es": "Micrófonos",
+        "en": "Microphones"
+      },
+      "descripcion": {
+        "es": "<strong>Modelo:</strong> Ultravoice<br><strong>Cantidad:</strong> 3",
+        "en": "<strong>Model:</strong> Ultravoice<br><strong>Number:</strong> 3"
+      },
+      "imagen": "https://http2.mlstatic.com/D_NQ_NP_617714-MLU70014306246_062023-O.webp",
+      "link": "https://www.behringer.com/series.html?category=R-BEHRINGER-ULTRAVOICESERIES"
+    },
+    {
+      "titulo": {
+        "es": "Ventiladores de pedestal",
+        "en": "Pedestal fan"
+      },
+      "descripcion": {
+        "es": "<strong>Cantidad:</strong> 3",
+        "en": "<strong>Number:</strong> 4"
+      },
+      "imagen": "https://groupesebcol.vtexassets.com/arquivos/ids/169621/5861033768-1.jpg.jpg?v=638749848624270000&width=800&height=800&aspect=true-800-800",
+      "link": "https://www.imusa.com.co/ventilador-pedestal-samurai-air-power-negro/p"
+    },
+    {
+      "titulo": {
+        "es": "Asilamiento acústico",
+        "en": "Acustic insulation"
+      },
+      "descripcion": {
+        "es": "Aislamiento acústico en las paredes, para evitar que ingrese sonido al auditorio.",
+        "en": "Acoustic insulation on the walls, to prevent sound from entering the auditorium."
+      },
+      "imagen": "https://live.staticflickr.com/1193/1332993997_d1735a9968_c_d.jpg",
+      "link": ""
+    }
   ];
+  // --- Fin Imágenes de ejemplo ---
   idioma: string = 'es';
 
   @ViewChild('contenedor') private contenedorRef?: ElementRef<HTMLDivElement>;
@@ -38,6 +103,7 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
   private gap: number = 20; // Asumiendo gap + bordes = 20px (ajustar si es necesario o calcular dinámicamente)
   private minTranslateX: number = 0; // Límite izquierdo del scroll
   private transitionStyle: string = ''; // Para guardar y restaurar la transición CSS
+  private isInitialized: boolean = false; // Bandera para asegurar cálculos después de renderizado
 
   private dialog: Dialog = inject(Dialog);
 
@@ -53,10 +119,12 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
     // Usamos un pequeño timeout para asegurar que el DOM esté completamente renderizado
     setTimeout(() => {
       this.calculateDimensions();
+      this.isInitialized = true; // Marcar como inicializado después de calcular dimensiones
       // Guardamos el estilo de transición original
       if (this.imagenesRef?.nativeElement) {
         this.transitionStyle = this.imagenesRef.nativeElement.style.transition;
       }
+      this.applyParallaxEffects(); // Aplicar parallax inicial
     }, 0);
   }
 
@@ -68,7 +136,14 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
     }
   }
   abreImagen(index: number): void {
-    if (!this.onlyClick) return; // Solo abre el diálogo si es un click puro
+    // Solo abre el diálogo si es un click puro (no un drag)
+    // Verificamos si hubo movimiento significativo durante el pointerdown/up
+    // Una pequeña tolerancia para clics accidentales con ligero movimiento
+    const movedDistance = Math.abs(this.getCurrentTranslateX() - this.currentTranslateX);
+    const isClick = movedDistance < 5; // Tolerancia de 5px, ajustar si es necesario
+
+    if (!isClick) return;
+
     this.dialog.open(ImageDialogComponent, {
       height: '100%',
       data: this.imagenes[index],
@@ -109,6 +184,7 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
     // Aplica la transformación con animación
     this.applyTransform(targetTranslateX, true);
     this.lastTranslateX = targetTranslateX; // Actualiza la última posición conocida
+    this.applyParallaxEffects(); // Actualiza parallax después de la navegación
   }
 
   // --- Lógica de Arrastre (Drag) con Pointer Events ---
@@ -117,8 +193,6 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
     // event.preventDefault(); // Puede prevenir clics en botones si no se maneja bien, probar con/sin
 
     if (!this.imagenesRef?.nativeElement) return;
-
-    this.onlyClick = true; // Asumimos que es un click hasta que se arrastra
 
     this.isDragging = true;
     this.startX = event.clientX; // Posición inicial del puntero
@@ -137,8 +211,6 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
   private onPointerMove = (event: PointerEvent): void => {
     if (!this.isDragging || !this.imagenesRef?.nativeElement) return;
 
-    this.onlyClick = false; // Cambia a drag
-
     // Calcula cuánto se ha movido el puntero
     const currentX: number = event.clientX;
     const deltaX: number = currentX - this.startX;
@@ -151,7 +223,8 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
     if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
     this.animationFrameId = requestAnimationFrame(() => {
       // Aplicamos límites suaves durante el drag (opcional, pero mejora la UX)
-      const limitedTranslateX: number = this.applyDragLimits(newTranslateX);
+      const limitedTranslateX: number = this.applyDragLimits(newTranslateX); // Limita el arrastre
+      this.applyParallaxEffects(); // Apply parallax during drag
       this.applyTransform(limitedTranslateX, false);
     });
   };
@@ -172,7 +245,8 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
 
     // Opcional: Implementar "Snapping" para que termine alineado con una imagen
     // Si no hay snapping, simplemente nos aseguramos de que esté dentro de los límites
-    this.applyTransform(this.lastTranslateX, true); // Anima suavemente a la posición final válida
+    this.applyTransform(this.lastTranslateX, true); // Anima suavemente el contenedor a la posición final válida
+    this.applyParallaxEffects(); // Aplica parallax final después de soltar
 
     // Limpia listeners globales
     this.removeDragListeners();
@@ -190,13 +264,52 @@ export class CarruselComponent implements AfterViewInit, OnDestroy {
   // --- Funciones Auxiliares ---
 
   // Aplica la transformación translateX al contenedor de imágenes
-  private applyTransform(translateX: number, useTransition: boolean): void {
+  private applyTransform(translateX: number, useTransition: boolean = true): void {
     if (!this.imagenesRef?.nativeElement) return;
-    this.imagenesRef.nativeElement.style.setProperty('--carousel-translate-x-abs', `${translateX}px`);
     this.imagenesRef.nativeElement.style.transition = useTransition ? this.transitionStyle : 'none';
     this.imagenesRef.nativeElement.style.transform = `translateX(${translateX}px)`;
   }
+  // Aplica el efecto parallax a cada imagen individualmente
+  private applyParallaxEffects(): void {
+    // Asegurarse de que el componente esté inicializado y los elementos DOM disponibles
+    if (!this.isInitialized || !this.imagenesRef?.nativeElement || !this.contenedorRef?.nativeElement) return;
 
+    const containerRect = this.contenedorRef.nativeElement.getBoundingClientRect();
+    const containerVisibleWidth = containerRect.width;
+    const containerLeft = containerRect.left;
+
+    // Iterar sobre cada contenedor de imagen (.imagen)
+    const imageElements = this.imagenesRef.nativeElement.children;
+
+    for (let i = 0; i < imageElements.length; i++) {
+      const imageElement = imageElements[i] as HTMLElement; // El div .imagen
+      const imgElement = imageElement.querySelector('img');
+      if (!imgElement) continue;
+
+      const imageElementRect = imageElement.getBoundingClientRect(); // Rect del div .imagen
+      const imgWidth = imgElement.offsetWidth; // Ancho real renderizado de la etiqueta <img>
+
+      // Calcular la posición del centro del div .imagen respecto al viewport
+      const imageElementCenterX = imageElementRect.left + imageElementRect.width / 2;
+
+      // Calcular un factor basado en la posición del centro del div .imagen dentro del contenedor visible
+      // Este factor va de 0 (centro del div .imagen en el borde izquierdo del contenedor visible)
+      // a 1 (centro del div .imagen en el borde derecho del contenedor visible).
+      const centerFactor = (imageElementCenterX - containerLeft) / containerVisibleWidth;
+
+      // Clampear el factor al rango [0, 1] para manejar imágenes fuera del área visible
+      const clampedCenterFactor = Math.max(0, Math.min(1, centerFactor));
+
+      // Calcular el porcentaje de translateX deseado (50% en borde izq, 0% en borde der)
+      const translateXPercentage = 50 - clampedCenterFactor * 50;
+
+      // Convertir el porcentaje a píxeles basado en el ancho real de la etiqueta <img>
+      const parallaxOffsetPixels = (translateXPercentage / 100) * imgWidth;
+
+      // Aplicar la transformación a la etiqueta <img>
+      imgElement.style.transform = `translateX(${parallaxOffsetPixels}px)`;
+    }
+  }
   // Obtiene el valor numérico actual de translateX
   private getCurrentTranslateX(): number {
     if (!this.imagenesRef?.nativeElement) return 0;
