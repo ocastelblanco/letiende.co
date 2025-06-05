@@ -78,6 +78,7 @@ export interface ElementoAuditorio {
   titulo: { [key: string]: string };
   descripcion: { [key: string]: string };
   imagen: string;
+  video?: string;
   link?: string;
 }
 export interface Auditorio {
@@ -162,7 +163,7 @@ export class DataService {
     auditorio: () => this.http.get(this.rutaJson + 'auditorio', { responseType: 'json' })
       .subscribe((resp: any) => {
         const auditorio: Auditorio = {
-          imagenes: this.generaElementoAuditorio(resp, 'Imágenes'),
+          imagenes: this.generaElementoAuditorio(resp, 'Imágenes').concat(this.generaElementoAuditorio(resp, 'Videos')),
           especificaciones: this.generaElementoAuditorio(resp, 'Especificaciones'),
         };
         this.auditorio.next(auditorio);
@@ -312,13 +313,14 @@ export class DataService {
     const partes: RegExp = /(https?:\/\/)(.*)/g;
     return url.replace(partes, '$1www.$2');
   }
-  generaElementoAuditorio(resp: string[][], tipo: 'Imágenes' | 'Especificaciones'): ElementoAuditorio[] {
+  generaElementoAuditorio(resp: string[][], tipo: 'Imágenes' | 'Especificaciones' | 'Videos'): ElementoAuditorio[] {
     return resp
       .filter((img: string[]) => img[0] == tipo)
       .map((img: string[]) => {
         return {
           titulo: { es: img[1], en: img[2] },
           descripcion: { es: this.addSaltoLinea(img[3]), en: this.addSaltoLinea(img[4]) },
+          video: '',
           imagen: img[5],
           link: img[6]
         }
