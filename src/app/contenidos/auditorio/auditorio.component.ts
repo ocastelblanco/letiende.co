@@ -133,7 +133,6 @@ export class AuditorioComponent implements OnInit {
         );
       const numFilas: number = Math.floor(this.altoCarrusel / 340); // El alto del carrusel es 320px + 20px de gap
       this.imgsCarrusel = this.distribuirImagenesEnFilas(this.dataAuditorio.imagenes, numFilas);
-      console.log(this.imgsCarrusel);
     }
   }
   distribuirImagenesEnFilas(imagenes: ElementoAuditorio[], numFilas: number): Array<ElementoAuditorio[]> {
