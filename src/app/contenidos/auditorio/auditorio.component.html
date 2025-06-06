@@ -42,9 +42,14 @@
            [id]="'auditorio-' + subVinculo.link">
         <div class="contenido">
           @if (subVinculo.link == 'auditorio'){
-          <div class="carrusel">
+          <div class="carrusel"
+               [style]="'height: ' + altoCarrusel + 'px'">
             <div class="titulo">{{interfaz.titulos.auditorio[idioma]}}</div>
-            <lt-carrusel [imagenes]="dataAuditorio.imagenes" />
+            @for (imagenes of imgsCarrusel; track $index){
+            <div class="contenido-carrusel">
+              <lt-carrusel [imagenes]="imagenes" />
+            </div>
+            }
           </div>
           }
           @if (subVinculo.link == 'especificaciones'){

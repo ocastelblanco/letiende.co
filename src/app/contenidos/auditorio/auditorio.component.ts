@@ -1,6 +1,6 @@
 import { Component, NgZone, OnInit, ViewChild, effect } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Auditorio, DataService } from 'src/app/servicios/data.service';
+import { Auditorio, DataService, ElementoAuditorio } from 'src/app/servicios/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { MatSidenavContainer } from '@angular/material/sidenav';
@@ -64,6 +64,8 @@ export class AuditorioComponent implements OnInit {
   ];
   subPos: number[] = [];
   dataAuditorio: Auditorio | undefined;
+  altoCarrusel: number = 0;
+  imgsCarrusel: Array<ElementoAuditorio[]> = [];
   constructor(
     private data: DataService,
     private breakpoint: BreakpointObserver,
@@ -115,9 +117,43 @@ export class AuditorioComponent implements OnInit {
         if (this.sideNavContainer) {
           clearInterval(int);
           this.iniciaMedidaScroll();
+          this.calculaAltoContenido();
         }
       });
     });
+  }
+  calculaAltoContenido(): void {
+    const contenidoAuditorio: HTMLElement | null = document.querySelector('#auditorio-auditorio > .contenido');
+    if (contenidoAuditorio && !this.altoCarrusel && this.dataAuditorio && this.dataAuditorio.imagenes.length > 0) {
+      const tituloContenidoAuditorio: HTMLElement = document.querySelector('#auditorio-auditorio > .contenido > .carrusel > .titulo') as HTMLElement;
+      this.altoCarrusel = contenidoAuditorio.offsetHeight -
+        (
+          tituloContenidoAuditorio.offsetHeight +
+          parseInt(getComputedStyle(tituloContenidoAuditorio).marginBottom.split('px')[0])
+        );
+      const numFilas: number = Math.floor(this.altoCarrusel / 340); // El alto del carrusel es 320px + 20px de gap
+      this.imgsCarrusel = this.distribuirImagenesEnFilas(this.dataAuditorio.imagenes, numFilas);
+      console.log(this.imgsCarrusel);
+    }
+  }
+  distribuirImagenesEnFilas(imagenes: ElementoAuditorio[], numFilas: number): Array<ElementoAuditorio[]> {
+    if (imagenes.length === 0 || numFilas <= 0) {
+      return [];
+    }
+    if (numFilas > imagenes.length) {
+      numFilas = imagenes.length;
+    }
+    const resultado: Array<ElementoAuditorio[]> = [];
+    const imagenesPorFilaBase = Math.floor(imagenes.length / numFilas);
+    const filasExtra = imagenes.length % numFilas;
+    let indiceInicio = 0;
+    for (let i = 0; i < numFilas; i++) {
+      const imagenesEnFila = i < filasExtra ? imagenesPorFilaBase + 1 : imagenesPorFilaBase;
+      const fila = imagenes.slice(indiceInicio, indiceInicio + imagenesEnFila);
+      resultado.push(fila);
+      indiceInicio += imagenesEnFila;
+    }
+    return resultado;
   }
   iniciaMedidaScroll(): void {
     //const cont: HTMLElement = this.sideNavContainer?.scrollable.getElementRef().nativeElement as HTMLElement;

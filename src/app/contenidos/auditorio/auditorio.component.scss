@@ -36,6 +36,9 @@ $gap: map.get(estilos.$tamanos, gap);
     &:last-of-type {
       min-height: calc(100% + 32px);
     }
+    .contenido-carrusel:not(:last-of-type) {
+      margin-bottom: $gap;
+    }
   }
   &.md,
   &.lg,
