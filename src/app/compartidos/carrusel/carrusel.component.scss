@@ -83,6 +83,19 @@ $transition-duration: 0.4s; // Duración de la animación
             margin: $gap;
           }
         }
+        .icono-video {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: calc(100% - 8px);
+          height: 40px;
+          display: flex;
+          justify-content: flex-end;
+          align-items: flex-start;
+          padding: 8px 8px 0 0;
+          color: white;
+          background: linear-gradient(to bottom, #230c00 0%, #230c00 30%, transparent 100%);
+        }
       }
     }
     .navegacion {

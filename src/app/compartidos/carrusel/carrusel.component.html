@@ -12,6 +12,11 @@
         <div class="titulo">
           <span [innerHTML]="imagen.titulo[idioma]"></span>
         </div>
+        @if (imagen.link != '') {
+        <div class="icono-video">
+          <mat-icon>videocam</mat-icon>
+        </div>
+        }
       </div>
       }
     </div>
