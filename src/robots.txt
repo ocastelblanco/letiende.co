@@ -1,3 +1,0 @@
-user-agent: *
-allow: *
-sitemap: https://letiende.co/sitemap.xml
