@@ -1,0 +1,53 @@
+service: letiende
+
+frameworkVersion: "^4.0.0" # O puedes usar "4.17.0" si quieres fijar esa versión exacta
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-1
+  # memorySize: 1024 # Opcional: ajusta según sea necesario para SSR
+  # timeout: 10 # Opcional: ajusta según sea necesario
+
+# Si usas API Gateway HTTP API (recomendado por costo/rendimiento para muchos casos):
+# provider:
+#   httpApi:
+#     payload: '2.0' # Opcional, default para httpApi
+
+functions:
+  main:
+    handler: dist/letiende.co/server/server.handler # Actualizado al nuevo handler de serverless-express
+    events:
+      - http:
+          method: any
+          path: /
+      - http:
+          method: any
+          path: /{proxy+}
+    # Para HTTP API, los eventos serían:
+    # events:
+    #   - httpApi:
+    #       method: ANY
+    #       path: /
+    #   - httpApi:
+    #       method: ANY
+    #       path: /{proxy+}
+
+package:
+  individually: true
+  patterns:
+    - "!**/*" # 1. Excluir todo primero.
+    - "dist/letiende.co/browser/**" # Incluir los assets del cliente.
+    - "dist/letiende.co/server/**" # Incluir todo el directorio de salida del servidor (server.mjs y cualquier chunk).
+    - "node_modules/@codegenie/serverless-express/**" # Incluir la dependencia serverless-express
+    # - "node_modules/express/**" # Express y sus dependencias. Angular CLI podría ya empaquetarlo.
+    # Si obtienes errores de "Cannot find module 'express'" en Lambda, descomenta esta línea
+    # y considera añadir otras dependencias directas que tu app Express pueda usar.
+
+    # Nota sobre node_modules:
+    # El build de Angular (`ng build`) para el servidor (server.mjs) es bastante bueno empaquetando
+    # dependencias. Si después de incluir '@codegenie/serverless-express' aún faltan módulos en Lambda,
+    # la opción más robusta (aunque genera un paquete más grande) es:
+    # - 'node_modules/**'
+    # - '!node_modules/aws-sdk/**'        # aws-sdk ya está disponible en el runtime de Lambda.
+    # - '!node_modules/@aws-sdk/**'       # También excluir la v3 del SDK de AWS.

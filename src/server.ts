@@ -6,6 +6,7 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
+import serverlessExpress from '@codegenie/serverless-express';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -66,3 +67,9 @@ if (isMainModule(import.meta.url)) {
  * Request handler used by the Angular CLI (for dev-server and during build) or Firebase Cloud Functions.
  */
 export const reqHandler = createNodeRequestHandler(app);
+
+/**
+ * Handler for AWS Lambda using @codegenie/serverless-express.
+ * This is the entry point for your Lambda function.
+ */
+export const handler = serverlessExpress({ app });
