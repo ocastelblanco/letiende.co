@@ -5,7 +5,7 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
-import { join } from 'node:path';
+import { join, posix as posixPath } from 'node:path';
 import serverlessExpress from '@codegenie/serverless-express';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
@@ -40,11 +40,29 @@ app.use(
  * Handle all other requests by rendering the Angular application.
  */
 app.use((req, res, next) => {
+  const appBaseHref = process.env['APP_BASE_HREF'] || '/';
+  console.log(`[SERVER.TS] Request Original URL: ${req.originalUrl}, Path: ${req.path}, BaseURL: ${req.baseUrl}`);
+  console.log(`[SERVER.TS] APP_BASE_HREF from env: ${appBaseHref}`);
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then((response) => {
+      if (response && (response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308)) {
+        let location = response.headers.get('Location');
+        console.log(`[SERVER.TS] Original Angular SSR Redirect: Status=${response.status}, Location=${location}, APP_BASE_HREF=${appBaseHref}`);
+
+        if (location && location.startsWith('/') && appBaseHref !== '/') {
+          // Solo ajusta si la ubicación es una ruta absoluta (comienza con '/')
+          // y APP_BASE_HREF no es la raíz ('/'),
+          // y la ubicación no comienza ya con APP_BASE_HREF.
+          if (!location.startsWith(appBaseHref)) {
+            const newLocation = posixPath.join(appBaseHref, location);
+            console.log(`[SERVER.TS] Adjusting Redirect Location from "${location}" to: "${newLocation}"`);
+            response.headers.set('Location', newLocation);
+          }
+        }
+      }
+      return response ? writeResponseToNodeResponse(response, res) : next();
+    })
     .catch(next);
 });
 

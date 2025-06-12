@@ -9,7 +9,7 @@
     "test": "ng test",
     "serve:ssr:letiende.co": "node dist/letiende.co/server/server.mjs",
     "build:ssr": "ng build --configuration production",
-    "deploy": "ng build:ssr && sls deploy"
+    "deploy": "npm run build:ssr && sls deploy"
   },
   "private": true,
   "dependencies": {

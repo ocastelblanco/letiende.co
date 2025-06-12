@@ -2,10 +2,21 @@ service: letiende
 
 frameworkVersion: "^4.0.0" # O puedes usar "4.17.0" si quieres fijar esa versión exacta
 
+custom:
+  stageSpecificBaseHref:
+    prod: "/" # Valor para el stage 'prod'
+  # Fallback para cualquier otro stage (ej. dev, staging, etc.)
+  defaultBaseHref: "/${sls:stage}/"
+
 provider:
   name: aws
   runtime: nodejs22.x
   region: us-east-1
+  stage: ${opt:stage, 'dev'} # Define el stage, por defecto 'dev'
+  environment:
+    PROVIDER_STAGE: ${sls:stage} # Expone el stage actual a Lambda
+    # APP_BASE_HREF: Define el base path público de la aplicación.
+    APP_BASE_HREF: "${self:custom.stageSpecificBaseHref.${sls:stage}, self:custom.defaultBaseHref}"
   # memorySize: 1024 # Opcional: ajusta según sea necesario para SSR
   # timeout: 10 # Opcional: ajusta según sea necesario
 
