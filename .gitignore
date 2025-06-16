@@ -43,3 +43,7 @@ Thumbs.db
 
 # Serverless Framework
 .serverless/
+# Firebase
+.firebase
+*-debug.log
+.runtimeconfig.json

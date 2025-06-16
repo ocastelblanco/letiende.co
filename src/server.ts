@@ -45,23 +45,59 @@ app.use((req, res, next) => {
   console.log(`[SERVER.TS] APP_BASE_HREF from env: ${appBaseHref}`);
   angularApp
     .handle(req)
-    .then((response) => {
-      if (response && (response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308)) {
-        let location = response.headers.get('Location');
-        console.log(`[SERVER.TS] Original Angular SSR Redirect: Status=${response.status}, Location=${location}, APP_BASE_HREF=${appBaseHref}`);
+    .then(async (originalResponse: Response | null) => { // Hacemos el callback asíncrono
+      if (!originalResponse) {
+        // Si no hay respuesta de Angular, pasamos al siguiente middleware de Express (ej. 404)
+        return next();
+      }
 
+      // Esta será la respuesta que finalmente enviaremos.
+      // Comienza como la respuesta original, pero podría ser reemplazada si el cuerpo se lee/modifica.
+      let responseToSend: Response = originalResponse;
+
+      if (originalResponse.status === 301 || originalResponse.status === 302 || originalResponse.status === 307 || originalResponse.status === 308) {
+        let location: string | null = originalResponse.headers.get('Location');
+        console.log(`[SERVER.TS] Original Angular SSR Redirect: Status=${originalResponse.status}, Location=${location}, APP_BASE_HREF=${appBaseHref}`);
         if (location && location.startsWith('/') && appBaseHref !== '/') {
-          // Solo ajusta si la ubicación es una ruta absoluta (comienza con '/')
-          // y APP_BASE_HREF no es la raíz ('/'),
-          // y la ubicación no comienza ya con APP_BASE_HREF.
           if (!location.startsWith(appBaseHref)) {
-            const newLocation = posixPath.join(appBaseHref, location);
+            const newLocation: string = posixPath.join(appBaseHref, location);
             console.log(`[SERVER.TS] Adjusting Redirect Location from "${location}" to: "${newLocation}"`);
-            response.headers.set('Location', newLocation);
+            // Las cabeceras SÍ se pueden modificar en el objeto Response original.
+            originalResponse.headers.set('Location', newLocation);
           }
         }
+        // responseToSend sigue siendo originalResponse, que ahora tiene la cabecera Location modificada.
+      } else if (originalResponse.body && originalResponse.headers.get('content-type')?.includes('text/html')) {
+        // Asegurar que la etiqueta <base href> sea correcta en el HTML renderizado
+        const baseHrefFromEnv = process.env['APP_BASE_HREF'] || '/';
+
+        if (baseHrefFromEnv !== '/') {
+          // Leer el cuerpo consume el stream. Debemos crear una nueva Response después.
+          const htmlContent: string = await originalResponse.text();
+          let modifiedHtmlContent: string = htmlContent; // Asumimos que no hay modificación inicialmente
+
+          const baseHrefRegex: RegExp = /<base\s+href="([^"]*)"\s*\/?>/i;
+          const match: RegExpMatchArray | null = htmlContent.match(baseHrefRegex);
+          const currentBaseHrefInHtml: string | null = match ? match[1] : null;
+
+          if (currentBaseHrefInHtml !== baseHrefFromEnv) {
+            if (match) {
+              modifiedHtmlContent = htmlContent.replace(baseHrefRegex, `<base href="${baseHrefFromEnv}">`);
+              console.log(`[SERVER.TS] Replaced <base href> in HTML from "${currentBaseHrefInHtml}" to "${baseHrefFromEnv}"`);
+            } else {
+              modifiedHtmlContent = htmlContent.replace(/(<head[^>]*>)/i, `$1\n  <base href="${baseHrefFromEnv}">`);
+              console.log(`[SERVER.TS] Added <base href="${baseHrefFromEnv}"> to HTML`);
+            }
+          }
+          // Creamos una nueva Response porque el stream del cuerpo de originalResponse se consumió con .text()
+          responseToSend = new Response(modifiedHtmlContent, {
+            status: originalResponse.status,
+            statusText: originalResponse.statusText,
+            headers: originalResponse.headers // Las cabeceras se clonan/copian
+          });
+        }
       }
-      return response ? writeResponseToNodeResponse(response, res) : next();
+      return writeResponseToNodeResponse(responseToSend, res);
     })
     .catch(next);
 });
