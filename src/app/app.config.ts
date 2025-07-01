@@ -16,6 +16,9 @@ import { getStorage, provideStorage } from '@angular/fire/storage';
 import { Cloudinary } from '@cloudinary/url-gen'; // Importa Cloudinary para crear la instancia y como token de inyección
 import { CloudinaryConfig } from '@servicios/cloudinary-config';
 import { FirebaseConfig } from '@servicios/firebase-config';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeng/themes/aura';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -42,8 +45,7 @@ export const appConfig: ApplicationConfig = {
     ScreenTrackingService,
     UserTrackingService,
     provideFirestore(() => getFirestore()),
-    provideStorage(() => getStorage())
-    ,
+    provideStorage(() => getStorage()),
     // Provee la instancia de Cloudinary configurada globalmente.
     // Esto permite inyectar 'Cloudinary' en cualquier componente/servicio.
     {
@@ -57,6 +59,12 @@ export const appConfig: ApplicationConfig = {
         return new Cloudinary({ cloud: { cloudName: cloudinaryConfigService.cloudName } });
       },
       deps: [CloudinaryConfig] // Declara la dependencia para la función de fábrica
-    }
+    },
+    provideAnimationsAsync(),
+    providePrimeNG({
+      theme: {
+        preset: Aura
+      }
+    }),
   ]
 };

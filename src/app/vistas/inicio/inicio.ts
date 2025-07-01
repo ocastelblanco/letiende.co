@@ -10,12 +10,14 @@ import { quality } from '@cloudinary/url-gen/actions/delivery';
 import { auto as autoQuality } from '@cloudinary/url-gen/qualifiers/quality';
 import { format } from '@cloudinary/url-gen/actions/delivery';
 import { auto as autoFormat } from '@cloudinary/url-gen/qualifiers/format';
+import { PrimengModule } from '@modulos/primeng/primeng-module';
 
 @Component({
   selector: 'lt-inicio',
   imports: [
     IconosModule,
     CloudinaryModule,
+    PrimengModule,
   ],
   templateUrl: './inicio.html',
   styleUrl: './inicio.scss'
@@ -25,7 +27,6 @@ export class Inicio implements OnInit {
   private cdr: ChangeDetectorRef = inject(ChangeDetectorRef); // Inyectar ChangeDetectorRef para forzar la detección de cambios
   urlLogo: string | undefined;
   private cloudinaryConfig: CloudinaryConfig = inject(CloudinaryConfig);
-  // cloudinaryImageUrl: string | undefined; // Eliminamos esta propiedad, ahora usaremos el objeto SDK
   img: CloudinaryImage | undefined; // Objeto de imagen del SDK de Cloudinary
 
   // Inyectamos la instancia de Cloudinary configurada globalmente
