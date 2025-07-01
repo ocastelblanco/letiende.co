@@ -43,7 +43,11 @@ Thumbs.db
 
 # Serverless Framework
 .serverless/
+
 # Firebase
 .firebase
 *-debug.log
 .runtimeconfig.json
+
+# Archivos de secretos locales
+setup-secrets.sh

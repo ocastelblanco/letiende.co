@@ -4,26 +4,51 @@ import {
   isMainModule,
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
-import express from 'express';
+import express, { Request, Response as ExpressResponse } from 'express';
+import cloudinary from 'cloudinary';
 import { join, posix as posixPath } from 'node:path';
 import serverlessExpress from '@codegenie/serverless-express';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
+// La inyección de providers específicos del servidor se realiza en `app.config.server.ts`.
 const angularApp = new AngularNodeAppEngine();
 
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
+ * API Endpoints. Deben definirse ANTES del handler de Angular.
  */
+
+// Middleware para parsear JSON en los bodies de las peticiones API
+app.use('/api', express.json());
+
+// Configura el SDK de Cloudinary en el servidor usando las variables de entorno seguras.
+if (
+  process.env['CLOUDINARY_CLOUD_NAME'] &&
+  process.env['CLOUDINARY_API_KEY'] &&
+  process.env['CLOUDINARY_API_SECRET']
+) {
+  cloudinary.v2.config({
+    cloud_name: process.env['CLOUDINARY_CLOUD_NAME'],
+    api_key: process.env['CLOUDINARY_API_KEY'],
+    api_secret: process.env['CLOUDINARY_API_SECRET'],
+    secure: true,
+  });
+  console.log('[SERVER.TS] Cloudinary SDK configurado.');
+
+  // Endpoint para generar una firma segura para las subidas desde el cliente.
+  app.post('/api/cloudinary/signature', (req: Request, res: ExpressResponse) => {
+    const paramsToSign = req.body.params_to_sign;
+    if (!paramsToSign) {
+      res.status(400).json({ error: 'Faltan parámetros para firmar (params_to_sign).' });
+      return;
+    }
+    const signature = cloudinary.v2.utils.api_sign_request(paramsToSign, process.env['CLOUDINARY_API_SECRET']!);
+    res.json({ signature });
+  });
+} else {
+  console.warn('[SERVER.TS] Faltan variables de entorno de Cloudinary. El endpoint de firma no estará disponible.');
+}
 
 /**
  * Serve static files from /browser
@@ -99,7 +124,11 @@ app.use((req, res, next) => {
       }
       return writeResponseToNodeResponse(responseToSend, res);
     })
-    .catch(next);
+    .catch(err => {
+      console.error('!!! ERROR DURING SSR HANDLING !!!');
+      console.error(err);
+      next(err);
+    });
 });
 
 /**

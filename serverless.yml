@@ -17,6 +17,19 @@ provider:
     PROVIDER_STAGE: ${sls:stage} # Expone el stage actual a Lambda
     # APP_BASE_HREF: Define el base path público de la aplicación.
     APP_BASE_HREF: "${self:custom.stageSpecificBaseHref.${sls:stage}, self:custom.defaultBaseHref}"
+    # Referencias a secretos en AWS SSM Parameter Store.
+    # Serverless Framework obtendrá estos valores de forma segura durante el despliegue.
+    # Asegúrate de que los parámetros existan en SSM en la región correcta.
+    CLOUDINARY_CLOUD_NAME: ${ssm:/letiende/${sls:stage}/CLOUDINARY_CLOUD_NAME}
+    CLOUDINARY_API_KEY: ${ssm:/letiende/${sls:stage}/CLOUDINARY_API_KEY}
+    CLOUDINARY_API_SECRET: ${ssm:/letiende/${sls:stage}/CLOUDINARY_API_SECRET}
+    FIREBASE_API_KEY: ${ssm:/letiende/${sls:stage}/FIREBASE_API_KEY}
+    FIREBASE_APP_ID: ${ssm:/letiende/${sls:stage}/FIREBASE_APP_ID}
+    FIREBASE_AUTH_DOMAIN: ${ssm:/letiende/${sls:stage}/FIREBASE_AUTH_DOMAIN}
+    FIREBASE_MEASUREMENT_ID: ${ssm:/letiende/${sls:stage}/FIREBASE_MEASUREMENT_ID}
+    FIREBASE_MESSAGING_SENDER_ID: ${ssm:/letiende/${sls:stage}/FIREBASE_MESSAGING_SENDER_ID}
+    FIREBASE_PROJECT_ID: ${ssm:/letiende/${sls:stage}/FIREBASE_PROJECT_ID}
+    FIREBASE_STORAGE_BUCKET: ${ssm:/letiende/${sls:stage}/FIREBASE_STORAGE_BUCKET}
   # memorySize: 1024 # Opcional: ajusta según sea necesario para SSR
   # timeout: 10 # Opcional: ajusta según sea necesario
 
