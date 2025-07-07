@@ -8,7 +8,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { FirebaseOptions, initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getAnalytics, provideAnalytics, ScreenTrackingService, UserTrackingService } from '@angular/fire/analytics';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
@@ -20,6 +20,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 
+import { localSecrets } from '../secrets';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -29,8 +31,20 @@ export const appConfig: ApplicationConfig = {
     // Usamos una función de fábrica para inyectar FirebaseConfigService
     // e inicializar Firebase con las opciones obtenidas de él.
     provideFirebaseApp(() => {
-      const firebaseConfigService = inject(FirebaseConfig);
+      const firebaseConfigService: FirebaseConfig = inject(FirebaseConfig);
       if (!firebaseConfigService.firebaseOptions) {
+        if (localSecrets) {
+          const options: FirebaseOptions = {
+            projectId: localSecrets.FIREBASE_PROJECT_ID,
+            appId: localSecrets.FIREBASE_APP_ID,
+            storageBucket: localSecrets.FIREBASE_STORAGE_BUCKET,
+            apiKey: localSecrets.FIREBASE_API_KEY,
+            authDomain: localSecrets.FIREBASE_AUTH_DOMAIN,
+            messagingSenderId: localSecrets.FIREBASE_MESSAGING_SENDER_ID,
+            measurementId: localSecrets.FIREBASE_MEASUREMENT_ID,
+          };
+          return initializeApp(options);
+        }
         // Manejar el caso en que las opciones de Firebase no estén disponibles.
         // Esto podría indicar una configuración incorrecta de las variables de entorno.
         console.error('Firebase configuration options are not available. Check environment variables.');
@@ -51,10 +65,13 @@ export const appConfig: ApplicationConfig = {
     {
       provide: Cloudinary,
       useFactory: () => {
-        const cloudinaryConfigService = inject(CloudinaryConfig);
+        let cloudinaryConfigService: CloudinaryConfig = inject(CloudinaryConfig);
         if (!cloudinaryConfigService.cloudName) {
+          if (localSecrets) {
+            return new Cloudinary({ cloud: { cloudName: localSecrets.CLOUDINARY_CLOUD_NAME } });
+          }
           console.error('Cloudinary Cloud Name no está disponible. El SDK de Cloudinary podría no funcionar correctamente.');
-          return new Cloudinary({ cloud: { cloudName: 'dummy_cloud_name' } }); // Fallback o manejo de error
+          return new Cloudinary({ cloud: { cloudName: 'letiende' } }); // Fallback o manejo de error
         }
         return new Cloudinary({ cloud: { cloudName: cloudinaryConfigService.cloudName } });
       },
