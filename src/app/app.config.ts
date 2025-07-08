@@ -18,9 +18,15 @@ import { CloudinaryConfig } from '@servicios/cloudinary-config';
 import { FirebaseConfig } from '@servicios/firebase-config';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeng/themes/aura';
+import { LTPreset } from './lt-tema';
 
-import { localSecrets } from '../secrets';
+
+let localSecrets: any | undefined = undefined;
+try {
+  localSecrets = require('../secrets').localSecrets;
+} catch (e) {
+  // No existe localSecrets porque este es un entorno de producción
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -80,8 +86,11 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {
-        preset: Aura
-      }
+        preset: LTPreset,
+        options: {
+          prefix: 'lt'
+        },
+      },
     }),
   ]
 };
