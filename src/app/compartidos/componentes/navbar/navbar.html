@@ -1,0 +1,36 @@
+<div class="navbar">
+  <div class="header">
+    <div class="boton-menu-lateral">
+      <p-button icon="pi pi-bars" />
+    </div>
+    <div ltFirebaseStorageImage="mono_naranja"
+         cssClass="logo-imagen"
+         class="logo">
+    </div>
+  </div>
+  <div class="menubar">
+    <p-menubar [model]="menuItems"
+               class="menu-bar">
+      <ng-template #item
+                   let-item>
+        <a pRipple
+           [routerLink]="item.routerLink"
+           routerLinkActive="active"
+           class="p-menubar-item-link menu-link">
+          @if (item.tipoIcono == 'primeng') {
+          <i class="pi"
+             [ngClass]="item.icon">
+          </i>
+          }
+          @if (item.tipoIcono == 'material_symbol') {
+          <span class="material-symbols-outlined"
+                [innerHTML]="item.icon">
+          </span>
+          }
+          @if (item.tipoIcono == 'fontawesome') {}
+          <span [innerHTML]="item.label"></span>
+        </a>
+      </ng-template>
+    </p-menubar>
+  </div>
+</div>

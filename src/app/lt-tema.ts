@@ -4,12 +4,20 @@ import Aura from '@primeng/themes/aura';
 export const LTPreset: any = definePreset(Aura, {
   primitive: {
     borderRadius: {
-      full: '27px'
+      menubar: '27px',
+      itemMenubar: '20px',
+    },
+    backdropFilter: {
+      menubar: 'blur(10px)',
     }
   },
   components: {
     menubar: {
-      borderRadius: '{borderRadius.full}'
+      borderRadius: '{borderRadius.menubar}',
+      backdropFilter: '{backdropFilter.menubar}',
+      item: {
+        borderRadius: '{borderRadius.itemMenubar}'
+      }
     },
   },
   semantic: {

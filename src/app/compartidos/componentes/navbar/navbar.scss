@@ -1,0 +1,34 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    .logo {
+      width: var(--lt-button-icon-only-width);
+      aspect-ratio: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .logo-imagen {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+    }
+  }
+  .menubar {
+    flex: auto 1 1;
+    .menu-bar {
+      backdrop-filter: var(--lt-menubar-backdrop-filter);
+      .menu-link {
+        border-radius: var(--lt-menubar-item-border-radius);
+        &.active {
+          background-color: var(--lt-menubar-item-active-background);
+        }
+      }
+    }
+  }
+}

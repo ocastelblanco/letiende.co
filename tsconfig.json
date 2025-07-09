@@ -21,6 +21,9 @@
       "@servicios/*": [
         "./src/app/compartidos/servicios/*"
       ],
+      "@directivas/*": [
+        "./src/app/compartidos/directivas/*"
+      ],
       "@componentes/*": [
         "./src/app/compartidos/componentes/*"
       ],
