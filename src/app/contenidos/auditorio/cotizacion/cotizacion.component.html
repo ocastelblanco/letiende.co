@@ -3,7 +3,7 @@
 </h2>
 <mat-dialog-content class="contenido">
   <div class="descripcion">
-    <span [innerHTML]="interfaz.descripcion[idioma]"></span>
+    <span [innerHTML]="interfaz.descripcion[idioma] | safe: 'html'"></span>
   </div>
   <div class="mas-info">
     <span [innerHTML]="interfaz.masInfo[idioma]"></span>

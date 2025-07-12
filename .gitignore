@@ -45,3 +45,10 @@ Thumbs.db
 .firebase
 *-debug.log
 .runtimeconfig.json
+
+# Secretos
+secrets.ts
+setup-secrets.sh
+
+# Serverless
+.serverless
