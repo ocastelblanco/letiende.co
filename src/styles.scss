@@ -1,13 +1,107 @@
-/* You can add global styles to this file, and also import other style files */
+@use "sass:color";
+
 @import url("https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.min.css");
 @import url("https://fonts.cdnfonts.com/css/angellya");
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;800&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Material+Icons");
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined");
-html {
+
+$surface-light-background: rgb(255, 239, 209);
+$surface-dark-background: rgb(24, 16, 0);
+$glass-bg: rgba($surface-light-background, 0.15);
+$glass-border: rgba($surface-light-background, 0.3);
+$glass-shadow: rgba($surface-dark-background, 0.1);
+$glass-hover-bg: rgba($surface-light-background, 0.25);
+$glass-dark-bg: rgba($surface-light-background, 0.15);
+$glass-dark-border: rgba($surface-light-background, 0.3);
+$glass-dark-shadow: rgba($surface-dark-background, 0.1);
+$glass-dark-hover-bg: rgba($surface-light-background, 0.25);
+/* styles.scss */
+
+body {
+  background: url("https://unocasa.com/cdn/shop/articles/types_of_coffee_91a828a5-7ff3-427d-acaa-c8b7289c9e5a_1024x.jpg?v=1621261041");
   font-family: "Poppins", sans-serif;
-  .titulo-principal {
-    font-family: "Angellya", sans-serif;
-    font-weight: 400;
+  &.oscuro {
+    --lt-glass-bg: #{$glass-dark-bg};
+    --lt-glass-border: #{$glass-dark-border};
+    --lt-glass-shadow: #{$glass-dark-shadow};
+    --lt-glass-hover-bg: #{$glass-dark-hover-bg};
   }
+}
+.titulo-principal {
+  font-family: "Angellya", sans-serif;
+  font-weight: 400;
+}
+/* 1. Define colores base (sobre tus tokens existentes) */
+:root {
+  --lt-glass-bg: #{$glass-bg};
+  --lt-glass-border: #{$glass-border};
+  --lt-glass-shadow: #{$glass-shadow};
+  --lt-glass-hover-bg: #{$glass-hover-bg};
+}
+
+/* 2. Glass panel base (para p-panel, p-card, etc.) */
+.glass-panel,
+.p-panel,
+.p-card {
+  background: var(--lt-glass-bg);
+  border: 1px solid var(--lt-glass-border);
+  border-radius: 1rem;
+  box-shadow: 0 4px 30px var(--lt-glass-shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 3. Glass navigation (Barra superior, Menubar, sidebar) */
+.p-menubar,
+.nav.glass-panel {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* 4. Menubar items (botones y links dentro del nav) */
+.p-menubar .p-menuitem > a,
+.p-menubar .p-menuitem > button,
+.p-menubar .p-menubar-item-link {
+  background: var(--lt-glass-bg);
+  border: 1px solid var(--lt-glass-border);
+  transition: background 0.3s;
+}
+
+/* Hover/focus */
+.p-menubar .p-menuitem > a:hover,
+.p-menubar .p-menuitem > button:hover,
+.p-menubar .p-menuitem > a:focus,
+.p-menubar .p-menuitem > button:focus,
+.p-menubar .p-menubar-item-link:hover,
+.p-menubar .p-menubar-item-link:focus {
+  background: var(--lt-glass-hover-bg) !important;
+}
+
+/* 5. Glass buttons (p-button) */
+.p-button.p-button-secondary,
+.p-button.p-button {
+  background: var(--lt-glass-bg) !important;
+  border: 1px solid var(--lt-glass-border);
+  border-radius: 0.75rem !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.p-button.p-button-secondary:hover,
+.p-button.p-button:hover {
+  background: var(--lt-glass-hover-bg) !important;
+}
+
+/* 6. Panel headers */
+.p-panel .p-panel-header {
+  background: transparent;
+}
+
+/* 7. Deep selectors útiles */
+:host ::ng-deep .p-menubar,
+:host ::ng-deep .p-panel,
+:host ::ng-deep .p-card {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }

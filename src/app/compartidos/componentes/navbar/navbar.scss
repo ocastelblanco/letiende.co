@@ -1,3 +1,6 @@
+@use "sass:color";
+@use "../../../../styles.scss" as estilos;
+$active-bg: rgba(estilos.$surface-light-background, 0.75);
 .navbar {
   display: flex;
   align-items: center;
@@ -26,7 +29,8 @@
       .menu-link {
         border-radius: var(--lt-menubar-item-border-radius);
         &.active {
-          background-color: var(--lt-menubar-item-active-background);
+          //background-color: var(--lt-menubar-item-active-background);
+          background-color: $active-bg;
         }
       }
     }

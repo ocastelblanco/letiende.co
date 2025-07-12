@@ -1,3 +1,4 @@
+import { Background } from '@cloudinary/url-gen/qualifiers';
 import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 
@@ -7,17 +8,19 @@ export const LTPreset: any = definePreset(Aura, {
       menubar: '27px',
       itemMenubar: '20px',
     },
-    backdropFilter: {
-      menubar: 'blur(10px)',
-    }
+    surface0Rgb: '255, 239, 209',
+    surface900Rgb: '24, 16, 0',
   },
   components: {
     menubar: {
+      background: 'rgba({surface0Rgb}, 0.15)',
       borderRadius: '{borderRadius.menubar}',
-      backdropFilter: '{backdropFilter.menubar}',
+      borderColor: 'rgba({surface900Rgb}, 0.3)',
       item: {
-        borderRadius: '{borderRadius.itemMenubar}'
-      }
+        borderRadius: '{borderRadius.itemMenubar}',
+        background: 'rgba({surface0Rgb}, 0.15)',
+        borderColor: 'rgba({surface900Rgb}, 0.3)',
+      },
     },
   },
   semantic: {
