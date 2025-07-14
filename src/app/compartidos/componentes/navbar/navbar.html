@@ -1,6 +1,8 @@
-<div class="navbar">
+<div class="navbar"
+     [ngClass]="bp()">
   <div class="header">
-    <div ltFirebaseStorageImage="mono_naranja"
+    <div #logoLT
+         [ltFirebaseStorageImage]="logo()"
          cssClass="logo-imagen"
          class="logo">
     </div>

@@ -1,0 +1,20 @@
+$light-surface: rgb(255, 239, 209);
+$dark-surface: rgb(24, 16, 0);
+$primary-light-surface: rgb(110, 249, 226);
+$primary-dark-surface: rgb(0, 55, 48);
+
+$light-glass-settings: (
+  bg: $light-surface,
+  hover: $light-surface,
+  border: $light-surface,
+  shadow: $dark-surface,
+  primary-bg: $primary-light-surface
+);
+
+$dark-glass-settings: (
+  bg: $dark-surface,
+  hover: $dark-surface,
+  border: $dark-surface,
+  shadow: $dark-surface,
+  primary-bg: $primary-dark-surface
+);

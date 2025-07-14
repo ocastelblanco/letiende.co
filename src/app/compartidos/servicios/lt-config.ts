@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, WritableSignal } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 
 export interface NavbarItem extends MenuItem {
@@ -13,4 +13,6 @@ export class LtConfig {
     { label: 'Inicio', icon: 'pi-home', tipoIcono: 'primeng', routerLink: '/inicio', },
     { label: 'Menú', icon: 'menu_book_2', tipoIcono: 'material_symbol', routerLink: '/menu', },
   ];
+  idioma: WritableSignal<string> = signal('es');
+  modoTema: WritableSignal<string> = signal('light');
 }

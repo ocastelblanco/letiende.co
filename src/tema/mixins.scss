@@ -1,0 +1,39 @@
+@use "sass:map";
+@use "sass:color";
+
+@mixin define-glass-vars($map) {
+  --lt-glass-bg: #{map.get($map, bg)};
+  --lt-glass-hover-bg: #{map.get($map, hover)};
+  --lt-glass-border: #{map.get($map, border)};
+  --lt-glass-shadow: #{map.get($map, shadow)};
+  --lt-glass-active-bg: #{map.get($map, primary-bg)};
+}
+
+@mixin glass-box($blur, $shadow-opacity, $background-opacity) {
+  box-shadow: 0 4px 30px rgba(var(--lt-glass-shadow), $shadow-opacity);
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+  // Estilos que se "pisan" en los componentes nativos de PrimeNG, pero que se aplican a otros componentes personalizados
+  background: rgba(var(--lt-glass-bg), $background-opacity);
+  border: 1px solid var(--lt-glass-border);
+}
+
+@mixin glass-soft {
+  @include glass-box(6px, 0.05, 0.1);
+}
+
+@mixin glass-frosted {
+  @include glass-box(12px, 0.1, 0.25);
+}
+
+@mixin glass-heavy {
+  @include glass-box(20px, 0.2, 0.35);
+}
+
+@mixin glass-thin {
+  @include glass-box(3px, 0.025, 0.05);
+}
+
+@mixin glass-flat {
+  @include glass-box(0px, 0, 0.15); // sin blur
+}

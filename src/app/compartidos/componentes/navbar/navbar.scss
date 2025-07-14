@@ -1,6 +1,6 @@
 @use "sass:color";
-@use "../../../../styles.scss" as estilos;
-$active-bg: rgba(estilos.$surface-light-background, 0.75);
+@use "../../../../tema/mixins.scss";
+
 .navbar {
   display: flex;
   align-items: center;
@@ -10,28 +10,45 @@ $active-bg: rgba(estilos.$surface-light-background, 0.75);
     align-items: center;
     gap: 4px;
     .logo {
-      width: var(--lt-button-icon-only-width);
-      aspect-ratio: 1;
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 8px;
       .logo-imagen {
         width: 100%;
         height: 100%;
         object-fit: contain;
+        &.loading {
+          width: 48px;
+          height: 48px;
+        }
       }
     }
   }
   .menubar {
     flex: auto 1 1;
-    .menu-bar {
-      backdrop-filter: var(--lt-menubar-backdrop-filter);
-      .menu-link {
-        border-radius: var(--lt-menubar-item-border-radius);
-        &.active {
-          //background-color: var(--lt-menubar-item-active-background);
-          background-color: $active-bg;
-        }
+  }
+  &.xs,
+  &.sm {
+    .header {
+      .logo {
+        @include mixins.glass-heavy;
+        width: var(--lt-button-icon-only-width);
+        aspect-ratio: 1;
+        border-radius: var(--lt-button-rounded-border-radius);
+      }
+    }
+  }
+  &.md,
+  &.lg,
+  &.xl {
+    .header {
+      .logo {
+        @include mixins.glass-heavy;
+        width: auto;
+        height: 54px;
+        aspect-ratio: 25/11;
+        border-radius: var(--lt-menubar-border-radius);
       }
     }
   }

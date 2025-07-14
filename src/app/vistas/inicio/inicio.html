@@ -17,4 +17,5 @@
 	</advanced-image>
 	}
 </div>
-<p-button label="Esto es un botón" />
+<p-button [label]="'Modo: ' + modoTema"
+					(onClick)="cambiarTema()" />

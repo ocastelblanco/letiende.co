@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, effect } from '@angular/core';
 import { IconosModule } from '@modulos/iconos/iconos-module';
 import { CloudinaryModule } from '@cloudinary/ng';
 import { CloudinaryImage } from '@cloudinary/url-gen';
@@ -10,6 +10,7 @@ import { format } from '@cloudinary/url-gen/actions/delivery';
 import { auto as autoFormat } from '@cloudinary/url-gen/qualifiers/format';
 import { PrimengModule } from '@modulos/primeng/primeng-module';
 import { FirebaseStorageImage } from '@directivas/firebase-storage-image';
+import { LtConfig } from '@servicios/lt-config';
 
 @Component({
   selector: 'lt-inicio',
@@ -28,7 +29,11 @@ export class Inicio implements OnInit {
 
   // Inyectamos la instancia de Cloudinary configurada globalmente
   private cld: Cloudinary = inject(Cloudinary);
-
+  private config: LtConfig = inject(LtConfig);
+  modoTema: string = 'light';
+  constructor() {
+    effect(() => this.modoTema = this.config.modoTema()); // Efecto para reaccionar a cambios en el modo de tema
+  }
   async ngOnInit(): Promise<void> {
     try {
       // Lógica para cargar la imagen de Cloudinary usando el SDK.
@@ -46,5 +51,10 @@ export class Inicio implements OnInit {
       console.error("Error al obtener la URL del logo:", error);
       // Opcionalmente, puedes asignar una URL de fallback o mostrar un mensaje de error
     }
+  }
+  cambiarTema(): void {
+    const element: HTMLElement = document.querySelector('html') as HTMLElement;
+    element.classList.toggle('tema-oscuro');
+    this.config.modoTema.set(this.modoTema === 'light' ? 'dark' : 'light'); // Cambiar el modo de tema
   }
 }

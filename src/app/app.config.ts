@@ -18,7 +18,7 @@ import { CloudinaryConfig } from '@servicios/cloudinary-config';
 import { FirebaseConfig } from '@servicios/firebase-config';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
-import { LTPreset } from './lt-tema';
+import { LTPreset } from '../tema/lt-tema';
 
 
 let localSecrets: any | undefined = undefined;
@@ -88,7 +88,8 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: LTPreset,
         options: {
-          prefix: 'lt'
+          prefix: 'lt',
+          darkModeSelector: '.tema-oscuro',
         },
       },
     }),
