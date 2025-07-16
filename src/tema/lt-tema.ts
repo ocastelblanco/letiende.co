@@ -1,6 +1,8 @@
 import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
+import { $dt } from '@primeng/themes';
 
+const dt = $dt;
 type glassOpacityType = 'soft' | 'thin' | 'flat' | 'frosted' | 'heavy' | 'hard';
 
 const glassOpacity: { [key in glassOpacityType]: string } = {
@@ -116,6 +118,35 @@ export const LTPreset: any = definePreset(Aura, {
           },
         },
       },
+      css: ({ dt }: any) => `
+        .p-button-idioma {
+          width: var(--lt-button-icon-only-width);
+          height:var(--lt-button-icon-only-width);
+        }
+          .p-button-idioma img {
+            height: var(--lt-button-icon-only-width);
+          }
+      `,
+    },
+    menu: {
+      colorScheme: {
+        light: {
+          background: '{lightPanelSurface}',
+        },
+        dark: {
+          background: '{darkPanelSurface}',
+        },
+      },
+      extend: {
+        idioma: {
+          minWidth: 'fit-content',
+        },
+      },
+      css: ({ dt }: any) => `
+        .p-menu-idioma {
+          min-width: ${dt('menu.idioma.minWidth')};
+        }
+      `,
     },
   },
   semantic: semantic,

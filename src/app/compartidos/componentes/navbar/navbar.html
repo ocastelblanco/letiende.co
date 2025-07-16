@@ -32,4 +32,33 @@
       </ng-template>
     </p-menubar>
   </div>
+  <div class="estilos">
+    <p-button [icon]="'pi '+ iconoTema()"
+              (onClick)="cambiarTema()"
+              [rounded]="true" />
+    <div class="desp-idioma">
+      <p-menu #idioma
+              styleClass="p-menu-idioma"
+              appendTo="body"
+              [model]="idiomaMenuItems"
+              [popup]="true">
+        <ng-template #item
+                     let-item>
+          <a pRipple
+             class="p-menu-item-link">
+            <span style="width: 24px; height: 24px;">
+              <img [src]="'flags/' + item.flag + '.svg'"
+                   [alt]="item.flag">
+            </span>
+            <span [innerHTML]="item.label"></span>
+          </a>
+        </ng-template>
+      </p-menu>
+      <p-button (click)="idioma.toggle($event)"
+                styleClass="p-button-idioma"
+                [rounded]="true">
+        <img [src]="'flags/' + idiomaActual().flag + '.svg'">
+      </p-button>
+    </div>
+  </div>
 </div>

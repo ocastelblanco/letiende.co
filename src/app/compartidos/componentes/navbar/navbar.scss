@@ -5,6 +5,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 8px;
   .header {
     display: flex;
     align-items: center;
@@ -14,10 +19,15 @@
       justify-content: center;
       align-items: center;
       padding: 8px;
+      transition:
+        width 1s ease-in-out,
+        height 1s ease-in-out;
       .logo-imagen {
-        width: 100%;
-        height: 100%;
         object-fit: contain;
+        &.loaded {
+          width: 100%;
+          height: 100%;
+        }
         &.loading {
           width: 48px;
           height: 48px;
@@ -28,15 +38,28 @@
   .menubar {
     flex: auto 1 1;
   }
+  .estilos {
+    @include mixins.glass-heavy;
+    display: flex;
+    justify-content: center;
+    gap: var(--lt-menubar-gap);
+    border-radius: var(--lt-menubar-border-radius);
+    .desp-idioma {
+      height: var(--lt-button-icon-only-width);
+    }
+  }
   &.xs,
   &.sm {
     .header {
       .logo {
         @include mixins.glass-heavy;
-        width: var(--lt-button-icon-only-width);
-        aspect-ratio: 1;
+        width: 46px;
+        height: 46px;
         border-radius: var(--lt-button-rounded-border-radius);
       }
+    }
+    .estilos {
+      padding: 2px;
     }
   }
   &.md,
@@ -45,11 +68,13 @@
     .header {
       .logo {
         @include mixins.glass-heavy;
-        width: auto;
-        height: 54px;
-        aspect-ratio: 25/11;
+        width: 132px;
+        height: 58px;
         border-radius: var(--lt-menubar-border-radius);
       }
+    }
+    .estilos {
+      padding: 8px;
     }
   }
 }
