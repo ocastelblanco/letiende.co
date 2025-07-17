@@ -5,7 +5,6 @@ import { FirebaseStorageImage } from '@directivas/firebase-storage-image';
 import { PrimengModule } from '@modulos/primeng/primeng-module';
 import { BreakpointService, BreakpointSize } from '@servicios/breakpoint-service';
 import { IdiomaItem, LtConfig, NavbarItem } from '@servicios/lt-config';
-import { MenuModule } from 'primeng/menu';
 
 @Component({
   selector: 'lt-navbar',
@@ -24,7 +23,8 @@ export class Navbar {
   private breakpointServicio: BreakpointService = inject(BreakpointService);
   menuItems: NavbarItem[] = this.config.navbarItems;
   bp: Signal<BreakpointSize> = computed(() => this.breakpointServicio.getCurrentBreakpoint());
-  logoActual: string = 'logo_blanco_sin_fondo';
+  modoTema: Signal<string> = computed(() => this.config.modoTema());
+  logoActual: string = 'logo_negro_sin_fondo';
   iconoTema: Signal<string> = computed(() => this.config.iconosTema[this.config.modoTema()]);
   idioma: Signal<string> = computed(() => this.config.idioma());
   idiomaMenuItems: IdiomaItem[] = this.config.idiomaItems.map((item: IdiomaItem) => {
@@ -34,7 +34,8 @@ export class Navbar {
     };
   });
   logo(): string {
-    const logo: string = (this.bp() == 'xs' || this.bp() == 'sm') ? 'mono_naranja' : 'logo_blanco_sin_fondo';
+    const logoTema: string = (this.modoTema() == 'light') ? 'logo_negro_sin_fondo' : 'logo_blanco_sin_fondo';
+    const logo: string = (this.bp() == 'xs' || this.bp() == 'sm') ? 'mono_naranja' : logoTema;
     if (this.logoDirectiva && this.logoActual != logo) {
       this.logoDirectiva.reload();
       this.logoActual = logo;
