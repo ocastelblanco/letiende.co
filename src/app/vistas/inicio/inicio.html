@@ -1,21 +1,8 @@
-<h1 class="titulo-principal">le tiende</h1>
-<p>inicio works!</p>
-<div ltFirebaseStorageImage="logo_negro_sin_fondo"
-		 width="360px"
-		 cssClass="logo-imagen"
-		 class="logo">
+<div class="inicio"
+		 lt-imagen-fondo
+		 publicID="Terraza">
+	<h1 class="titulo-principal">le tiende</h1>
+	<p>Un texto de párrafo</p>
+	<fa-icon [icon]="['fas', 'coffee']" />
+	<p-button [label]="'Modo: ' + modoTema" />
 </div>
-<fa-icon [icon]="['fas', 'coffee']" />
-
-<!-- Nueva imagen de Cloudinary -->
-<div style="margin-top: 20px;"> <!-- Contenedor para la imagen de Cloudinary -->
-	<h2>Imagen de Cloudinary (SDK)</h2>
-	@if (img) { <!-- Usamos el objeto 'img' del SDK -->
-	<advanced-image [cldImg]="img"
-									alt="Cloudinary Image"
-									style="max-width: 100%; height: auto; border: 1px solid #ccc;">
-	</advanced-image>
-	}
-</div>
-<p-button [label]="'Modo: ' + modoTema"
-					(onClick)="cambiarTema()" />

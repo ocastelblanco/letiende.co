@@ -19,6 +19,7 @@ import { FirebaseConfig } from '@servicios/firebase-config';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import { LTPreset } from '../tema/lt-tema';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 
 
 let localSecrets: any | undefined = undefined;
@@ -93,5 +94,6 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
+    provideHttpClient(withFetch()),
   ]
 };

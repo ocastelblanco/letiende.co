@@ -45,7 +45,6 @@ export class FirebaseStorageImage implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       effect(() => {
         if (this.ltFirebaseStorageImage && this.isInitialized) {
-          console.log('La imagen cambió a ', this.ltFirebaseStorageImage);
           this.loadImage();
         }
       });

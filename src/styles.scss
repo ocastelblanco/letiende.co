@@ -17,18 +17,27 @@ html {
     @include mixins.define-glass-vars(var.$dark-glass-settings);
   }
   body {
-    background: url("https://unocasa.com/cdn/shop/articles/types_of_coffee_91a828a5-7ff3-427d-acaa-c8b7289c9e5a_1024x.jpg?v=1621261041");
     font-family: "Poppins", sans-serif;
     margin: 0;
     width: 100vw;
     height: 100vh;
     position: relative;
+    .titulo-principal {
+      font-family: "Angellya", sans-serif;
+      font-weight: 400;
+    }
+    .navbar {
+      z-index: 9;
+    }
+    router-outlet + * {
+      & > div {
+        z-index: 0;
+        width: 100%;
+        min-height: 100%;
+        padding-top: 74px;
+      }
+    }
   }
-}
-
-.titulo-principal {
-  font-family: "Angellya", sans-serif;
-  font-weight: 400;
 }
 
 /* Glass panel base (para p-panel, p-card, etc.) */

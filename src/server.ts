@@ -8,6 +8,7 @@ import express, { Request, Response as ExpressResponse } from 'express';
 import cloudinary from 'cloudinary';
 import { join, posix as posixPath } from 'node:path';
 import serverlessExpress from '@codegenie/serverless-express';
+import { localSecrets } from './secrets';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -20,18 +21,18 @@ const angularApp = new AngularNodeAppEngine();
  */
 
 // Middleware para parsear JSON en los bodies de las peticiones API
-app.use('/api', express.json());
+app.use('/api', express.json({ limit: '10mb' }));
+app.use('/api', express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Configura el SDK de Cloudinary en el servidor usando las variables de entorno seguras.
-if (
-  process.env['CLOUDINARY_CLOUD_NAME'] &&
-  process.env['CLOUDINARY_API_KEY'] &&
-  process.env['CLOUDINARY_API_SECRET']
-) {
+const cld_cld_name = process.env['CLOUDINARY_CLOUD_NAME'] || localSecrets.CLOUDINARY_CLOUD_NAME;
+const cld_api_key = process.env['CLOUDINARY_API_KEY'] || localSecrets.CLOUDINARY_API_KEY;
+const cld_api_secret = process.env['CLOUDINARY_API_SECRET'] || localSecrets.CLOUDINARY_API_SECRET;
+if (cld_cld_name && cld_api_key && cld_api_secret) {
   cloudinary.v2.config({
-    cloud_name: process.env['CLOUDINARY_CLOUD_NAME'],
-    api_key: process.env['CLOUDINARY_API_KEY'],
-    api_secret: process.env['CLOUDINARY_API_SECRET'],
+    cloud_name: cld_cld_name,
+    api_key: cld_api_key,
+    api_secret: cld_api_secret,
     secure: true,
   });
   console.log('[SERVER.TS] Cloudinary SDK configurado.');
@@ -46,8 +47,28 @@ if (
     const signature = cloudinary.v2.utils.api_sign_request(paramsToSign, process.env['CLOUDINARY_API_SECRET']!);
     res.json({ signature });
   });
+  app.post('/api/cloudinary/details', (req: Request, res: ExpressResponse) => {
+    const publicId = req.body.public_id;
+    if (!publicId) {
+      res.status(400).json({ error: 'Falta el parámetro public_id.' });
+      return;
+    }
+    console.log('[SERVER.TS] Obteniendo detalles para public_id:', publicId);
+    cloudinary.v2.api.resource(publicId)
+      .then(result => {
+        console.log('[SERVER.TS] Detalles obtenidos exitosamente');
+        res.json({ result });
+      })
+      .catch(err => {
+        console.error('[SERVER.TS] Error al obtener detalles del recurso de Cloudinary:', err);
+        res.status(500).json({
+          error: 'Error al obtener detalles del recurso',
+          details: err.message
+        });
+      });
+  });
 } else {
-  console.warn('[SERVER.TS] Faltan variables de entorno de Cloudinary. El endpoint de firma no estará disponible.');
+  console.warn('[SERVER.TS] Faltan variables de entorno de Cloudinary. Los endpoints no estarán disponibles.');
 }
 
 /**
