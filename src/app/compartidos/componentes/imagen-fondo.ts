@@ -7,7 +7,7 @@ import { auto as autoFormat } from '@cloudinary/url-gen/qualifiers/format';
 import { scale } from '@cloudinary/url-gen/actions/resize';
 import { blur } from "@cloudinary/url-gen/actions/effect";
 import { CloudinaryModule } from '@cloudinary/ng';
-import { CloudinaryDetails, CloudinaryResource, CloudinaryResult } from '@servicios/cloudinary-details';
+import { CloudinaryAPI, CloudinaryResource, CloudinaryResult } from '@servicios/cloudinary-api';
 import { Subject, fromEvent, debounceTime, takeUntil, first } from 'rxjs';
 
 @Component({
@@ -54,7 +54,7 @@ export class ImagenFondo implements AfterViewInit, OnDestroy {
   private cld: Cloudinary = inject(Cloudinary);
   private cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
   private document: Document = inject(DOCUMENT);
-  private details: CloudinaryDetails = inject(CloudinaryDetails);
+  private cldAPI: CloudinaryAPI = inject(CloudinaryAPI);
   private container: HTMLElement = this.el.nativeElement as HTMLElement;
   private destroy$ = new Subject<void>();
   private imageDetails: CloudinaryResult | null = null;
@@ -64,9 +64,8 @@ export class ImagenFondo implements AfterViewInit, OnDestroy {
     if (!isPlatformBrowser(this.platID)) {
       return;
     }
-
     // 1. Obtenemos los detalles de la imagen UNA SOLA VEZ y los guardamos.
-    this.details.getResourceDetails(this.publicID)
+    this.cldAPI.getResourceDetails(this.publicID)
       .pipe(
         first(), // Solo tomamos el primer valor y nos desuscribimos.
         takeUntil(this.destroy$)
@@ -76,7 +75,6 @@ export class ImagenFondo implements AfterViewInit, OnDestroy {
         // 2. Creamos la imagen inicial una vez que tenemos los detalles.
         this.actualizaImagen();
       });
-
     // 3. Nos suscribimos al evento 'resize' con un debounce para evitar llamadas excesivas.
     fromEvent(this.document.defaultView!, 'resize')
       .pipe(
@@ -85,34 +83,28 @@ export class ImagenFondo implements AfterViewInit, OnDestroy {
       )
       .subscribe(() => this.actualizaImagen());
   }
-
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
     this.img = null;
     this.imageDetails = null;
   }
-
   private actualizaImagen(): void {
     // Si no tenemos los detalles o las dimensiones del contenedor, no hacemos nada.
     if (!this.imageDetails || this.container.offsetWidth === 0) {
       return;
     }
-
     const anchoCont: number = this.container.offsetWidth;
     const altoCont: number = this.container.offsetHeight;
     const relacionAspectoCont: number = anchoCont / altoCont;
     const relacionAspectoImg: number = this.imageDetails.width / this.imageDetails.height;
-
     // Decidimos si escalar por ancho o por alto para que la imagen siempre cubra el contenedor.
     const resizeAction = relacionAspectoImg > relacionAspectoCont ? scale().height(altoCont) : scale().width(anchoCont);
-
     this.img = this.cld.image(this.publicID)
       .resize(resizeAction)
       .delivery(quality(autoQuality()))
       .delivery(format(autoFormat()))
       .effect(blur(800));
-
     this.cdr.detectChanges();
   }
 }

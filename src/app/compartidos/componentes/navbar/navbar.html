@@ -1,10 +1,11 @@
 <div class="navbar"
      [ngClass]="bp()">
   <div class="header">
-    <div #logoLT
-         [ltFirebaseStorageImage]="logo()"
-         cssClass="logo-imagen"
-         class="logo">
+    <div class="logo">
+      <img [src]="cdn + 'logos/' + logo() + '.svg'"
+           [style]="{height: bp() == 'xs' || bp() == 'sm' ? '20px' : 'auto'}"
+           class="logo-imagen"
+           [alt]="logo()">
     </div>
   </div>
   <div class="menubar">
@@ -47,7 +48,7 @@
           <a pRipple
              class="p-menu-item-link">
             <span style="width: 24px; height: 24px;">
-              <img [src]="'flags/' + item.flag + '.svg'"
+              <img [src]="cdn + 'flags/' + item.flag + '.svg'"
                    [alt]="item.flag">
             </span>
             <span [innerHTML]="item.label"></span>
@@ -57,7 +58,7 @@
       <p-button (click)="idioma.toggle($event)"
                 styleClass="p-button-idioma"
                 [rounded]="true">
-        <img [src]="'flags/' + idiomaActual().flag + '.svg'">
+        <img [src]="cdn + 'flags/' + idiomaActual().flag + '.svg'">
       </p-button>
     </div>
   </div>

@@ -28,6 +28,7 @@ app.use('/api', express.urlencoded({ extended: true, limit: '10mb' }));
 const cld_cld_name = process.env['CLOUDINARY_CLOUD_NAME'] || localSecrets.CLOUDINARY_CLOUD_NAME;
 const cld_api_key = process.env['CLOUDINARY_API_KEY'] || localSecrets.CLOUDINARY_API_KEY;
 const cld_api_secret = process.env['CLOUDINARY_API_SECRET'] || localSecrets.CLOUDINARY_API_SECRET;
+
 if (cld_cld_name && cld_api_key && cld_api_secret) {
   cloudinary.v2.config({
     cloud_name: cld_cld_name,
@@ -44,7 +45,7 @@ if (cld_cld_name && cld_api_key && cld_api_secret) {
       res.status(400).json({ error: 'Faltan parámetros para firmar (params_to_sign).' });
       return;
     }
-    const signature = cloudinary.v2.utils.api_sign_request(paramsToSign, process.env['CLOUDINARY_API_SECRET']!);
+    const signature = cloudinary.v2.utils.api_sign_request(paramsToSign, cld_api_secret);
     res.json({ signature });
   });
   app.post('/api/cloudinary/details', (req: Request, res: ExpressResponse) => {
