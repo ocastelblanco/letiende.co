@@ -6,16 +6,16 @@ import { LtConfig } from '@servicios/lt-config';
 import { MetaService } from '@servicios/meta';
 
 @Component({
-  selector: 'lt-inicio',
+  selector: 'lt-menu',
   imports: [
     PrimengModule,
     IconosModule,
     ImagenFondo,
   ],
-  templateUrl: './inicio.html',
-  styleUrl: './inicio.scss'
+  templateUrl: './menu.html',
+  styleUrl: './menu.scss'
 })
-export class Inicio implements OnInit {
+export class Menu implements OnInit {
   private config: LtConfig = inject(LtConfig);
   private meta: MetaService = inject(MetaService);
   modoTema: string = 'light';
@@ -24,14 +24,14 @@ export class Inicio implements OnInit {
   }
   ngOnInit(): void {
     this.meta.updatePageMeta({
-      title: 'Le Tiende - Centro Cultural',
-      description: 'Café en taza, literatura en papel y música en surcos de vinilo.',
-      keywords: 'café, literatura, música, vinilos, cultura, centro cultural, Le Tiende, auditorio, parkway, Bogotá',
+      title: 'Menú Le Tiende',
+      description: 'Disfruta de nuestro menú para acompañar tus mejores momentos en Le Tiende.',
+      keywords: 'café, empanadas, hamburquesas, tortas, pastelería, cocteles, licores, Le Tiende, parkway, Bogotá',
       image: 'https://assets.letiende.co/logos/logo_sobre_amarillo_sin_fondo.png',
       url: 'https://letiende.co',
       type: 'website',
       siteName: 'Le Tiende',
-      canonical: 'https://letiende.co/inicio',
+      canonical: 'https://letiende.co/menu',
       noindex: false,
       nofollow: false,
     });
