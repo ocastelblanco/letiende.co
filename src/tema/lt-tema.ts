@@ -66,8 +66,8 @@ const semantic: any = {
 export const LTPreset: any = definePreset(Aura, {
   primitive: {
     borderRadius: {
-      menubar: '27px',
-      itemMenubar: '20px',
+      barramenu: '27px',
+      itemBarramenu: '20px',
     },
     lightPanelSurface: creaRGBA('light', 0, 'frosted'),
     darkPanelSurface: creaRGBA('dark', 900, 'frosted'),
@@ -88,14 +88,14 @@ export const LTPreset: any = definePreset(Aura, {
           background: '{darkPanelSurface}',
         },
       },
-      borderRadius: '{borderRadius.menubar}',
-      base: {
-        item: {
-          border: {
-            radius: '{borderRadius.itemMenubar}'
-          },
+      css: ({ dt }: any) => `
+        .p-menubar.menu-bar {
+          border-radius: var(--lt-border-radius-barramenu);
         }
-      },
+        .p-menubar-item-content {
+          border-radius: var(--lt-border-radius-item-barramenu) !important;
+        }
+      `,
     },
     button: {
       colorScheme: {
@@ -123,9 +123,9 @@ export const LTPreset: any = definePreset(Aura, {
           width: var(--lt-button-icon-only-width);
           height:var(--lt-button-icon-only-width);
         }
-          .p-button-idioma img {
-            height: var(--lt-button-icon-only-width);
-          }
+        .p-button-idioma img {
+          height: var(--lt-button-icon-only-width);
+        }
       `,
     },
     menu: {
