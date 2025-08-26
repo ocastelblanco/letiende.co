@@ -35,15 +35,17 @@ import { Subject, fromEvent, debounceTime, takeUntil, first } from 'rxjs';
       position: absolute;
       inset: 0;
       width: 100%;
-      height: 100%;
+      height: calc(100% - 74px);
       object-fit: cover;
       object-position: center;
       z-index: 0;
       opacity: 0.35;
     }
     .wrapper-contenido {
-      position: relative;
+      position: absolute;
       z-index: 1;
+      width: 100%;
+      height: calc(100% - 74px);
     }
   `]
 })

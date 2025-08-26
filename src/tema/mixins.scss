@@ -37,3 +37,9 @@
 @mixin glass-flat {
   @include glass-box(0px, 0, 0.15); // sin blur
 }
+
+@mixin item-menu {
+  font-size: 0.75em;
+  font-weight: 500;
+  line-height: 1;
+}

@@ -1,0 +1,30 @@
+<div class="menu-lateral"
+     [ngClass]="[modoTema, menuPlegado ? 'cerrado' : 'abierto', bp]">
+  <div class="barra">
+    <div class="boton-toggle"
+         (click)="toggleMenu()">
+      <span class="material-symbols-outlined"
+            [innerHTML]="'menu' + (menuPlegado ? '' : '_open')">
+      </span>
+    </div>
+  </div>
+  <div class="items">
+    @for (item of datosMenu; track item.titulo) {
+    <a pRipple
+       class="item"
+       [ngClass]="{'active': url == item.enlace}"
+       routerLinkActive="active"
+       [routerLink]="item.enlace"
+       [ariaLabel]="item.titulo">
+      <div class="item-icono">
+        <lt-icono [icono]="item.icono"
+                  [fontSize]="'1.5em'" />
+      </div>
+      <div class="item-titulo">
+        <span class="texto"
+              [innerHTML]="item.titulo"></span>
+      </div>
+    </a>
+    }
+  </div>
+</div>

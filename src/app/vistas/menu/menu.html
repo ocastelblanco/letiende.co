@@ -1,4 +1,19 @@
 <div class="menu"
-     lt-imagen-fondo
-     publicID="Barra">
+		 [ngClass]="[modoTema, bp()]"
+		 lt-imagen-fondo
+		 publicID="Barra">
+	<div class="contenido">
+		<lt-menu-lateral class="lateral"
+										 [bp]="bp()"
+										 [modoTema]="modoTema"
+										 [datosMenu]="datosMenu" />
+		<div class="categorias">
+			@for (categoria of [0,1,2,3,4,5,6]; track $index) {
+			<p-card [header]="'Lorem Ipsum ' + categoria"
+							class="categoria">
+				Lorem ipsum
+			</p-card>
+			}
+		</div>
+	</div>
 </div>

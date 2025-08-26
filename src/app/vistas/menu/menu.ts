@@ -1,9 +1,13 @@
-import { Component, inject, effect, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, effect, inject, OnInit, Signal } from '@angular/core';
 import { ImagenFondo } from '@componentes/imagen-fondo';
 import { IconosModule } from '@modulos/iconos/iconos-module';
 import { PrimengModule } from '@modulos/primeng/primeng-module';
 import { LtConfig } from '@servicios/lt-config';
 import { MetaService } from '@servicios/meta';
+import { BreakpointService, BreakpointSize } from '@servicios/breakpoint-service';
+import { NgClass } from '@angular/common';
+import { MenuLateral } from "@componentes/menu-lateral/menu-lateral";
+import { DatoMenuLateral, Datos } from '@servicios/datos';
 
 @Component({
   selector: 'lt-menu',
@@ -11,6 +15,8 @@ import { MetaService } from '@servicios/meta';
     PrimengModule,
     IconosModule,
     ImagenFondo,
+    NgClass,
+    MenuLateral
   ],
   templateUrl: './menu.html',
   styleUrl: './menu.scss'
@@ -18,7 +24,13 @@ import { MetaService } from '@servicios/meta';
 export class Menu implements OnInit {
   private config: LtConfig = inject(LtConfig);
   private meta: MetaService = inject(MetaService);
+  private breakpointServicio: BreakpointService = inject(BreakpointService);
+  private datos: Datos = inject(Datos);
+  private cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
+  bp: Signal<BreakpointSize> = computed(() => this.breakpointServicio.getCurrentBreakpoint());
+  idioma: Signal<string> = computed(() => this.config.idioma());
   modoTema: string = 'light';
+  datosMenu: DatoMenuLateral[] = [];
   constructor() {
     effect(() => this.modoTema = this.config.modoTema()); // Efecto para reaccionar a cambios en el modo de tema
   }
@@ -34,6 +46,10 @@ export class Menu implements OnInit {
       canonical: 'https://letiende.co/menu',
       noindex: false,
       nofollow: false,
+    });
+    this.datos.getMenu().subscribe((datos: DatoMenuLateral[]) => {
+      this.datosMenu = datos;
+      this.cdr.detectChanges();
     });
   }
 }

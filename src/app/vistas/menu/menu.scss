@@ -1,0 +1,43 @@
+@use "../../../tema/mixins.scss";
+.menu {
+  .contenido {
+    display: flex;
+    justify-content: space-between;
+    height: 100%;
+    .lateral {
+      margin-left: 8px;
+      height: 100%;
+    }
+    .categorias {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-content: flex-start;
+      gap: 1em;
+      margin-bottom: 4em;
+      flex: 1 1 auto;
+      .categoria {
+        @include mixins.glass-heavy;
+        background: var(--lt-menubar-background);
+        max-width: 32rem;
+        min-width: 14.375rem;
+        flex: 0 0 auto;
+      }
+    }
+  }
+  &.xs {
+    .contenido {
+      position: relative;
+      .lateral {
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        z-index: 9;
+      }
+      .categorias {
+        margin-top: 72px;
+      }
+    }
+  }
+}

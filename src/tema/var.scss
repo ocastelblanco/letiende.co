@@ -1,11 +1,15 @@
-$light-surface: rgb(255, 239, 209);
-$dark-surface: rgb(24, 16, 0);
+$transparencia: 0.4;
+$transparencia-hover: 0.9;
+$light-surface: rgba(255, 239, 209, $transparencia);
+$light-hover-surface: rgba(255, 239, 209, $transparencia-hover);
+$dark-surface: rgba(24, 16, 0, $transparencia);
+$dark-hover-surface: rgba(24, 16, 0, $transparencia-hover);
 $primary-light-surface: rgb(110, 249, 226);
 $primary-dark-surface: rgb(0, 55, 48);
 
 $light-glass-settings: (
   bg: $light-surface,
-  hover: $light-surface,
+  hover: $light-hover-surface,
   border: $light-surface,
   shadow: $dark-surface,
   primary-bg: $primary-light-surface
@@ -13,7 +17,7 @@ $light-glass-settings: (
 
 $dark-glass-settings: (
   bg: $dark-surface,
-  hover: $dark-surface,
+  hover: $dark-hover-surface,
   border: $dark-surface,
   shadow: $dark-surface,
   primary-bg: $primary-dark-surface

@@ -1,6 +1,5 @@
 import { NgClass } from '@angular/common';
-import { Component, computed, inject, Signal, ViewChild } from '@angular/core';
-import { Storage } from '@angular/fire/storage';
+import { Component, computed, inject, Signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { PrimengModule } from '@modulos/primeng/primeng-module';
 import { BreakpointService, BreakpointSize } from '@servicios/breakpoint-service';
@@ -19,7 +18,6 @@ import { IdiomaItem, LtConfig, NavbarItem } from '@servicios/lt-config';
 export class Navbar {
   private config: LtConfig = inject(LtConfig);
   private breakpointServicio: BreakpointService = inject(BreakpointService);
-  private storage: Storage = inject(Storage);
   menuItems: NavbarItem[] = this.config.navbarItems;
   bp: Signal<BreakpointSize> = computed(() => this.breakpointServicio.getCurrentBreakpoint());
   modoTema: Signal<string> = computed(() => this.config.modoTema());

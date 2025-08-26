@@ -1,0 +1,34 @@
+[
+  {
+    "icono": {
+      "nombre": "coffee_maker",
+      "tipo": "material-symbols-outlined"
+    },
+    "titulo": "Bebidas de café",
+    "enlace": "/menu/bebidas-de-cafe"
+  },
+  {
+    "icono": {
+      "nombre": "emoji_food_beverage",
+      "tipo": "material-symbols-outlined"
+    },
+    "titulo": "Bebidas sin café",
+    "enlace": "/menu/bebidas-sin-cafe"
+  },
+  {
+    "icono": {
+      "nombre": "liquor",
+      "tipo": "material-symbols-outlined"
+    },
+    "titulo": "Cervezas, vinos y licores",
+    "enlace": "/menu/cervezas-vinos-licores"
+  },
+  {
+    "icono": {
+      "nombre": "dinner_dining",
+      "tipo": "material-symbols-outlined"
+    },
+    "titulo": "Para comer",
+    "enlace": "/menu/para-comer"
+  }
+]
