@@ -9,7 +9,11 @@
     "test": "ng test",
     "serve:ssr:letiende.co": "node dist/letiende.co/server/server.mjs",
     "build:ssr": "ng build --configuration production",
-    "deploy": "npm run build:ssr && sls deploy"
+    "build:ssr:dev": "ng build --configuration production --base-href /dev/",
+    "build:ssr:prod": "ng build --configuration production --base-href /",
+    "deploy:dev": "npm run build:ssr:dev && sls deploy --stage dev",
+    "deploy:prod": "npm run build:ssr:prod && sls deploy --stage prod",
+    "deploy": "npm run deploy:dev"
   },
   "private": true,
   "dependencies": {

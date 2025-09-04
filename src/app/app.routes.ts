@@ -5,7 +5,7 @@ import { Menu } from '@vistas/menu/menu';
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
   { path: 'inicio', component: Inicio, title: 'Le Tiende' },
-  { path: 'menu', component: Menu, title: 'Menú Le Tiende' },
-  { path: 'menu/:categoria', component: Menu, title: 'Menú Le Tiende' },
+  { path: 'menu', component: Menu, title: 'Menú Le Tiende', data: { preload: true } },
+  { path: 'menu/:categoria', component: Menu, title: 'Menú Le Tiende', data: { preload: true } },
   { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
