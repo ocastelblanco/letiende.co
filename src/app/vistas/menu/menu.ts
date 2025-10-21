@@ -38,7 +38,7 @@ export class Menu implements OnInit {
     this.meta.updatePageMeta({
       title: 'Menú Le Tiende',
       description: 'Disfruta de nuestro menú para acompañar tus mejores momentos en Le Tiende.',
-      keywords: 'café, empanadas, hamburquesas, tortas, pastelería, cocteles, licores, Le Tiende, parkway, Bogotá',
+      keywords: 'café,empanadas,hamburguesas,tortas,pastelería,cocteles,licores,Le Tiende,parkway,Bogotá',
       image: 'https://assets.letiende.co/logos/logo_sobre_amarillo_sin_fondo.png',
       url: 'https://letiende.co',
       type: 'website',
