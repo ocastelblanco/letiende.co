@@ -202,8 +202,8 @@
         "en": "Rent our black box theater"
       },
       "descripcion": {
-        "es": "<p>El valor del alquiler de nuestro auditorio por 4 horas, de jueves a sábado, es de $399.900 pesos colombianos.</p><p>De domingo a miércoles, $249.900</p>",
-        "en": "<p>The rental price of our auditorium for 4 hours, from Thursday to Saturday, is COP$399,900.</p><p>From Sunday to Wednesday, COP$249,900.</p>"
+        "es": "<p>¿Te interesa nuestro auditorio?</p>",
+        "en": "<p>Are you interested in our black box theater?</p>"
       },
       "masInfo": {
         "es": "Para más información, comunícate con nosotros a nuestro WhatsApp",
