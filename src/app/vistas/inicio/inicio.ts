@@ -1,4 +1,4 @@
-import { Component, inject, effect, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, effect, OnInit, signal } from '@angular/core';
 import { ImagenFondo } from '@componentes/imagen-fondo';
 import { IconosModule } from '@modulos/iconos/iconos-module';
 import { PrimengModule } from '@modulos/primeng/primeng-module';
@@ -7,21 +7,21 @@ import { MetaService } from '@servicios/meta';
 
 @Component({
   selector: 'lt-inicio',
-  imports: [
-    PrimengModule,
-    IconosModule,
-    ImagenFondo,
-  ],
+  imports: [PrimengModule, IconosModule, ImagenFondo],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './inicio.html',
   styleUrl: './inicio.scss'
 })
 export class Inicio implements OnInit {
-  private config: LtConfig = inject(LtConfig);
-  private meta: MetaService = inject(MetaService);
-  modoTema: string = 'light';
+  private readonly config: LtConfig = inject(LtConfig);
+  private readonly meta: MetaService = inject(MetaService);
+
+  readonly modoTema = signal<string>('light');
+
   constructor() {
-    effect(() => this.modoTema = this.config.modoTema()); // Efecto para reaccionar a cambios en el modo de tema
+    effect(() => this.modoTema.set(this.config.modoTema())); // Efecto para reaccionar a cambios en el modo de tema
   }
+
   ngOnInit(): void {
     this.meta.updatePageMeta({
       title: 'Le Tiende - Centro Cultural',

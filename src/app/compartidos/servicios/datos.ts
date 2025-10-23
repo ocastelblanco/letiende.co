@@ -13,9 +13,10 @@ export interface DatoMenuLateral {
   providedIn: 'root'
 })
 export class Datos {
-  private http: HttpClient = inject(HttpClient);
-  private api: string = '';
-  public getMenu(): Observable<DatoMenuLateral[]> {
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly api: string = '';
+
+  getMenu(): Observable<DatoMenuLateral[]> {
     return this.http.get<DatoMenuLateral[]>(this.api + 'menu.json');
   }
 }

@@ -1,18 +1,18 @@
 <div class="menu-lateral"
-     [ngClass]="[modoTema, menuPlegado ? 'cerrado' : 'abierto', bp]">
+     [class]="modoTema() + ' ' + (menuPlegado() ? 'cerrado' : 'abierto') + ' ' + bp()">
   <div class="barra">
     <div class="boton-toggle"
          (click)="toggleMenu()">
       <span class="material-symbols-outlined"
-            [innerHTML]="'menu' + (menuPlegado ? '' : '_open')">
+            [innerHTML]="'menu' + (menuPlegado() ? '' : '_open')">
       </span>
     </div>
   </div>
   <div class="items">
-    @for (item of datosMenu; track item.titulo) {
+    @for (item of datosMenu(); track item.titulo) {
     <a pRipple
        class="item"
-       [ngClass]="{'active': url == item.enlace}"
+       [class.active]="url() === item.enlace"
        routerLinkActive="active"
        [routerLink]="item.enlace"
        [ariaLabel]="item.titulo">

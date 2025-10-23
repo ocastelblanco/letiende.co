@@ -1,9 +1,9 @@
 <div class="navbar"
-     [ngClass]="bp()">
+     [class]="bp()">
   <div class="header">
     <div class="logo">
       <img [src]="cdn + 'logos/' + logo() + '.svg'"
-           [style]="{height: bp() == 'xs' || bp() == 'sm' ? '20px' : 'auto'}"
+           [style.height]="bp() === 'xs' || bp() === 'sm' ? '20px' : 'auto'"
            class="logo-imagen"
            [alt]="logo()">
     </div>
@@ -17,17 +17,16 @@
            [routerLink]="item.routerLink"
            routerLinkActive="active"
            class="p-menubar-item-link menu-link">
-          @if (item.tipoIcono == 'primeng') {
-          <i class="pi"
-             [ngClass]="item.icon">
+          @if (item.tipoIcono === 'primeng') {
+          <i [class]="'pi ' + item.icon">
           </i>
           }
-          @if (item.tipoIcono == 'material_symbol') {
+          @if (item.tipoIcono === 'material_symbol') {
           <span class="material-symbols-outlined"
                 [innerHTML]="item.icon">
           </span>
           }
-          @if (item.tipoIcono == 'fontawesome') {}
+          @if (item.tipoIcono === 'fontawesome') {}
           <span [innerHTML]="item.label"></span>
         </a>
       </ng-template>
@@ -47,7 +46,7 @@
                      let-item>
           <a pRipple
              class="p-menu-item-link">
-            <span style="width: 24px; height: 24px;">
+            <span [style.width.px]="24" [style.height.px]="24">
               <img [src]="cdn + 'flags/' + item.flag + '.svg'"
                    [alt]="item.flag">
             </span>

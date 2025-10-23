@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, DOCUMENT, ElementRef, inject, Input, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DOCUMENT, ElementRef, inject, input, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { Cloudinary, CloudinaryImage } from '@cloudinary/url-gen/index';
 import { format, quality } from '@cloudinary/url-gen/actions/delivery';
 import { auto as autoQuality } from '@cloudinary/url-gen/qualifiers/quality';
@@ -12,10 +12,8 @@ import { Subject, fromEvent, debounceTime, takeUntil, first } from 'rxjs';
 
 @Component({
   selector: 'div[lt-imagen-fondo]',
-  imports: [
-    CloudinaryModule,
-  ],
-  standalone: true,
+  imports: [CloudinaryModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (img) {
       <advanced-image [cldImg]="img"
@@ -50,15 +48,16 @@ import { Subject, fromEvent, debounceTime, takeUntil, first } from 'rxjs';
   `]
 })
 export class ImagenFondo implements AfterViewInit, OnDestroy {
-  @Input() publicID: string = 'Principal';
-  private el: ElementRef = inject(ElementRef);
-  private platID: any = inject(PLATFORM_ID);
-  private cld: Cloudinary = inject(Cloudinary);
-  private cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
-  private document: Document = inject(DOCUMENT);
-  private cldAPI: CloudinaryAPI = inject(CloudinaryAPI);
-  private container: HTMLElement = this.el.nativeElement as HTMLElement;
-  private destroy$ = new Subject<void>();
+  readonly publicID = input<string>('Principal');
+
+  private readonly el: ElementRef = inject(ElementRef);
+  private readonly platID: object = inject(PLATFORM_ID);
+  private readonly cld: Cloudinary = inject(Cloudinary);
+  private readonly cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private readonly document: Document = inject(DOCUMENT);
+  private readonly cldAPI: CloudinaryAPI = inject(CloudinaryAPI);
+  private readonly container: HTMLElement = this.el.nativeElement as HTMLElement;
+  private readonly destroy$: Subject<void> = new Subject<void>();
   private imageDetails: CloudinaryResult | null = null;
   img: CloudinaryImage | null = null;
 
@@ -67,7 +66,7 @@ export class ImagenFondo implements AfterViewInit, OnDestroy {
       return;
     }
     // 1. Obtenemos los detalles de la imagen UNA SOLA VEZ y los guardamos.
-    this.cldAPI.getResourceDetails(this.publicID)
+    this.cldAPI.getResourceDetails(this.publicID())
       .pipe(
         first(), // Solo tomamos el primer valor y nos desuscribimos.
         takeUntil(this.destroy$)
@@ -85,12 +84,14 @@ export class ImagenFondo implements AfterViewInit, OnDestroy {
       )
       .subscribe(() => this.actualizaImagen());
   }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
     this.img = null;
     this.imageDetails = null;
   }
+
   private actualizaImagen(): void {
     // Si no tenemos los detalles o las dimensiones del contenedor, no hacemos nada.
     if (!this.imageDetails || this.container.offsetWidth === 0) {
@@ -102,7 +103,7 @@ export class ImagenFondo implements AfterViewInit, OnDestroy {
     const relacionAspectoImg: number = this.imageDetails.width / this.imageDetails.height;
     // Decidimos si escalar por ancho o por alto para que la imagen siempre cubra el contenedor.
     const resizeAction = relacionAspectoImg > relacionAspectoCont ? scale().height(altoCont) : scale().width(anchoCont);
-    this.img = this.cld.image(this.publicID)
+    this.img = this.cld.image(this.publicID())
       .resize(resizeAction)
       .delivery(quality(autoQuality()))
       .delivery(format(autoFormat()))

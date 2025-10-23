@@ -1,24 +1,24 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FontAwesomeModule, FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import {
   faMugHot,
-} from '@fortawesome/free-solid-svg-icons'; // Ejemplo: importa el ícono 'coffee'
+} from '@fortawesome/free-solid-svg-icons';
+import { makeEnvironmentProviders, EnvironmentProviders } from '@angular/core';
 
-@NgModule({
-  declarations: [],
-  imports: [
-    CommonModule,
-    FontAwesomeModule,
-  ],
-  exports: [
-    FontAwesomeModule
-  ]
-})
-export class IconosModule {
-  constructor(library: FaIconLibrary) {
-    library.addIcons(
-      faMugHot,
-    );
-  }
+// Exportamos FontAwesomeModule para que los componentes lo puedan importar
+export { FontAwesomeModule as IconosModule };
+
+// Provider function para registrar los íconos globalmente
+export function provideIconos(): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    {
+      provide: 'FONT_AWESOME_ICONS',
+      useFactory: (library: FaIconLibrary) => {
+        library.addIcons(
+          faMugHot,
+        );
+      },
+      deps: [FaIconLibrary],
+      multi: false
+    }
+  ]);
 }

@@ -8,10 +8,10 @@ export type BreakpointSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   providedIn: 'root'
 })
 export class BreakpointService implements OnDestroy {
-  private destroy$ = new Subject<void>();
+  private readonly destroy$: Subject<void> = new Subject<void>();
 
   // Signal que contiene el breakpoint actual
-  public readonly currentBreakpoint: WritableSignal<BreakpointSize> = signal<BreakpointSize>('lg');
+  readonly currentBreakpoint: WritableSignal<BreakpointSize> = signal<BreakpointSize>('lg');
 
   // Mapeo de breakpoints del Angular CDK a nuestros valores
   private readonly breakpointMap = {
@@ -22,7 +22,7 @@ export class BreakpointService implements OnDestroy {
     [Breakpoints.XLarge]: 'xl' as const
   };
 
-  constructor(private breakpointObserver: BreakpointObserver) {
+  constructor(private readonly breakpointObserver: BreakpointObserver) {
     this.initializeBreakpointObserver();
   }
 

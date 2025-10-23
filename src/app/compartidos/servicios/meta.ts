@@ -30,9 +30,9 @@ interface SiteConfig {
   providedIn: 'root'
 })
 export class MetaService {
-  private meta: Meta = inject(Meta);
-  private title: Title = inject(Title);
-  private router: Router = inject(Router);
+  private readonly meta: Meta = inject(Meta);
+  private readonly title: Title = inject(Title);
+  private readonly router: Router = inject(Router);
 
   // Configuración base del sitio
   private readonly siteConfig: SiteConfig = {
@@ -118,7 +118,7 @@ export class MetaService {
   }
 
   private buildRobotsContent(noindex?: boolean, nofollow?: boolean): string {
-    const robots: any[] = [];
+    const robots: string[] = [];
 
     if (noindex) robots.push('noindex');
     else robots.push('index');

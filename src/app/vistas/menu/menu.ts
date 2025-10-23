@@ -1,39 +1,36 @@
-import { ChangeDetectorRef, Component, computed, effect, inject, OnInit, Signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, inject, OnInit, Signal, signal } from '@angular/core';
 import { ImagenFondo } from '@componentes/imagen-fondo';
 import { IconosModule } from '@modulos/iconos/iconos-module';
 import { PrimengModule } from '@modulos/primeng/primeng-module';
 import { LtConfig } from '@servicios/lt-config';
 import { MetaService } from '@servicios/meta';
 import { BreakpointService, BreakpointSize } from '@servicios/breakpoint-service';
-import { NgClass } from '@angular/common';
 import { MenuLateral } from "@componentes/menu-lateral/menu-lateral";
 import { DatoMenuLateral, Datos } from '@servicios/datos';
 
 @Component({
   selector: 'lt-menu',
-  imports: [
-    PrimengModule,
-    IconosModule,
-    ImagenFondo,
-    NgClass,
-    MenuLateral
-  ],
+  imports: [PrimengModule, IconosModule, ImagenFondo, MenuLateral],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './menu.html',
   styleUrl: './menu.scss'
 })
 export class Menu implements OnInit {
-  private config: LtConfig = inject(LtConfig);
-  private meta: MetaService = inject(MetaService);
-  private breakpointServicio: BreakpointService = inject(BreakpointService);
-  private datos: Datos = inject(Datos);
-  private cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
-  bp: Signal<BreakpointSize> = computed(() => this.breakpointServicio.getCurrentBreakpoint());
-  idioma: Signal<string> = computed(() => this.config.idioma());
-  modoTema: string = 'light';
-  datosMenu: DatoMenuLateral[] = [];
+  private readonly config: LtConfig = inject(LtConfig);
+  private readonly meta: MetaService = inject(MetaService);
+  private readonly breakpointServicio: BreakpointService = inject(BreakpointService);
+  private readonly datos: Datos = inject(Datos);
+  private readonly cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
+
+  readonly bp: Signal<BreakpointSize> = computed(() => this.breakpointServicio.getCurrentBreakpoint());
+  readonly idioma: Signal<string> = computed(() => this.config.idioma());
+  readonly modoTema = signal<string>('light');
+  readonly datosMenu = signal<DatoMenuLateral[]>([]);
+
   constructor() {
-    effect(() => this.modoTema = this.config.modoTema()); // Efecto para reaccionar a cambios en el modo de tema
+    effect(() => this.modoTema.set(this.config.modoTema())); // Efecto para reaccionar a cambios en el modo de tema
   }
+
   ngOnInit(): void {
     this.meta.updatePageMeta({
       title: 'Menú Le Tiende',
@@ -48,7 +45,7 @@ export class Menu implements OnInit {
       nofollow: false,
     });
     this.datos.getMenu().subscribe((datos: DatoMenuLateral[]) => {
-      this.datosMenu = datos;
+      this.datosMenu.set(datos);
       this.cdr.detectChanges();
     });
   }
