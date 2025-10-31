@@ -6,7 +6,7 @@
 
 import { apiDiscogs, apiCoverDiscogs } from './libs/discogs.mjs';
 import { apiGoogleBooks } from './libs/googlebooks.mjs';
-import { leePOST, formateaEmail, validaReCAPTCHA } from './libs/funciones.mjs';
+import { leePOST, formateaEmail, validaReCAPTCHA, leeJSON, guardarContenidoS3 } from './libs/funciones.mjs';
 import { SendEmailCommand, SESClient } from "@aws-sdk/client-ses";
 
 const REGION = 'us-east-1';
@@ -95,11 +95,39 @@ export const handler = async (event, context, callback) => {
         break;
       }
       case 'actualizarContenido': {
-        const payload = leePOST(event);
+        // Recibe contenido desde Google Apps Script y lo almacena en S3
+        const payload = leeJSON(event);
         if (payload.ok) {
-          // Ser recibe el contenido de Google Workspace para generar un JSON y almacenarlo en S3
+          try {
+            const resultado = await guardarContenidoS3(payload.data);
+            if (resultado.success) {
+              salida({
+                success: true,
+                message: resultado.message,
+                seccion: payload.data.seccion,
+                url: resultado.url,
+                timestamp: resultado.timestamp
+              }, 200);
+            } else {
+              salida({
+                success: false,
+                message: resultado.message,
+                error: resultado.error
+              }, 400);
+            }
+          } catch (error) {
+            console.error('Error en actualizarContenido:', error);
+            salida({
+              success: false,
+              message: 'Error procesando contenido',
+              error: error.message
+            }, 500);
+          }
         } else {
-          salida(payload, 400);
+          salida({
+            success: false,
+            message: payload.data
+          }, 400);
         }
         break;
       }

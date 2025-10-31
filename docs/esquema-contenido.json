@@ -1,0 +1,357 @@
+{
+  "$schema": "Esquema de contenido para Le Tiende - Google Apps Script → AWS Lambda → S3",
+  "version": "1.0.0",
+  "descripcion": "Este esquema define la estructura del JSON que se envía desde Google Apps Script a la API de Lambda para almacenar contenido en S3",
+
+  "estructura": {
+    "seccion": "string (requerido) - Identificador de la sección del sitio",
+    "idiomas": "object (requerido) - Contenido en diferentes idiomas",
+    "metadata": "object (opcional) - Metadatos adicionales",
+    "timestamp": "string (automático) - Fecha/hora de última actualización"
+  },
+
+  "secciones_validas": [
+    "inicio",
+    "menu",
+    "eventos",
+    "auditorio",
+    "libreria",
+    "contacto",
+    "nosotros"
+  ],
+
+  "ejemplos": [
+    {
+      "ejemplo": "Página de Inicio",
+      "data": {
+        "seccion": "inicio",
+        "idiomas": {
+          "es": {
+            "titulo": "Le Tiende - Centro Cultural",
+            "subtitulo": "Café en taza, literatura en papel y música en surcos de vinilo",
+            "descripcion": "Un espacio donde convergen la cultura, el arte y la gastronomía en el corazón del Parkway",
+            "secciones": [
+              {
+                "id": "bienvenida",
+                "titulo": "Bienvenidos",
+                "contenido": "Somos un centro cultural que combina librería, café, bar y teatro en un solo espacio.",
+                "imagen_id": "bienvenida_principal"
+              },
+              {
+                "id": "horarios",
+                "titulo": "Horarios",
+                "contenido": "Lunes a Jueves: 10am - 10pm\nViernes a Sábado: 10am - 12am\nDomingo: 11am - 8pm"
+              }
+            ],
+            "llamadas_accion": [
+              {
+                "texto": "Ver Eventos",
+                "enlace": "/eventos",
+                "tipo": "primario"
+              },
+              {
+                "texto": "Conoce el Menú",
+                "enlace": "/menu",
+                "tipo": "secundario"
+              }
+            ]
+          },
+          "en": {
+            "titulo": "Le Tiende - Cultural Center",
+            "subtitulo": "Coffee in a cup, literature on paper and music in vinyl grooves",
+            "descripcion": "A space where culture, art and gastronomy converge in the heart of Parkway",
+            "secciones": [
+              {
+                "id": "bienvenida",
+                "titulo": "Welcome",
+                "contenido": "We are a cultural center that combines bookstore, café, bar and theater in one space.",
+                "imagen_id": "bienvenida_principal"
+              },
+              {
+                "id": "horarios",
+                "titulo": "Schedule",
+                "contenido": "Monday to Thursday: 10am - 10pm\nFriday to Saturday: 10am - 12am\nSunday: 11am - 8pm"
+              }
+            ],
+            "llamadas_accion": [
+              {
+                "texto": "View Events",
+                "enlace": "/eventos",
+                "tipo": "primario"
+              },
+              {
+                "texto": "Check Menu",
+                "enlace": "/menu",
+                "tipo": "secundario"
+              }
+            ]
+          }
+        },
+        "metadata": {
+          "autor": "Oscar Castelblanco",
+          "ultima_revision": "2025-10-29",
+          "version": "1.0",
+          "publicado": true,
+          "seo": {
+            "keywords": "centro cultural, café, librería, teatro, Bogotá, Parkway",
+            "og_image": "https://assets.letiende.co/images/og-inicio.jpg"
+          }
+        },
+        "timestamp": "2025-10-29T16:30:00Z"
+      }
+    },
+    {
+      "ejemplo": "Menú de Comidas y Bebidas",
+      "data": {
+        "seccion": "menu",
+        "idiomas": {
+          "es": {
+            "titulo": "Nuestro Menú",
+            "descripcion": "Disfruta de nuestra selección de cafés, comidas y bebidas",
+            "categorias": [
+              {
+                "id": "cafes",
+                "nombre": "Cafés",
+                "descripcion": "Café colombiano de origen",
+                "items": [
+                  {
+                    "id": "cafe_americano",
+                    "nombre": "Café Americano",
+                    "descripcion": "Espresso suave diluido en agua caliente",
+                    "precio": 5000,
+                    "moneda": "COP",
+                    "disponible": true,
+                    "imagen_id": "cafe_americano",
+                    "alergenos": [],
+                    "opciones": [
+                      {
+                        "nombre": "Tamaño",
+                        "valores": ["8 oz", "12 oz", "16 oz"]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "capuchino",
+                    "nombre": "Capuchino",
+                    "descripcion": "Espresso con leche espumada y un toque de canela",
+                    "precio": 7000,
+                    "moneda": "COP",
+                    "disponible": true,
+                    "imagen_id": "capuchino",
+                    "alergenos": ["lacteos"]
+                  }
+                ]
+              },
+              {
+                "id": "comidas",
+                "nombre": "Comidas",
+                "descripcion": "Platos preparados con ingredientes frescos",
+                "items": [
+                  {
+                    "id": "sandwich_pollo",
+                    "nombre": "Sándwich de Pollo",
+                    "descripcion": "Pan artesanal con pollo, lechuga, tomate y salsa de la casa",
+                    "precio": 18000,
+                    "moneda": "COP",
+                    "disponible": true,
+                    "imagen_id": "sandwich_pollo",
+                    "alergenos": ["gluten"],
+                    "vegetariano": false
+                  }
+                ]
+              }
+            ]
+          },
+          "en": {
+            "titulo": "Our Menu",
+            "descripcion": "Enjoy our selection of coffees, foods and drinks",
+            "categorias": [
+              {
+                "id": "cafes",
+                "nombre": "Coffees",
+                "descripcion": "Colombian origin coffee",
+                "items": [
+                  {
+                    "id": "cafe_americano",
+                    "nombre": "Americano Coffee",
+                    "descripcion": "Smooth espresso diluted in hot water",
+                    "precio": 5000,
+                    "moneda": "COP",
+                    "disponible": true,
+                    "imagen_id": "cafe_americano",
+                    "alergenos": [],
+                    "opciones": [
+                      {
+                        "nombre": "Size",
+                        "valores": ["8 oz", "12 oz", "16 oz"]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "capuchino",
+                    "nombre": "Cappuccino",
+                    "descripcion": "Espresso with foamed milk and a touch of cinnamon",
+                    "precio": 7000,
+                    "moneda": "COP",
+                    "disponible": true,
+                    "imagen_id": "capuchino",
+                    "alergenos": ["dairy"]
+                  }
+                ]
+              },
+              {
+                "id": "comidas",
+                "nombre": "Food",
+                "descripcion": "Dishes prepared with fresh ingredients",
+                "items": [
+                  {
+                    "id": "sandwich_pollo",
+                    "nombre": "Chicken Sandwich",
+                    "descripcion": "Artisan bread with chicken, lettuce, tomato and house sauce",
+                    "precio": 18000,
+                    "moneda": "COP",
+                    "disponible": true,
+                    "imagen_id": "sandwich_pollo",
+                    "alergenos": ["gluten"],
+                    "vegetariano": false
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "metadata": {
+          "autor": "Equipo Le Tiende",
+          "ultima_revision": "2025-10-29",
+          "version": "2.3",
+          "publicado": true,
+          "actualizacion_precios": "2025-10-15"
+        },
+        "timestamp": "2025-10-29T16:30:00Z"
+      }
+    },
+    {
+      "ejemplo": "Eventos y Presentaciones",
+      "data": {
+        "seccion": "eventos",
+        "idiomas": {
+          "es": {
+            "titulo": "Eventos en Le Teatre",
+            "descripcion": "Disfruta de las mejores presentaciones en nuestro auditorio",
+            "eventos": [
+              {
+                "id": "concierto_jazz_nov2025",
+                "titulo": "Noche de Jazz",
+                "descripcion": "Una velada única con los mejores exponentes del jazz colombiano",
+                "fecha_inicio": "2025-11-15T20:00:00Z",
+                "fecha_fin": "2025-11-15T23:00:00Z",
+                "ubicacion": "Le Teatre - Auditorio Principal",
+                "imagen_id": "evento_jazz_nov2025",
+                "artistas": [
+                  {
+                    "nombre": "Trío Jazz Bogotá",
+                    "bio": "Reconocido grupo de jazz con 10 años de trayectoria"
+                  }
+                ],
+                "precios": [
+                  {
+                    "categoria": "General",
+                    "valor": 35000,
+                    "moneda": "COP"
+                  },
+                  {
+                    "categoria": "Estudiantes",
+                    "valor": 25000,
+                    "moneda": "COP"
+                  }
+                ],
+                "capacidad": 120,
+                "entradas_disponibles": 85,
+                "enlace_boletas": "https://www.tuboleta.com/evento-xyz",
+                "categorias": ["musica", "jazz", "cultura"],
+                "destacado": true
+              }
+            ]
+          },
+          "en": {
+            "titulo": "Events at Le Teatre",
+            "descripcion": "Enjoy the best performances in our auditorium",
+            "eventos": [
+              {
+                "id": "concierto_jazz_nov2025",
+                "titulo": "Jazz Night",
+                "descripcion": "A unique evening with the best Colombian jazz performers",
+                "fecha_inicio": "2025-11-15T20:00:00Z",
+                "fecha_fin": "2025-11-15T23:00:00Z",
+                "ubicacion": "Le Teatre - Main Auditorium",
+                "imagen_id": "evento_jazz_nov2025",
+                "artistas": [
+                  {
+                    "nombre": "Jazz Bogotá Trio",
+                    "bio": "Renowned jazz group with 10 years of experience"
+                  }
+                ],
+                "precios": [
+                  {
+                    "categoria": "General",
+                    "valor": 35000,
+                    "moneda": "COP"
+                  },
+                  {
+                    "categoria": "Students",
+                    "valor": 25000,
+                    "moneda": "COP"
+                  }
+                ],
+                "capacidad": 120,
+                "entradas_disponibles": 85,
+                "enlace_boletas": "https://www.tuboleta.com/evento-xyz",
+                "categorias": ["music", "jazz", "culture"],
+                "destacado": true
+              }
+            ]
+          }
+        },
+        "metadata": {
+          "autor": "Equipo Eventos Le Tiende",
+          "ultima_revision": "2025-10-29",
+          "version": "1.5",
+          "publicado": true,
+          "proxima_actualizacion": "2025-11-01"
+        },
+        "timestamp": "2025-10-29T16:30:00Z"
+      }
+    }
+  ],
+
+  "notas_implementacion": {
+    "google_apps_script": {
+      "endpoint": "https://api.letiende.co/actualizarContenido",
+      "metodo": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "Origin": "https://script.google.com"
+      },
+      "autenticacion": "Se valida el origen en la función Lambda",
+      "manejo_errores": "La API retorna statusCode 200 si OK, 400/500 si error"
+    },
+    "almacenamiento_s3": {
+      "bucket": "letiende-assets",
+      "ruta": "data/{seccion}.json",
+      "ejemplo": "data/inicio.json, data/menu.json, data/eventos.json",
+      "permisos": "Lectura pública, escritura solo desde Lambda",
+      "versionado": "Recomendado activar versionado en S3 para respaldos"
+    },
+    "validaciones": {
+      "seccion_requerida": "El campo 'seccion' es obligatorio",
+      "idioma_minimo": "Debe incluir al menos 'es' (español)",
+      "timestamp_automatico": "Se agrega automáticamente si no existe",
+      "sanitizacion": "Se valida que no haya código malicioso en el JSON"
+    },
+    "extensibilidad": {
+      "nuevos_idiomas": "Solo agregar nueva clave en el objeto 'idiomas' (ej: 'fr', 'de', 'pt')",
+      "nuevas_secciones": "Agregar nombre a array secciones_validas y crear estructura similar",
+      "campos_personalizados": "Usar el objeto 'metadata' para campos específicos de cada sección"
+    }
+  }
+}

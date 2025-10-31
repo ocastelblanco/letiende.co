@@ -215,6 +215,91 @@ SDK configurado mediante provider factory en `app.config.ts`:
 - Lazy loading automático con `<advanced-image>`
 - CDN global para delivery
 
+### API Lambda para Gestión de Contenido
+
+La aplicación utiliza AWS Lambda (Node.js 22.x con ES Modules) para manejar operaciones backend a través de `https://api.letiende.co`.
+
+#### Endpoints Disponibles
+
+**POST /actualizarContenido**
+Recibe contenido desde Google Apps Script y lo almacena en S3 (bucket: `letiende-assets`).
+
+```javascript
+// Estructura del JSON esperado
+{
+  "seccion": "inicio|menu|eventos|auditorio|libreria|contacto|nosotros",
+  "idiomas": {
+    "es": { /* contenido en español */ },
+    "en": { /* contenido en inglés */ }
+  },
+  "metadata": {
+    "autor": "string",
+    "version": "string",
+    "publicado": boolean
+  }
+}
+```
+
+**Validaciones**:
+- Campo `seccion` es obligatorio y debe ser una sección válida
+- Campo `idiomas` debe incluir al menos el idioma `es` (español)
+- Origen CORS validado (incluye `https://script.google.com`)
+- Timestamp agregado automáticamente si no existe
+
+**Respuesta exitosa (200)**:
+```json
+{
+  "success": true,
+  "message": "Contenido guardado exitosamente",
+  "seccion": "inicio",
+  "url": "https://letiende-assets.s3.amazonaws.com/data/inicio.json",
+  "timestamp": "2025-10-31T..."
+}
+```
+
+**GET /discogs**
+Búsqueda de álbumes en Discogs por código de barras o artista/álbum.
+- Query params: `barcode` o `album` + `artista`
+
+**GET /coverDiscogs**
+Obtiene la imagen de portada desde Discogs.
+- Query params: `cover` (URL de la imagen)
+
+**GET /libros**
+Búsqueda de libros en Google Books API.
+- Query params: `barcode`, `autor`, o `titulo`
+
+**POST /mensaje**
+Envío de emails mediante AWS SES.
+- Body: `{ destinatario, asunto, html, texto }`
+
+**POST /recaptcha**
+Validación de tokens de Google reCAPTCHA.
+- Body: `{ secret, response }`
+
+#### Integración con Google Apps Script
+
+El archivo `external_resources/Google_Apps_Script/actualizarContenido.gs` contiene el código para sincronizar contenido desde Google Sheets:
+
+**Flujo de trabajo**:
+1. Usuario edita celda en Google Sheets
+2. Trigger `onEdit()` detecta el cambio
+3. Script construye JSON según esquema (`docs/esquema-contenido.json`)
+4. Envía POST a `https://api.letiende.co/actualizarContenido`
+5. Lambda valida y guarda en S3
+6. Respuesta confirma URL del archivo almacenado
+
+**Estructura de ejemplo en Sheets**:
+```
+Hoja "Inicio":
+| Campo      | ES                        | EN                        |
+|------------|---------------------------|---------------------------|
+| titulo     | Le Tiende - Centro...     | Le Tiende - Cultural...   |
+| subtitulo  | Café en taza...           | Coffee in a cup...        |
+```
+
+Ver `docs/esquema-contenido.json` para la estructura completa del modelo de datos.
+
 ### Gestión de Secretos
 
 #### Desarrollo Local
