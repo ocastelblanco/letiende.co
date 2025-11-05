@@ -6,13 +6,46 @@
 		<lt-menu-lateral class="lateral"
 										 [bp]="bp()"
 										 [modoTema]="modoTema()"
-										 [datosMenu]="datosMenu()" />
+										 [datosMenu]="datosMenuLateral()" />
 		<div class="categorias">
-			@for (categoria of [0,1,2,3,4,5,6]; track $index) {
-			<p-card [header]="'Lorem Ipsum ' + categoria"
-							class="categoria">
-				Lorem ipsum
-			</p-card>
+			@if (menuIdioma(); as menu) {
+				@for (categoria of menu.categorias; track categoria.id) {
+					<p-card [header]="categoria.nombre"
+									[subheader]="categoria.descripcion"
+									class="categoria"
+									[id]="categoria.id">
+						<div class="items">
+							@for (item of categoria.items; track item.id) {
+								@if (item.disponible) {
+									<div class="item">
+										<div class="item-header">
+											<h3 class="item-nombre">{{ item.nombre }}</h3>
+											<span class="item-precio">{{ item.precio | currency: item.moneda : 'symbol-narrow' }}</span>
+										</div>
+										<p class="item-descripcion">{{ item.descripcion }}</p>
+										@if (item.alergenos && item.alergenos.length > 0) {
+											<div class="item-alergenos">
+												<small>Alérgenos: {{ item.alergenos.join(', ') }}</small>
+											</div>
+										}
+										@if (item.opciones && item.opciones.length > 0) {
+											<div class="item-opciones">
+												@for (opcion of item.opciones; track opcion.nombre) {
+													<small>{{ opcion.nombre }}: {{ opcion.valores.join(', ') }}</small>
+												}
+											</div>
+										}
+									</div>
+								}
+							}
+						</div>
+					</p-card>
+				}
+			} @else {
+				<p-card header="Cargando menú..."
+								class="categoria">
+					<p-progressSpinner />
+				</p-card>
 			}
 		</div>
 	</div>
