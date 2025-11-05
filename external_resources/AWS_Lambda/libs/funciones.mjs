@@ -9,9 +9,13 @@ import https from 'https';
  * @returns {Object} - {data: Object, ok: boolean}
  */
 export const leePOST = (event) => {
-  const origen = event.headers.origin;
+  // API Gateway puede transformar headers a minúsculas, intentar ambos casos
+  const origen = event.headers.origin || event.headers.Origin;
+  const userAgent = event.headers['user-agent'] || event.headers['User-Agent'] || '';
+
   const origenesPermitidos = [
     'http://localhost:4200', // Desarrollo local
+    'https://script.google.com', // Google Apps Script
     'https://letiende.co',
     'https://www.letiende.co',
     'https://olivercastelblanco.com',
@@ -22,7 +26,13 @@ export const leePOST = (event) => {
     'https://www.bar23.co',
   ];
 
-  if (origen && origenesPermitidos.includes(origen)) {
+  // Validar si el origen está en la lista permitida
+  const origenValido = origen && origenesPermitidos.includes(origen);
+
+  // Validar si viene de Google Apps Script por User-Agent
+  const esGoogleAppsScript = userAgent.includes('Google-Apps-Script');
+
+  if (origenValido || esGoogleAppsScript) {
     const respuesta = deCodeBody(event);
     if (respuesta) {
       return {
@@ -36,8 +46,9 @@ export const leePOST = (event) => {
       };
     }
   } else {
+    console.error('Origen no permitido:', { origen, userAgent });
     return {
-      data: `El origen de la petición no está permitido: ${origen}`,
+      data: `El origen de la petición no está permitido. Origin: ${origen}, User-Agent: ${userAgent.substring(0, 50)}...`,
       ok: false
     };
   }
@@ -119,7 +130,10 @@ export const validaReCAPTCHA = (data) => {
  * @returns {Object} - {data: Object, ok: boolean}
  */
 export const leeJSON = (event) => {
-  const origen = event.headers.origin;
+  // API Gateway puede transformar headers a minúsculas, intentar ambos casos
+  const origen = event.headers.origin || event.headers.Origin;
+  const userAgent = event.headers['user-agent'] || event.headers['User-Agent'] || '';
+
   const origenesPermitidos = [
     'http://localhost:4200', // Desarrollo local
     'https://script.google.com', // Google Apps Script
@@ -133,9 +147,16 @@ export const leeJSON = (event) => {
     'https://www.bar23.co',
   ];
 
-  if (!origen || !origenesPermitidos.includes(origen)) {
+  // Validar si el origen está en la lista permitida
+  const origenValido = origen && origenesPermitidos.includes(origen);
+
+  // Validar si viene de Google Apps Script por User-Agent
+  const esGoogleAppsScript = userAgent.includes('Google-Apps-Script');
+
+  if (!origenValido && !esGoogleAppsScript) {
+    console.error('Origen no permitido:', { origen, userAgent });
     return {
-      data: `El origen de la petición no está permitido: ${origen}`,
+      data: `El origen de la petición no está permitido. Origin: ${origen}, User-Agent: ${userAgent.substring(0, 50)}...`,
       ok: false
     };
   }
