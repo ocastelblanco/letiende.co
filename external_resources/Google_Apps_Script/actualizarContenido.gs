@@ -261,6 +261,9 @@ function enviarContenidoAPI(contenido) {
   const opciones = {
     method: 'post',
     contentType: 'application/json',
+    headers: {
+      'Origin': 'https://script.google.com'
+    },
     payload: JSON.stringify(contenido),
     muteHttpExceptions: true
   };
