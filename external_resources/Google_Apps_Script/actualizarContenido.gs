@@ -10,7 +10,7 @@
  * Función principal que se ejecuta al editar la hoja
  * @param {Object} e - Evento de edición de Google Sheets
  */
-function onEdit(e) {
+function atEdit(e) {
   // Obtener la hoja activa
   const sheet = e.source.getActiveSheet();
   const sheetName = sheet.getName();
