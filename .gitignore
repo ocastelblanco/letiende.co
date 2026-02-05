@@ -56,3 +56,7 @@ secrets.ts
 # Lambda artifacts
 external_resources/*.zip
 external_resources/lambda_descargada/
+
+# Claude Code
+.claude/*
+.omc/*
