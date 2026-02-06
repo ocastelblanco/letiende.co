@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, effect, OnInit, signal } from '@angular/core';
 import { ImagenFondo } from '@componentes/imagen-fondo';
-import { IconosModule } from '@modulos/iconos/iconos-module';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { PrimengModule } from '@modulos/primeng/primeng-module';
 import { LtConfig } from '@servicios/lt-config';
 import { MetaService } from '@servicios/meta';
 
 @Component({
   selector: 'lt-inicio',
-  imports: [PrimengModule, IconosModule, ImagenFondo],
+  imports: [PrimengModule, FaIconComponent, ImagenFondo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './inicio.html',
   styleUrl: './inicio.scss'

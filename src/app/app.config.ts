@@ -20,6 +20,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { providePrimeNG } from 'primeng/config';
 import { LTPreset } from '../tema/lt-tema';
 import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideIconos } from '@modulos/iconos/iconos-module';
 
 
 let localSecrets: any | undefined = undefined;
@@ -95,5 +96,6 @@ export const appConfig: ApplicationConfig = {
       },
     }),
     provideHttpClient(withFetch()),
+    provideIconos(),
   ]
 };

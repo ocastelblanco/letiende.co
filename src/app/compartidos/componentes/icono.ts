@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { IconosModule } from '@modulos/iconos/iconos-module';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { IconoLT } from '@servicios/datos';
 
 @Component({
   selector: 'lt-icono',
-  imports: [IconosModule],
+  imports: [FaIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
   <div class="icono"
