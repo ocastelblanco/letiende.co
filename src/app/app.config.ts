@@ -87,6 +87,7 @@ export const appConfig: ApplicationConfig = {
     },
     provideAnimationsAsync(),
     providePrimeNG({
+      ripple: true,
       theme: {
         preset: LTPreset,
         options: {

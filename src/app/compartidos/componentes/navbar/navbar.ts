@@ -6,7 +6,10 @@ import { IdiomaItem, LtConfig, NavbarItem } from '@servicios/lt-config';
 
 @Component({
   selector: 'lt-navbar',
-  imports: [PrimengModule, RouterModule],
+  imports: [
+    PrimengModule,
+    RouterModule,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss'
