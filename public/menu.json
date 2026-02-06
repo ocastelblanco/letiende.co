@@ -1,34 +1,369 @@
-[
-  {
-    "icono": {
-      "nombre": "coffee_maker",
-      "tipo": "material-symbols-outlined"
+{
+  "seccion": "menu",
+  "idiomas": {
+    "es": {
+      "titulo": "Menú Le Tiende",
+      "descripcion": "Disfruta de nuestra selección de café, bebidas y comida preparada con amor",
+      "categorias": [
+        {
+          "id": "bebidas-cafe",
+          "nombre": "Bebidas de café",
+          "descripcion": "Café de especialidad preparado por baristas expertos",
+          "icono": { "nombre": "coffee_maker", "tipo": "material-symbols-outlined" },
+          "enlace": "/menu/bebidas-de-cafe",
+          "items": [
+            {
+              "id": "espresso",
+              "nombre": "Espresso",
+              "descripcion": "Café espresso clásico, intenso y aromático",
+              "precio": 4500,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "opciones": [
+                {
+                  "nombre": "Tamaño",
+                  "valores": ["Simple", "Doble"]
+                }
+              ]
+            },
+            {
+              "id": "cappuccino",
+              "nombre": "Cappuccino",
+              "descripcion": "Espresso con leche vaporizada y espuma cremosa",
+              "precio": 7500,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["lácteos"],
+              "opciones": [
+                {
+                  "nombre": "Leche",
+                  "valores": ["Entera", "Deslactosada", "Almendras", "Avena"]
+                }
+              ]
+            },
+            {
+              "id": "latte",
+              "nombre": "Latte",
+              "descripcion": "Espresso suave con leche vaporizada y arte latte",
+              "precio": 8000,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["lácteos"],
+              "opciones": [
+                {
+                  "nombre": "Leche",
+                  "valores": ["Entera", "Deslactosada", "Almendras", "Avena"]
+                },
+                {
+                  "nombre": "Sabor",
+                  "valores": ["Natural", "Vainilla", "Caramelo", "Avellana"]
+                }
+              ]
+            },
+            {
+              "id": "cold-brew",
+              "nombre": "Cold Brew",
+              "descripcion": "Café extraído en frío durante 12 horas, suave y refrescante",
+              "precio": 9000,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true
+            }
+          ]
+        },
+        {
+          "id": "bebidas-sin-cafe",
+          "nombre": "Bebidas sin café",
+          "descripcion": "Opciones refrescantes y deliciosas sin cafeína",
+          "icono": { "nombre": "emoji_food_beverage", "tipo": "material-symbols-outlined" },
+          "enlace": "/menu/bebidas-sin-cafe",
+          "items": [
+            {
+              "id": "chocolate-caliente",
+              "nombre": "Chocolate Caliente",
+              "descripcion": "Chocolate belga con leche vaporizada y crema batida",
+              "precio": 8500,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["lácteos"],
+              "opciones": [
+                {
+                  "nombre": "Leche",
+                  "valores": ["Entera", "Deslactosada", "Almendras", "Avena"]
+                }
+              ]
+            },
+            {
+              "id": "te-chai",
+              "nombre": "Té Chai",
+              "descripcion": "Té negro especiado con leche y miel",
+              "precio": 7000,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["lácteos"]
+            },
+            {
+              "id": "limonada-natural",
+              "nombre": "Limonada Natural",
+              "descripcion": "Limonada fresca con hierbabuena y panela",
+              "precio": 6000,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "opciones": [
+                {
+                  "nombre": "Preparación",
+                  "valores": ["Natural", "Con hierbabuena", "Con jengibre"]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "para-comer",
+          "nombre": "Para comer",
+          "descripcion": "Bocados perfectos para acompañar tu bebida",
+          "icono": { "nombre": "dinner_dining", "tipo": "material-symbols-outlined" },
+          "enlace": "/menu/para-comer",
+          "items": [
+            {
+              "id": "croissant-mantequilla",
+              "nombre": "Croissant de Mantequilla",
+              "descripcion": "Croissant francés hojaldrado y crujiente",
+              "precio": 6500,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["gluten", "lácteos", "huevo"]
+            },
+            {
+              "id": "sandwich-jamon-queso",
+              "nombre": "Sándwich de Jamón y Queso",
+              "descripcion": "Pan artesanal con jamón serrano, queso manchego y tomate",
+              "precio": 12000,
+              "moneda": "COP",
+              "disponible": true,
+              "alergenos": ["gluten", "lácteos"],
+              "opciones": [
+                {
+                  "nombre": "Pan",
+                  "valores": ["Blanco", "Integral", "Centeno"]
+                }
+              ]
+            },
+            {
+              "id": "torta-zanahoria",
+              "nombre": "Torta de Zanahoria",
+              "descripcion": "Torta húmeda con nueces y frosting de queso crema",
+              "precio": 9500,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["gluten", "lácteos", "huevo", "frutos secos"]
+            },
+            {
+              "id": "ensalada-quinoa",
+              "nombre": "Ensalada de Quinoa",
+              "descripcion": "Quinoa con vegetales frescos, aguacate y vinagreta de limón",
+              "precio": 14000,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true
+            }
+          ]
+        }
+      ]
     },
-    "titulo": "Bebidas de café",
-    "enlace": "/menu/bebidas-de-cafe"
+    "en": {
+      "titulo": "Le Tiende Menu",
+      "descripcion": "Enjoy our selection of coffee, beverages and food prepared with love",
+      "categorias": [
+        {
+          "id": "bebidas-cafe",
+          "nombre": "Coffee Beverages",
+          "descripcion": "Specialty coffee prepared by expert baristas",
+          "icono": { "nombre": "coffee_maker", "tipo": "material-symbols-outlined" },
+          "enlace": "/menu/bebidas-de-cafe",
+          "items": [
+            {
+              "id": "espresso",
+              "nombre": "Espresso",
+              "descripcion": "Classic espresso coffee, intense and aromatic",
+              "precio": 4500,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "opciones": [
+                {
+                  "nombre": "Size",
+                  "valores": ["Single", "Double"]
+                }
+              ]
+            },
+            {
+              "id": "cappuccino",
+              "nombre": "Cappuccino",
+              "descripcion": "Espresso with steamed milk and creamy foam",
+              "precio": 7500,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["dairy"],
+              "opciones": [
+                {
+                  "nombre": "Milk",
+                  "valores": ["Whole", "Lactose-free", "Almond", "Oat"]
+                }
+              ]
+            },
+            {
+              "id": "latte",
+              "nombre": "Latte",
+              "descripcion": "Smooth espresso with steamed milk and latte art",
+              "precio": 8000,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["dairy"],
+              "opciones": [
+                {
+                  "nombre": "Milk",
+                  "valores": ["Whole", "Lactose-free", "Almond", "Oat"]
+                },
+                {
+                  "nombre": "Flavor",
+                  "valores": ["Natural", "Vanilla", "Caramel", "Hazelnut"]
+                }
+              ]
+            },
+            {
+              "id": "cold-brew",
+              "nombre": "Cold Brew",
+              "descripcion": "Coffee extracted cold for 12 hours, smooth and refreshing",
+              "precio": 9000,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true
+            }
+          ]
+        },
+        {
+          "id": "bebidas-sin-cafe",
+          "nombre": "Non-Coffee Beverages",
+          "descripcion": "Refreshing and delicious caffeine-free options",
+          "icono": { "nombre": "emoji_food_beverage", "tipo": "material-symbols-outlined" },
+          "enlace": "/menu/bebidas-sin-cafe",
+          "items": [
+            {
+              "id": "chocolate-caliente",
+              "nombre": "Hot Chocolate",
+              "descripcion": "Belgian chocolate with steamed milk and whipped cream",
+              "precio": 8500,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["dairy"],
+              "opciones": [
+                {
+                  "nombre": "Milk",
+                  "valores": ["Whole", "Lactose-free", "Almond", "Oat"]
+                }
+              ]
+            },
+            {
+              "id": "te-chai",
+              "nombre": "Chai Tea",
+              "descripcion": "Spiced black tea with milk and honey",
+              "precio": 7000,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["dairy"]
+            },
+            {
+              "id": "limonada-natural",
+              "nombre": "Natural Lemonade",
+              "descripcion": "Fresh lemonade with mint and panela",
+              "precio": 6000,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "opciones": [
+                {
+                  "nombre": "Preparation",
+                  "valores": ["Natural", "With mint", "With ginger"]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "para-comer",
+          "nombre": "Food",
+          "descripcion": "Perfect bites to accompany your beverage",
+          "icono": { "nombre": "dinner_dining", "tipo": "material-symbols-outlined" },
+          "enlace": "/menu/para-comer",
+          "items": [
+            {
+              "id": "croissant-mantequilla",
+              "nombre": "Butter Croissant",
+              "descripcion": "French flaky and crispy croissant",
+              "precio": 6500,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["gluten", "dairy", "egg"]
+            },
+            {
+              "id": "sandwich-jamon-queso",
+              "nombre": "Ham and Cheese Sandwich",
+              "descripcion": "Artisan bread with serrano ham, manchego cheese and tomato",
+              "precio": 12000,
+              "moneda": "COP",
+              "disponible": true,
+              "alergenos": ["gluten", "dairy"],
+              "opciones": [
+                {
+                  "nombre": "Bread",
+                  "valores": ["White", "Whole wheat", "Rye"]
+                }
+              ]
+            },
+            {
+              "id": "torta-zanahoria",
+              "nombre": "Carrot Cake",
+              "descripcion": "Moist cake with walnuts and cream cheese frosting",
+              "precio": 9500,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true,
+              "alergenos": ["gluten", "dairy", "egg", "tree nuts"]
+            },
+            {
+              "id": "ensalada-quinoa",
+              "nombre": "Quinoa Salad",
+              "descripcion": "Quinoa with fresh vegetables, avocado and lemon vinaigrette",
+              "precio": 14000,
+              "moneda": "COP",
+              "disponible": true,
+              "vegetariano": true
+            }
+          ]
+        }
+      ]
+    }
   },
-  {
-    "icono": {
-      "nombre": "emoji_food_beverage",
-      "tipo": "material-symbols-outlined"
-    },
-    "titulo": "Bebidas sin café",
-    "enlace": "/menu/bebidas-sin-cafe"
+  "metadata": {
+    "autor": "Le Tiende",
+    "version": "1.0.0",
+    "publicado": true,
+    "ultima_revision": "2025-02-05",
+    "actualizacion_precios": "2025-02-05"
   },
-  {
-    "icono": {
-      "nombre": "liquor",
-      "tipo": "material-symbols-outlined"
-    },
-    "titulo": "Cervezas, vinos y licores",
-    "enlace": "/menu/cervezas-vinos-licores"
-  },
-  {
-    "icono": {
-      "nombre": "dinner_dining",
-      "tipo": "material-symbols-outlined"
-    },
-    "titulo": "Para comer",
-    "enlace": "/menu/para-comer"
-  }
-]
+  "timestamp": "2025-02-05T00:00:00.000Z"
+}

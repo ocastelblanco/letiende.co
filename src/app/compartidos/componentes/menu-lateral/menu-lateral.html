@@ -9,20 +9,20 @@
     </div>
   </div>
   <div class="items">
-    @for (item of datosMenu(); track item.titulo) {
+    @for (item of datosMenu(); track item.nombre) {
     <a pRipple
        class="item"
        [class.active]="url() === item.enlace"
        routerLinkActive="active"
        [routerLink]="item.enlace"
-       [ariaLabel]="item.titulo">
+       [ariaLabel]="item.nombre">
       <div class="item-icono">
         <lt-icono [icono]="item.icono"
                   [fontSize]="'1.5em'" />
       </div>
       <div class="item-titulo">
         <span class="texto"
-              [innerHTML]="item.titulo"></span>
+              [innerHTML]="item.nombre"></span>
       </div>
     </a>
     }

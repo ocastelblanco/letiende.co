@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input, OnInit, PLATFORM_ID, signal } from '@angular/core';
-import { DatoMenuLateral } from '@servicios/datos';
+import { MenuCategoria } from '@servicios/datos';
 import { Icono } from "@componentes/icono";
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
@@ -13,7 +13,7 @@ import { BreakpointSize } from '@servicios/breakpoint-service';
   styleUrl: './menu-lateral.scss'
 })
 export class MenuLateral implements OnInit {
-  readonly datosMenu = input<DatoMenuLateral[]>([]);
+  readonly datosMenu = input<MenuCategoria[]>([]);
   readonly modoTema = input<string>('light');
   readonly bp = input<BreakpointSize>('xs');
 

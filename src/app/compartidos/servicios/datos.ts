@@ -1,15 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, isDevMode } from '@angular/core';
 import { Observable } from 'rxjs';
 
 export type IconoLT = { nombre: string, tipo: 'fas' | 'pi' | 'material-symbols-outlined' };
-
-// Interfaces para el menú lateral de navegación
-export interface DatoMenuLateral {
-  icono: IconoLT;
-  titulo: string;
-  enlace: string;
-}
 
 // Interfaces para la estructura completa del menú desde S3
 export interface MenuResponse {
@@ -38,6 +31,8 @@ export interface MenuCategoria {
   id: string;
   nombre: string;
   descripcion: string;
+  icono: IconoLT;
+  enlace: string;
   items: MenuItem[];
 }
 
@@ -64,7 +59,8 @@ export interface MenuOpcion {
 })
 export class Datos {
   private readonly http: HttpClient = inject(HttpClient);
-  private readonly assetsUrl: string = 'https://assets.letiende.co/data/';
+  // En desarrollo usa el archivo local, en producción usa assets.letiende.co
+  private readonly assetsUrl: string = isDevMode() ? '/' : 'https://assets.letiende.co/data/';
 
   getMenu(): Observable<MenuResponse> {
     return this.http.get<MenuResponse>(this.assetsUrl + 'menu.json');
