@@ -60,3 +60,4 @@ external_resources/lambda_descargada/
 # Claude Code
 .claude/*
 .omc/*
+.mcp.json

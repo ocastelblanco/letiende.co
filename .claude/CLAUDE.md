@@ -82,13 +82,13 @@ Cada sección principal tiene una hoja en la spreadsheet mencionada, con los tex
 ## Tecnologías
 |Tecnología|Versión|Propósito|Documentación|
 |----------|-------|---------|-------------|
-|Angular|20.x|Framework frontend|https://angular.dev|
-|PrimeNG|20.x|Componentes UI|https://primeng.org|
+|Angular|21.x|Framework frontend|https://angular.dev|
+|PrimeNG|21.x|Componentes UI|https://primeng.org|
 |PrimeIcons|7.x|Librería de iconos|https://primeng.org/icons|
-|FontAwesome|6.x|Librería de iconos|https://docs.fontawesome.com|
-|FontAwesome Angular|2.x|SDK de Angular para íconos|https://github.com/FortAwesome/angular-fontawesome|
+|FontAwesome|7.x|Librería de iconos|https://docs.fontawesome.com|
+|FontAwesome Angular|4.x|SDK de Angular para íconos|https://github.com/FortAwesome/angular-fontawesome|
 |Google Symbols & Icons||Librería de iconos|https://developers.google.com/fonts/docs/material_symbols|
-|Angular Fire|20.x|Servicios backend libres de administración|https://github.com/angular/angularfire|
+|Angular Fire|21.x|Servicios backend libres de administración|https://github.com/angular/angularfire|
 |Serverless|4.x|Framework de despliegue|https://www.serverless.com/framework/docs|
 |serverless-express|4.x|Generador de Express para Serverless / AWS Lambda|https://github.com/CodeGenieApp/serverless-express|
 |Cloudinary API||Almacenamiento y distribución de imágenes|https://cloudinary.com/documentation/cloudinary_references|
