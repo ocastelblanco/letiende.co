@@ -30,6 +30,9 @@
       "@vistas/*": [
         "./src/app/vistas/*"
       ],
+      "@core/*": [
+        "./src/app/core/*"
+      ]
     }
   },
   "angularCompilerOptions": {

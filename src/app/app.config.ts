@@ -19,7 +19,8 @@ import { FirebaseConfig } from '@servicios/firebase-config';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import { LTPreset } from '../tema/lt-tema';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
+import { withHttpTransferCacheOptions } from '@angular/platform-browser';
 import { provideIconos } from '@modulos/iconos/iconos-module';
 
 
@@ -35,7 +36,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes),
-    provideClientHydration(withEventReplay()),
+    provideClientHydration(withEventReplay(), withHttpTransferCacheOptions({ includePostRequests: false })),
     // Usamos una función de fábrica para inyectar FirebaseConfigService
     // e inicializar Firebase con las opciones obtenidas de él.
     provideFirebaseApp(() => {

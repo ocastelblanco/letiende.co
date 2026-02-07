@@ -30,6 +30,20 @@
           <span [innerHTML]="item.label"></span>
         </a>
       </ng-template>
+      <ng-template #end>
+        @if (estaAutenticado()) {
+        <p-button class="admin-button"
+                  icon="pi pi-cog"
+                  routerLink="/admin"
+                  routerLinkActive="active"
+                  (onClick)="limpiarFocoMenubar()"
+                  [rounded]="true" />
+        }
+        <p-button class="log-button"
+                  [icon]="estaAutenticado() ? 'pi pi-sign-out' : 'pi pi-sign-in'"
+                  (onClick)="manejarClickAuth()"
+                  [rounded]="true" />
+      </ng-template>
     </p-menubar>
   </div>
   <div class="estilos">
@@ -38,13 +52,13 @@
               [rounded]="true" />
     <div class="desp-idioma">
       <p-menu #idioma
-              styleClass="p-menu-idioma"
+              class="p-menu-idioma"
               [model]="idiomaMenuItems"
               [popup]="true">
         <ng-template #item
                      let-item>
           <a pRipple
-             class="flex items-center gap-2 px-3 py-2 cursor-pointer"
+             class="flag-selector"
              (click)="item.command?.({ originalEvent: $event, item: item })">
             <span class="flag-container">
               <img [src]="cdn + 'flags/' + item.flag + '.svg'"
@@ -54,11 +68,14 @@
           </a>
         </ng-template>
       </p-menu>
-      <p-button (click)="idioma.toggle($event)"
-                styleClass="p-button-idioma"
+      <p-button (click)="desplegarMenuIdiomas(idioma, $event)"
+                class="p-button-idioma"
                 [rounded]="true">
         <img [src]="cdn + 'flags/' + idiomaActual().flag + '.svg'">
       </p-button>
     </div>
   </div>
 </div>
+
+<lt-dialogo-login [visible]="dialogoLoginVisible()"
+                  (visibleChange)="dialogoLoginVisible.set($event)" />

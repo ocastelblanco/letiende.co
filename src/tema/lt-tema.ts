@@ -73,14 +73,15 @@ function creaRGBA(colorHex: string, opacidad: glassOpacityType): string {
 }
 
 // Valores precalculados para glassmorphism
-const lightPanelSurface = creaRGBA(lightSurface[0], 'frosted');
-const darkPanelSurface = creaRGBA(darkSurface[900], 'frosted');
-const lightButtonPrimaryBackground = creaRGBA(lightSurface[200], 'soft');
-const lightButtonPrimaryHoverBackground = creaRGBA(primaryColors[500], 'hard');
-const darkButtonPrimaryBackground = creaRGBA(darkSurface[700], 'soft');
-const darkButtonPrimaryHoverBackground = creaRGBA(darkSurface[100], 'hard');
-const lightButtonPrimaryColor = `rgb(${hexToRgb(lightSurface[900])})`;
-const darkButtonPrimaryColor = `rgb(${hexToRgb(lightSurface[0])})`;
+const lightPanelSurface: string = creaRGBA(lightSurface[0], 'frosted');
+const darkPanelSurface: string = creaRGBA(darkSurface[900], 'frosted');
+const lightButtonPrimaryBackground: string = creaRGBA(lightSurface[200], 'soft');
+const lightButtonPrimaryHoverBackground: string = creaRGBA(primaryColors[500], 'hard');
+const darkButtonPrimaryBackground: string = creaRGBA(darkSurface[700], 'soft');
+const darkButtonPrimaryHoverBackground: string = creaRGBA(darkSurface[100], 'hard');
+const lightButtonPrimaryColor: string = `rgb(${hexToRgb(lightSurface[900])})`;
+const darkButtonPrimaryColor: string = `rgb(${hexToRgb(lightSurface[0])})`;
+const headerPadding: { lg: string, sm: string } = { lg: '8px', sm: '2px' };
 
 export const LTPreset = definePreset(Aura, {
   primitive: {
@@ -118,6 +119,8 @@ export const LTPreset = definePreset(Aura, {
       --lt-dark-button-primary-hover-bg: ${darkButtonPrimaryHoverBackground};
       --lt-light-button-primary-color: ${lightButtonPrimaryColor};
       --lt-dark-button-primary-color: ${darkButtonPrimaryColor};
+      --lt-header-padding-lg: ${headerPadding.lg};
+      --lt-header-padding-sm: ${headerPadding.sm};
     }
 
     /* Menubar glassmorphism */
@@ -134,6 +137,11 @@ export const LTPreset = definePreset(Aura, {
 
     .p-dark .p-menubar.menu-bar {
       background: var(--lt-dark-panel-surface);
+    }
+
+    .admin-button.active .p-button {
+      background: var(--lt-glass-active-bg) !important;
+      color: var(--lt-menubar-item-color) !important;
     }
 
     /* Button primary glassmorphism */
@@ -159,6 +167,7 @@ export const LTPreset = definePreset(Aura, {
 
     /* Botón idioma */
     .p-button-idioma {
+      display: flex;
       width: var(--lt-button-icon-only-width);
       height: var(--lt-button-icon-only-width);
     }
@@ -176,10 +185,6 @@ export const LTPreset = definePreset(Aura, {
 
     .p-dark .p-menu {
       background: var(--lt-dark-panel-surface);
-    }
-
-    .p-menu-idioma {
-      min-width: fit-content;
     }
   `,
 });

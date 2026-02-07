@@ -1,0 +1,93 @@
+@use "sass:color";
+@use "../../../../tema/mixins.scss";
+
+::ng-deep .dialogo-login {
+  .p-dialog {
+    @include mixins.glass-heavy;
+    border-radius: 20px;
+    overflow: hidden;
+
+    .p-dialog-header {
+      background: transparent;
+      border-bottom: 1px solid var(--lt-glass-border);
+      padding: 1.25rem 1.5rem;
+
+      .dialogo-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+
+        i {
+          font-size: 1.5rem;
+          color: var(--lt-primary-color);
+        }
+      }
+    }
+
+    .p-dialog-content {
+      background: transparent;
+      padding: 1.5rem;
+
+      .dialogo-contenido {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+
+        .dialogo-descripcion {
+          margin: 0;
+          text-align: center;
+          opacity: 0.8;
+          line-height: 1.5;
+        }
+
+        .dialogo-error {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1rem;
+          background: rgba(239, 68, 68, 0.15);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          border-radius: 10px;
+          color: #ef4444;
+          font-size: 0.875rem;
+
+          i {
+            font-size: 1rem;
+          }
+        }
+
+        .dialogo-acciones {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+
+          .boton-google {
+            @include mixins.glass-frosted;
+            border-radius: 12px;
+            padding: 0.875rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+
+            &:hover:not(:disabled) {
+              @include mixins.glass-heavy;
+              transform: translateY(-2px);
+            }
+
+            .p-button-label {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 0.75rem;
+            }
+
+            .google-icon {
+              flex-shrink: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}

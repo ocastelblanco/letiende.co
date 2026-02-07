@@ -7,6 +7,7 @@ export { MenuModule } from 'primeng/menu';
 export { CardModule } from 'primeng/card';
 export { ProgressSpinnerModule } from 'primeng/progressspinner';
 export { RippleModule } from 'primeng/ripple';
+export { DialogModule } from 'primeng/dialog';
 
 // Re-exportación para compatibilidad con imports existentes
 import { ButtonModule } from 'primeng/button';
@@ -15,6 +16,7 @@ import { MenuModule } from 'primeng/menu';
 import { CardModule } from 'primeng/card';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RippleModule } from 'primeng/ripple';
+import { DialogModule } from 'primeng/dialog';
 
 export const PrimengModule = [
   ButtonModule,
@@ -23,4 +25,5 @@ export const PrimengModule = [
   CardModule,
   ProgressSpinnerModule,
   RippleModule,
+  DialogModule,
 ] as const;

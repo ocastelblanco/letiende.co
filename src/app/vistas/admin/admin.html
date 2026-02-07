@@ -1,0 +1,92 @@
+<div class="admin-container"
+     [class]="modoTema() + ' ' + bp()"
+     lt-imagen-fondo
+     publicID="Admin">
+  @if (cargando()) {
+    <div class="admin-cargando">
+      <p-progressSpinner strokeWidth="4"
+                         [style]="{ width: '50px', height: '50px' }" />
+      <span>Verificando sesión...</span>
+    </div>
+  } @else if (usuario()) {
+    <div class="admin-contenido">
+      <!-- Menú lateral -->
+      <lt-menu-lateral class="lateral"
+                       [bp]="bp()"
+                       [modoTema]="modoTema()"
+                       [datosMenu]="menuItems" />
+
+      <div class="admin-main">
+        <div class="admin-header">
+          <h1>Panel de Administración</h1>
+          <!-- Bloque de usuario -->
+          <div class="usuario-card">
+            <div class="usuario-info">
+              <span class="usuario-nombre">{{ usuario()?.displayName || 'Usuario' }}</span>
+              <span class="usuario-email">{{ usuario()?.email }}</span>
+            </div>
+            @if (usuario()?.photoURL && !avatarError()) {
+              <img [src]="usuario()?.photoURL"
+                   [alt]="usuario()?.displayName || 'Usuario'"
+                   referrerpolicy="no-referrer"
+                   (error)="onAvatarError()"
+                   class="usuario-avatar">
+            } @else {
+              <div class="usuario-avatar-placeholder">
+                <i class="pi pi-user"></i>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="admin-panel">
+          <p class="admin-descripcion">
+            Bienvenido al panel de administración de Le Tiende.
+            Desde aquí podrás gestionar el contenido del sitio web.
+          </p>
+
+          <div class="admin-cards">
+            <p-card styleClass="admin-card"
+                    [routerLink]="'/admin/eventos'">
+              <ng-template #header>
+                <div class="card-header">
+                  <i class="pi pi-calendar"></i>
+                </div>
+              </ng-template>
+              <ng-template #title>Eventos</ng-template>
+              <ng-template #subtitle>Gestionar eventos del auditorio</ng-template>
+            </p-card>
+
+            <p-card styleClass="admin-card"
+                    [routerLink]="'/admin/libreria'">
+              <ng-template #header>
+                <div class="card-header">
+                  <i class="pi pi-book"></i>
+                </div>
+              </ng-template>
+              <ng-template #title>Librería</ng-template>
+              <ng-template #subtitle>Administrar catálogo de libros</ng-template>
+            </p-card>
+
+            <p-card styleClass="admin-card"
+                    [routerLink]="'/admin/menu'">
+              <ng-template #header>
+                <div class="card-header">
+                  <i class="pi pi-list"></i>
+                </div>
+              </ng-template>
+              <ng-template #title>Menú</ng-template>
+              <ng-template #subtitle>Actualizar menú de comidas y bebidas</ng-template>
+            </p-card>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="admin-no-auth">
+      <i class="pi pi-lock"></i>
+      <h2>Acceso restringido</h2>
+      <p>Debes iniciar sesión para acceder a esta sección.</p>
+    </div>
+  }
+</div>

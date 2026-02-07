@@ -39,6 +39,10 @@
   }
   .menubar {
     flex: auto 1 1;
+    .admin-button {
+      margin-right: 0.5em;
+      text-decoration: none;
+    }
   }
   .estilos {
     @include mixins.glass-heavy;
@@ -60,7 +64,7 @@
       }
     }
     .estilos {
-      padding: 2px;
+      padding: var(--lt-header-padding-sm);
     }
   }
   &.md,
@@ -74,51 +78,91 @@
       }
     }
     .estilos {
-      padding: 8px;
+      padding: var(--lt-header-padding-lg);
     }
   }
 }
 
 // Estilos para el menú de idiomas (popup)
-::ng-deep .p-menu-idioma {
-  .flag-container {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+::ng-deep {
+  .navbar {
+    .estilos {
+      .desp-idioma {
+        .p-menu-idioma {
+          .p-motion {
+            inset-inline-start: 0 !important;
+            .p-menu {
+              @include mixins.glass-heavy;
+              background: var(--lt-menubar-background);
+              overflow: hidden;
+              border-radius: 20px;
+              min-width: auto;
+              width: 80px;
+              .p-menu-list {
+                padding: 0;
+                .p-menu-item {
+                  .p-menu-item-content {
+                    border-radius: 20px;
+                    .flag-selector {
+                      display: flex;
+                      align-items: center;
+                      gap: 0.5rem;
+                      padding-left: 0.75rem;
+                      padding-right: 0.75rem;
+                      padding-top: 0.5rem;
+                      padding-bottom: 0.5rem;
+                      cursor: pointer;
+                      .flag-container {
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        overflow: hidden;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        img {
+                          width: 100%;
+                          height: 100%;
+                          object-fit: cover;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
-  }
-
-  // Clases de utilidad para el template personalizado
-  .flex {
-    display: flex;
-  }
-
-  .items-center {
-    align-items: center;
-  }
-
-  .gap-2 {
-    gap: 0.5rem;
-  }
-
-  .px-3 {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-  }
-
-  .py-2 {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-  }
-
-  .cursor-pointer {
-    cursor: pointer;
+    &.xs,
+    &.sm {
+      .estilos {
+        .desp-idioma {
+          .p-menu-idioma {
+            .p-motion {
+              .p-menu {
+                left: calc(16px + var(--lt-header-padding-sm));
+              }
+            }
+          }
+        }
+      }
+    }
+    &.md,
+    &.lg,
+    &.xl {
+      .estilos {
+        .desp-idioma {
+          .p-menu-idioma {
+            .p-motion {
+              .p-menu {
+                left: calc(16px + var(--lt-header-padding-lg));
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
