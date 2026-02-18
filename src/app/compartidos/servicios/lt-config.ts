@@ -18,6 +18,7 @@ export class LtConfig {
   public navbarItems: NavbarItem[] = [
     { label: 'Inicio', icon: 'pi-home', tipoIcono: 'primeng', routerLink: '/inicio', },
     { label: 'Menú', icon: 'menu_book_2', tipoIcono: 'material_symbol', routerLink: '/menu', },
+    { label: 'Eventos', icon: 'calendar_month', tipoIcono: 'material_symbol', routerLink: '/eventos', },
   ];
   public iconosTema: any = {
     light: 'pi-sun',

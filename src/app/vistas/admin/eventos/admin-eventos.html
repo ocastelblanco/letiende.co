@@ -1,0 +1,118 @@
+<div class="admin-container"
+     [class]="modoTema() + ' ' + bp()"
+     lt-imagen-fondo
+     publicID="Admin">
+  <div class="admin-contenido">
+    <!-- Menu lateral -->
+    <lt-menu-lateral class="lateral"
+                     [bp]="bp()"
+                     [modoTema]="modoTema()"
+                     [datosMenu]="menuItems" />
+
+    <div class="admin-main">
+      <!-- Header -->
+      <div class="admin-header">
+        <h1>Administrar Eventos</h1>
+        <button pButton
+                icon="pi pi-plus"
+                label="Nuevo evento"
+                (click)="abrirCrear()"></button>
+      </div>
+
+      <!-- Panel de contenido -->
+      <div class="admin-panel">
+        @if (cargando()) {
+        <div class="admin-cargando">
+          <p-progressSpinner strokeWidth="4"
+                             [style]="{ width: '50px', height: '50px' }" />
+          <span>Cargando eventos...</span>
+        </div>
+        } @else if (eventosLista().length > 0) {
+        <p-table [value]="eventosLista()"
+                 [paginator]="true"
+                 [rows]="10"
+                 [rowsPerPageOptions]="[5, 10, 20]"
+                 [showCurrentPageReport]="true"
+                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} eventos"
+                 [tableStyle]="{ 'min-width': '50rem' }"
+                 styleClass="eventos-tabla">
+          <ng-template #header>
+            <tr>
+              <th pSortableColumn="titulo">Titulo <p-sortIcon field="titulo" /></th>
+              <th pSortableColumn="fecha_inicio">Fecha <p-sortIcon field="fecha_inicio" /></th>
+              <th>Ubicacion</th>
+              <th pSortableColumn="capacidad">Capacidad <p-sortIcon field="capacidad" /></th>
+              <th>Destacado</th>
+              <th>Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template #body
+                       let-evento>
+            <tr>
+              <td>{{ evento.titulo }}</td>
+              <td>{{ evento.fecha_inicio | date: 'dd/MM/yy HH:mm' }}</td>
+              <td>{{ evento.ubicacion }}</td>
+              <td>{{ evento.entradas_disponibles }} / {{ evento.capacidad }}</td>
+              <td>
+                @if (evento.destacado) {
+                <i class="pi pi-star-fill"
+                   style="color: var(--p-primary-color)"></i>
+                } @else {
+                <i class="pi pi-star"
+                   style="color: var(--p-text-muted-color)"></i>
+                }
+              </td>
+              <td>
+                <div class="acciones-celda">
+                  <button pButton
+                          icon="pi pi-pencil"
+                          severity="info"
+                          [text]="true"
+                          [rounded]="true"
+                          size="small"
+                          (click)="abrirEditar(evento.id)"></button>
+                  <button pButton
+                          icon="pi pi-trash"
+                          severity="danger"
+                          [text]="true"
+                          [rounded]="true"
+                          size="small"
+                          (click)="confirmarEliminar(evento.id)"></button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        } @else {
+        <!-- Estado vacio -->
+        <div class="admin-vacio">
+          <span class="material-symbols-outlined icono-vacio">calendar_add_on</span>
+          <h2>No hay eventos programados aún.</h2>
+          <p>Crea tu primer evento para comenzar a gestionar la cartelera de Le Teatre.</p>
+          <button pButton
+                  icon="pi pi-plus"
+                  label="Crear primer evento"
+                  (click)="abrirCrear()"></button>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialogo del formulario -->
+  <p-dialog [header]="modoFormulario() === 'crear' ? 'Nuevo evento' : 'Editar evento'"
+            [(visible)]="dialogoVisible"
+            [modal]="true"
+            [style]="{ width: '90vw', 'max-width': '900px' }"
+            [closable]="true"
+            [draggable]="false"
+            (onHide)="cerrarDialogo()">
+    <lt-form-evento [eventoEditando]="eventoEditando()"
+                    [modoFormulario]="modoFormulario()"
+                    (guardar)="guardarEvento($event)"
+                    (cancelar)="cerrarDialogo()" />
+  </p-dialog>
+
+  <p-toast />
+  <p-confirmDialog />
+</div>

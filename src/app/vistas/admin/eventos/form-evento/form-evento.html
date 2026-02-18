@@ -1,0 +1,457 @@
+<form [formGroup]="formEvento"
+      (ngSubmit)="onSubmit()"
+      class="form-evento">
+
+  <!-- Informacion general -->
+  <div class="form-seccion">
+    <h3 class="form-seccion__titulo">
+      <span class="material-symbols-outlined">info</span>
+      Informacion general
+    </h3>
+    <p-fluid>
+      <div class="form-grid">
+        <!-- Media ID -->
+        <div class="campo">
+          <label for="media_id">Media ID (Cloudinary)</label>
+          <input pInputText
+                 id="media_id"
+                 formControlName="media_id"
+                 placeholder="ej: eventos/jazz-night-2026" />
+          @if (formEvento.get('media_id')?.invalid && formEvento.get('media_id')?.touched) {
+          <p-message severity="error"
+                     text="El Media ID es requerido" />
+          }
+        </div>
+
+        <!-- Tipo de media -->
+        <div class="campo">
+          <label for="media_tipo">Tipo de media</label>
+          <p-select id="media_tipo"
+                    formControlName="media_tipo"
+                    [options]="opcionesMediaTipo"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Seleccionar tipo" />
+        </div>
+
+        <!-- Fecha inicio -->
+        <div class="campo">
+          <label for="fecha_inicio">Fecha y hora de inicio</label>
+          <p-datepicker id="fecha_inicio"
+                        formControlName="fecha_inicio"
+                        [showTime]="true"
+                        [showIcon]="true"
+                        dateFormat="dd/mm/yy"
+                        hourFormat="12"
+                        placeholder="Seleccionar fecha" />
+          @if (formEvento.get('fecha_inicio')?.invalid && formEvento.get('fecha_inicio')?.touched) {
+          <p-message severity="error"
+                     text="La fecha de inicio es requerida" />
+          }
+        </div>
+
+        <!-- Fecha fin -->
+        <div class="campo">
+          <label for="fecha_fin">Fecha y hora de fin</label>
+          <p-datepicker id="fecha_fin"
+                        formControlName="fecha_fin"
+                        [showTime]="true"
+                        [showIcon]="true"
+                        dateFormat="dd/mm/yy"
+                        hourFormat="12"
+                        [minDate]="fechaMinFin()"
+                        placeholder="Seleccionar fecha" />
+          @if (formEvento.get('fecha_fin')?.invalid && formEvento.get('fecha_fin')?.touched) {
+          <p-message severity="error"
+                     text="La fecha de fin es requerida" />
+          }
+        </div>
+
+        <!-- Ubicacion -->
+        <div class="campo campo-full">
+          <label for="ubicacion">Ubicacion</label>
+          <input pInputText
+                 id="ubicacion"
+                 formControlName="ubicacion"
+                 placeholder="ej: Le Teatre - Parkway, Bogota" />
+          @if (formEvento.get('ubicacion')?.invalid && formEvento.get('ubicacion')?.touched) {
+          <p-message severity="error"
+                     text="La ubicacion es requerida" />
+          }
+        </div>
+
+        <!-- Capacidad -->
+        <div class="campo">
+          <label for="capacidad">Capacidad</label>
+          <p-inputNumber id="capacidad"
+                         formControlName="capacidad"
+                         [min]="1"
+                         [showButtons]="true"
+                         placeholder="100" />
+        </div>
+
+        <!-- Entradas disponibles -->
+        <div class="campo">
+          <label for="entradas_disponibles">Entradas disponibles</label>
+          <p-inputNumber id="entradas_disponibles"
+                         formControlName="entradas_disponibles"
+                         [min]="0"
+                         [showButtons]="true"
+                         placeholder="100" />
+        </div>
+
+        <!-- Formas de pago -->
+        <div class="campo campo-full">
+          <label>Formas de pago</label>
+          <div class="formas-pago" formArrayName="forma_pago">
+            @for (opcion of opcionesFormaPago; track opcion.tipo; let i = $index) {
+            <div class="forma-pago-item" [formGroupName]="i">
+              <p-toggleswitch formControlName="activo" />
+              <span class="forma-pago-label">{{ opcion.label }}</span>
+              @if (opcion.requiereTelefono && formaPagoArray.at(i).get('activo')?.value) {
+              <input pInputText
+                     formControlName="telefono"
+                     placeholder="Número de teléfono"
+                     class="forma-pago-telefono" />
+              }
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Categorias -->
+        <div class="campo campo-full">
+          <label for="categorias">Categorias</label>
+          <p-autocomplete id="categorias"
+                          formControlName="categorias"
+                          [suggestions]="categoriasFiltradas"
+                          [multiple]="true"
+                          (completeMethod)="filtrarCategorias($event)"
+                          placeholder="Escribir para buscar categorias" />
+        </div>
+
+        <!-- Destacado -->
+        <div class="campo campo-toggle">
+          <label for="destacado">Evento destacado</label>
+          <p-toggleswitch id="destacado"
+                          formControlName="destacado" />
+        </div>
+      </div>
+    </p-fluid>
+  </div>
+
+  <!-- Enlaces -->
+  <div class="form-seccion">
+    <h3 class="form-seccion__titulo">
+      <span class="material-symbols-outlined">link</span>
+      Enlaces
+    </h3>
+    <p-fluid>
+      <div class="form-grid">
+        <div class="campo">
+          <label for="enlace_boletas">Enlace de boletas</label>
+          <input pInputText
+                 id="enlace_boletas"
+                 formControlName="enlace_boletas"
+                 placeholder="https://..." />
+        </div>
+        <div class="campo">
+          <label for="enlace_instagram">Instagram</label>
+          <input pInputText
+                 id="enlace_instagram"
+                 formControlName="enlace_instagram"
+                 placeholder="https://instagram.com/..." />
+        </div>
+        <div class="campo">
+          <label for="enlace_tiktok">TikTok</label>
+          <input pInputText
+                 id="enlace_tiktok"
+                 formControlName="enlace_tiktok"
+                 placeholder="https://tiktok.com/..." />
+        </div>
+        <div class="campo">
+          <label for="enlace_web">Sitio web</label>
+          <input pInputText
+                 id="enlace_web"
+                 formControlName="enlace_web"
+                 placeholder="https://..." />
+        </div>
+        <div class="campo campo-full">
+          <label for="codigo_pulep">Codigo PULEP</label>
+          <input pInputText
+                 id="codigo_pulep"
+                 formControlName="codigo_pulep"
+                 placeholder="Codigo de registro PULEP" />
+        </div>
+      </div>
+    </p-fluid>
+  </div>
+
+  <!-- Contenido por idioma -->
+  <div class="form-seccion">
+    <h3 class="form-seccion__titulo">
+      <span class="material-symbols-outlined">translate</span>
+      Contenido por idioma
+    </h3>
+    <p-tabs value="0">
+      <p-tablist>
+        <p-tab value="0">Español</p-tab>
+        <p-tab value="1">English</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <!-- Panel Español -->
+        <p-tabpanel value="0">
+          <ng-container formGroupName="es">
+            <p-fluid>
+              <div class="form-grid">
+                <div class="campo campo-full">
+                  <label for="titulo_es">Titulo</label>
+                  <input pInputText
+                         id="titulo_es"
+                         formControlName="titulo"
+                         placeholder="Titulo del evento en Español" />
+                  @if (getIdiomaGroup('es').get('titulo')?.invalid && getIdiomaGroup('es').get('titulo')?.touched) {
+                  <p-message severity="error"
+                             text="El titulo es requerido" />
+                  }
+                </div>
+                <div class="campo campo-full">
+                  <label for="descripcion_es">Descripcion</label>
+                  <textarea pTextarea
+                            id="descripcion_es"
+                            formControlName="descripcion"
+                            [rows]="4"
+                            placeholder="Descripcion del evento en Español"></textarea>
+                  @if (getIdiomaGroup('es').get('descripcion')?.invalid &&
+                  getIdiomaGroup('es').get('descripcion')?.touched) {
+                  <p-message severity="error"
+                             text="La descripcion es requerida" />
+                  }
+                </div>
+              </div>
+            </p-fluid>
+
+            <!-- Artistas ES -->
+            <div class="form-array">
+              <div class="form-array__header">
+                <h4>Artistas</h4>
+                <button pButton
+                        type="button"
+                        icon="pi pi-plus"
+                        label="Agregar artista"
+                        severity="secondary"
+                        [text]="true"
+                        size="small"
+                        (click)="agregarArtista('es')"></button>
+              </div>
+              @for (artista of getFormArray('es', 'artistas').controls; track $index) {
+              <div class="form-array-item"
+                   [formArrayName]="'artistas'">
+                <div class="form-array-item__campos"
+                     [formGroupName]="$index">
+                  <input pInputText
+                         formControlName="nombre"
+                         placeholder="Nombre del artista" />
+                  <input pInputText
+                         formControlName="bio"
+                         placeholder="Bio corta" />
+                </div>
+                <button pButton
+                        type="button"
+                        icon="pi pi-trash"
+                        severity="danger"
+                        [text]="true"
+                        size="small"
+                        (click)="eliminarArtista('es', $index)"></button>
+              </div>
+              }
+            </div>
+
+            <!-- Precios ES -->
+            <div class="form-array">
+              <div class="form-array__header">
+                <h4>Precios</h4>
+                <button pButton
+                        type="button"
+                        icon="pi pi-plus"
+                        label="Agregar precio"
+                        severity="secondary"
+                        [text]="true"
+                        size="small"
+                        (click)="agregarPrecio('es')"></button>
+              </div>
+              @for (precio of getFormArray('es', 'precios').controls; track $index) {
+              <div class="form-array-item"
+                   [formArrayName]="'precios'">
+                <div class="form-array-item__campos form-array-item__campos--precios"
+                     [formGroupName]="$index">
+                  <input pInputText
+                         formControlName="categoria"
+                         placeholder="Categoria (ej: General)" />
+                  <p-inputNumber formControlName="valor"
+                                 [min]="0"
+                                 mode="currency"
+                                 currency="COP"
+                                 locale="es-CO"
+                                 placeholder="Valor" />
+                  <input pInputText
+                         formControlName="moneda"
+                         placeholder="Moneda"
+                         style="max-width: 80px" />
+                  <p-select formControlName="tipo_venta"
+                            [options]="opcionesTipoVenta"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Tipo de venta"
+                            [style]="{ 'min-width': '140px' }" />
+                </div>
+                <button pButton
+                        type="button"
+                        icon="pi pi-trash"
+                        severity="danger"
+                        [text]="true"
+                        size="small"
+                        (click)="eliminarPrecio('es', $index)"></button>
+              </div>
+              }
+            </div>
+          </ng-container>
+        </p-tabpanel>
+
+        <!-- Panel English -->
+        <p-tabpanel value="1">
+          <ng-container formGroupName="en">
+            <p-fluid>
+              <div class="form-grid">
+                <div class="campo campo-full">
+                  <label for="titulo_en">Title</label>
+                  <input pInputText
+                         id="titulo_en"
+                         formControlName="titulo"
+                         placeholder="Event title in English" />
+                  @if (getIdiomaGroup('en').get('titulo')?.invalid && getIdiomaGroup('en').get('titulo')?.touched) {
+                  <p-message severity="error"
+                             text="Title is required" />
+                  }
+                </div>
+                <div class="campo campo-full">
+                  <label for="descripcion_en">Description</label>
+                  <textarea pTextarea
+                            id="descripcion_en"
+                            formControlName="descripcion"
+                            [rows]="4"
+                            placeholder="Event description in English"></textarea>
+                  @if (getIdiomaGroup('en').get('descripcion')?.invalid &&
+                  getIdiomaGroup('en').get('descripcion')?.touched) {
+                  <p-message severity="error"
+                             text="Description is required" />
+                  }
+                </div>
+              </div>
+            </p-fluid>
+
+            <!-- Artistas EN -->
+            <div class="form-array">
+              <div class="form-array__header">
+                <h4>Artists</h4>
+                <button pButton
+                        type="button"
+                        icon="pi pi-plus"
+                        label="Add artist"
+                        severity="secondary"
+                        [text]="true"
+                        size="small"
+                        (click)="agregarArtista('en')"></button>
+              </div>
+              @for (artista of getFormArray('en', 'artistas').controls; track $index) {
+              <div class="form-array-item"
+                   [formArrayName]="'artistas'">
+                <div class="form-array-item__campos"
+                     [formGroupName]="$index">
+                  <input pInputText
+                         formControlName="nombre"
+                         placeholder="Artist name" />
+                  <input pInputText
+                         formControlName="bio"
+                         placeholder="Short bio" />
+                </div>
+                <button pButton
+                        type="button"
+                        icon="pi pi-trash"
+                        severity="danger"
+                        [text]="true"
+                        size="small"
+                        (click)="eliminarArtista('en', $index)"></button>
+              </div>
+              }
+            </div>
+
+            <!-- Precios EN -->
+            <div class="form-array">
+              <div class="form-array__header">
+                <h4>Prices</h4>
+                <button pButton
+                        type="button"
+                        icon="pi pi-plus"
+                        label="Add price"
+                        severity="secondary"
+                        [text]="true"
+                        size="small"
+                        (click)="agregarPrecio('en')"></button>
+              </div>
+              @for (precio of getFormArray('en', 'precios').controls; track $index) {
+              <div class="form-array-item"
+                   [formArrayName]="'precios'">
+                <div class="form-array-item__campos form-array-item__campos--precios"
+                     [formGroupName]="$index">
+                  <input pInputText
+                         formControlName="categoria"
+                         placeholder="Category (e.g: General)" />
+                  <p-inputNumber formControlName="valor"
+                                 [min]="0"
+                                 mode="currency"
+                                 currency="COP"
+                                 locale="es-CO"
+                                 placeholder="Value" />
+                  <input pInputText
+                         formControlName="moneda"
+                         placeholder="Currency"
+                         style="max-width: 80px" />
+                  <p-select formControlName="tipo_venta"
+                            [options]="opcionesTipoVenta"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Sale type"
+                            [style]="{ 'min-width': '140px' }" />
+                </div>
+                <button pButton
+                        type="button"
+                        icon="pi pi-trash"
+                        severity="danger"
+                        [text]="true"
+                        size="small"
+                        (click)="eliminarPrecio('en', $index)"></button>
+              </div>
+              }
+            </div>
+          </ng-container>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+
+  <!-- Acciones -->
+  <div class="form-acciones">
+    <button pButton
+            type="button"
+            label="Cancelar"
+            severity="secondary"
+            [outlined]="true"
+            (click)="onCancelar()"></button>
+    <button pButton
+            type="submit"
+            [label]="modoFormulario() === 'crear' ? 'Crear evento' : 'Guardar cambios'"
+            icon="pi pi-check"
+            [disabled]="formEvento.invalid"></button>
+  </div>
+</form>

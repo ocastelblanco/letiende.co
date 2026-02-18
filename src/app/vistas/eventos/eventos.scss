@@ -1,0 +1,137 @@
+@use "../../../tema/mixins.scss" as mixins;
+
+.eventos {
+  .contenido {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .encabezado {
+    text-align: center;
+    animation: slideDown 0.5s ease;
+  }
+
+  .titulo {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--p-text-color);
+  }
+
+  .descripcion {
+    font-size: 1.125rem;
+    color: var(--p-text-secondary-color);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .eventos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    gap: 1.5rem;
+    animation: fadeIn 0.5s ease 0.2s both;
+  }
+
+  .eventos-vacio {
+    @include mixins.glass-frosted;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 4rem 2rem;
+    border-radius: 0.75rem;
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+
+    .icono-vacio {
+      font-size: 3rem;
+      color: var(--p-text-muted-color);
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--p-text-color);
+      margin: 0;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: var(--p-text-secondary-color);
+      margin: 0;
+    }
+
+    .enlace-ig {
+      color: var(--p-primary-color);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--p-primary-hover-color);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .eventos-cargando {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+  }
+
+  // Responsive
+  &.xs,
+  &.sm {
+    .contenido {
+      padding: 1rem;
+    }
+
+    .titulo {
+      font-size: 1.5rem;
+    }
+
+    .descripcion {
+      font-size: 0.95rem;
+    }
+
+    .eventos-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+
+  &.md {
+    .eventos-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

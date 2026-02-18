@@ -1,0 +1,296 @@
+{
+  "seccion": "eventos",
+  "idiomas": {
+    "es": {
+      "titulo": "Eventos",
+      "descripcion": "Descubre todos los eventos y actividades culturales que Le Tiende tiene para ti",
+      "eventos": [
+        {
+          "id": "evento-001",
+          "titulo": "Noche de Jazz en Vivo",
+          "descripcion": "Una experiencia íntima de jazz en vivo con los mejores músicos de Bogotá. Disfruta de buenos tragos y excelente música mientras disfrutas la atmósfera de Le Teatre.",
+          "fecha_inicio": "2026-03-15T21:00:00Z",
+          "fecha_fin": "2026-03-16T01:00:00Z",
+          "ubicacion": "Le Teatre - Parkway, Bogotá",
+          "media_id": "evento_jazz",
+          "media_tipo": "image",
+          "artistas": [
+            {
+              "nombre": "Juan Carlos Quinteto",
+              "bio": "Quinteto de jazz experimental con raíces en el bop moderno"
+            }
+          ],
+          "precios": [
+            {
+              "categoria": "Entrada general",
+              "valor": 45000,
+              "moneda": "COP"
+            },
+            {
+              "categoria": "Estudiante",
+              "valor": 30000,
+              "moneda": "COP"
+            }
+          ],
+          "forma_pago": ["taquilla_fisica", "taquilla_virtual", "transferencia"],
+          "capacidad": 150,
+          "entradas_disponibles": 45,
+          "enlace_boletas": "https://passline.com/eventos/jazz-le-tiende",
+          "enlace_instagram": "https://instagram.com/letiende",
+          "codigo_pulep": "PUL-2026-001234",
+          "categorias": ["musica", "concierto"],
+          "destacado": true
+        },
+        {
+          "id": "evento-002",
+          "titulo": "Taller de Escritura Creativa",
+          "descripcion": "Taller intensivo de tres horas donde exploraremos técnicas de escritura creativa, narrativa y poesía. Perfecto para escritores principiantes y experimentados. Incluye coffee break.",
+          "fecha_inicio": "2026-04-22T14:00:00Z",
+          "fecha_fin": "2026-04-22T17:00:00Z",
+          "ubicacion": "Librería Le Tiende - Parkway, Bogotá",
+          "media_id": "evento_escritura",
+          "media_tipo": "image",
+          "artistas": [
+            {
+              "nombre": "Laura Mendoza",
+              "bio": "Autora reconocida y tallerista con más de 10 años de experiencia"
+            }
+          ],
+          "precios": [
+            {
+              "categoria": "Entrada general",
+              "valor": 35000,
+              "moneda": "COP"
+            },
+            {
+              "categoria": "Miembros Le Tiende",
+              "valor": 25000,
+              "moneda": "COP"
+            }
+          ],
+          "forma_pago": ["transferencia", "efectivo", "datafono"],
+          "capacidad": 30,
+          "entradas_disponibles": 12,
+          "enlace_boletas": "https://passline.com/eventos/escritura-le-tiende",
+          "enlace_web": "https://letiende.co/talleres",
+          "categorias": ["taller"],
+          "destacado": false
+        },
+        {
+          "id": "evento-003",
+          "titulo": "Ciclo de Cine: Directores Latinoamericanos",
+          "descripcion": "Ciclo especial de cine con películas de directores latinoamericanos contemporáneos. Cada sesión incluye proyección y charla con crítico de cine. Ambiente perfecto con bebidas de Le Tiende.",
+          "fecha_inicio": "2026-05-20T19:30:00Z",
+          "fecha_fin": "2026-05-20T22:00:00Z",
+          "ubicacion": "Le Teatre - Parkway, Bogotá",
+          "media_id": "evento_cine",
+          "media_tipo": "video",
+          "artistas": [
+            {
+              "nombre": "Carlos Restrepo",
+              "bio": "Crítico de cine y curador cinematográfico independiente"
+            }
+          ],
+          "precios": [
+            {
+              "categoria": "General",
+              "valor": 20000,
+              "moneda": "COP"
+            },
+            {
+              "categoria": "Entrada + bebida",
+              "valor": 35000,
+              "moneda": "COP"
+            }
+          ],
+          "forma_pago": ["taquilla_fisica", "taquilla_virtual"],
+          "capacidad": 80,
+          "entradas_disponibles": 28,
+          "enlace_boletas": "https://passline.com/eventos/cine-latinoamericano",
+          "enlace_instagram": "https://instagram.com/letiende",
+          "enlace_tiktok": "https://tiktok.com/@letiende",
+          "categorias": ["cine"],
+          "destacado": true
+        },
+        {
+          "id": "evento-004",
+          "titulo": "Noche de Poesía Abierta",
+          "descripcion": "Espacio abierto para poetas y amantes de la palabra hablada. Cada participante puede compartir sus obras en un ambiente íntimo y acogedor. Entrada libre, aportes voluntarios.",
+          "fecha_inicio": "2026-06-28T20:00:00Z",
+          "fecha_fin": "2026-06-28T23:30:00Z",
+          "ubicacion": "Le Teatre - Parkway, Bogotá",
+          "media_id": "evento_poesia",
+          "media_tipo": "image",
+          "artistas": [
+            {
+              "nombre": "Colectivo de Poetas Bogotanos",
+              "bio": "Colectivo independiente dedicado a la promoción de la poesía en vivo"
+            }
+          ],
+          "precios": [
+            {
+              "categoria": "Entrada libre",
+              "valor": 0,
+              "moneda": "COP"
+            }
+          ],
+          "forma_pago": ["efectivo"],
+          "capacidad": 100,
+          "entradas_disponibles": 100,
+          "enlace_instagram": "https://instagram.com/letiende",
+          "categorias": ["teatro", "poesia"],
+          "destacado": false
+        }
+      ]
+    },
+    "en": {
+      "titulo": "Events",
+      "descripcion": "Discover all the cultural events and activities that Le Tiende has for you",
+      "eventos": [
+        {
+          "id": "evento-001",
+          "titulo": "Live Jazz Night",
+          "descripcion": "An intimate live jazz experience with the best musicians in Bogotá. Enjoy great drinks and excellent music while experiencing the atmosphere of Le Teatre.",
+          "fecha_inicio": "2026-03-15T21:00:00Z",
+          "fecha_fin": "2026-03-16T01:00:00Z",
+          "ubicacion": "Le Teatre - Parkway, Bogotá",
+          "media_id": "evento_jazz",
+          "media_tipo": "image",
+          "artistas": [
+            {
+              "nombre": "Juan Carlos Quintet",
+              "bio": "Experimental jazz quintet with roots in modern bebop"
+            }
+          ],
+          "precios": [
+            {
+              "categoria": "General Admission",
+              "valor": 45000,
+              "moneda": "COP"
+            },
+            {
+              "categoria": "Student",
+              "valor": 30000,
+              "moneda": "COP"
+            }
+          ],
+          "forma_pago": ["taquilla_fisica", "taquilla_virtual", "transferencia"],
+          "capacidad": 150,
+          "entradas_disponibles": 45,
+          "enlace_boletas": "https://passline.com/events/jazz-le-tiende",
+          "enlace_instagram": "https://instagram.com/letiende",
+          "codigo_pulep": "PUL-2026-001234",
+          "categorias": ["musica", "concierto"],
+          "destacado": true
+        },
+        {
+          "id": "evento-002",
+          "titulo": "Creative Writing Workshop",
+          "descripcion": "Intensive three-hour workshop where we will explore creative writing techniques, narrative and poetry. Perfect for beginner and experienced writers. Includes coffee break.",
+          "fecha_inicio": "2026-04-22T14:00:00Z",
+          "fecha_fin": "2026-04-22T17:00:00Z",
+          "ubicacion": "Le Tiende Bookstore - Parkway, Bogotá",
+          "media_id": "evento_escritura",
+          "media_tipo": "image",
+          "artistas": [
+            {
+              "nombre": "Laura Mendoza",
+              "bio": "Renowned author and workshop facilitator with over 10 years of experience"
+            }
+          ],
+          "precios": [
+            {
+              "categoria": "General Admission",
+              "valor": 35000,
+              "moneda": "COP"
+            },
+            {
+              "categoria": "Le Tiende Members",
+              "valor": 25000,
+              "moneda": "COP"
+            }
+          ],
+          "forma_pago": ["transferencia", "efectivo", "datafono"],
+          "capacidad": 30,
+          "entradas_disponibles": 12,
+          "enlace_boletas": "https://passline.com/events/writing-le-tiende",
+          "enlace_web": "https://letiende.co/workshops",
+          "categorias": ["taller"],
+          "destacado": false
+        },
+        {
+          "id": "evento-003",
+          "titulo": "Latin American Directors Film Series",
+          "descripcion": "Special film series featuring films by contemporary Latin American directors. Each session includes screening and discussion with film critic. Perfect atmosphere with Le Tiende drinks.",
+          "fecha_inicio": "2026-05-20T19:30:00Z",
+          "fecha_fin": "2026-05-20T22:00:00Z",
+          "ubicacion": "Le Teatre - Parkway, Bogotá",
+          "media_id": "evento_cine",
+          "media_tipo": "video",
+          "artistas": [
+            {
+              "nombre": "Carlos Restrepo",
+              "bio": "Film critic and independent film curator"
+            }
+          ],
+          "precios": [
+            {
+              "categoria": "General",
+              "valor": 20000,
+              "moneda": "COP"
+            },
+            {
+              "categoria": "Ticket + Drink",
+              "valor": 35000,
+              "moneda": "COP"
+            }
+          ],
+          "forma_pago": ["taquilla_fisica", "taquilla_virtual"],
+          "capacidad": 80,
+          "entradas_disponibles": 28,
+          "enlace_boletas": "https://passline.com/events/latin-cinema",
+          "enlace_instagram": "https://instagram.com/letiende",
+          "enlace_tiktok": "https://tiktok.com/@letiende",
+          "categorias": ["cine"],
+          "destacado": true
+        },
+        {
+          "id": "evento-004",
+          "titulo": "Open Poetry Night",
+          "descripcion": "Open space for poets and lovers of spoken word. Each participant can share their works in an intimate and welcoming atmosphere. Free admission, voluntary contributions.",
+          "fecha_inicio": "2026-06-28T20:00:00Z",
+          "fecha_fin": "2026-06-28T23:30:00Z",
+          "ubicacion": "Le Teatre - Parkway, Bogotá",
+          "media_id": "evento_poesia",
+          "media_tipo": "image",
+          "artistas": [
+            {
+              "nombre": "Bogotá Poets Collective",
+              "bio": "Independent collective dedicated to promoting live poetry"
+            }
+          ],
+          "precios": [
+            {
+              "categoria": "Free Admission",
+              "valor": 0,
+              "moneda": "COP"
+            }
+          ],
+          "forma_pago": ["efectivo"],
+          "capacidad": 100,
+          "entradas_disponibles": 100,
+          "enlace_instagram": "https://instagram.com/letiende",
+          "categorias": ["teatro", "poesia"],
+          "destacado": false
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "autor": "Admin Le Tiende",
+    "ultima_revision": "2026-02-09",
+    "version": "1.0.0",
+    "publicado": true
+  },
+  "timestamp": "2026-02-09T18:30:00Z"
+}

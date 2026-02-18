@@ -1,0 +1,60 @@
+<div class="eventos"
+     [class]="modoTema() + ' ' + bp()"
+     lt-imagen-fondo
+     publicID="Auditorio">
+  <div class="contenido">
+    @if (eventosIdioma(); as seccion) {
+    <!-- Encabezado -->
+    <div class="encabezado">
+      <h1 class="titulo">{{ seccion.titulo }}</h1>
+      <p class="descripcion">{{ seccion.descripcion }}</p>
+    </div>
+
+    <!-- Rejilla de eventos -->
+    @if (eventosFuturos().length > 0) {
+    <div class="eventos-grid">
+      @for (evento of eventosFuturos(); track evento.id) {
+      <lt-evento-card [evento]="evento"
+                      [idioma]="idioma()" />
+      }
+    </div>
+    } @else {
+    <div class="eventos-vacio">
+      <span class="material-symbols-outlined icono-vacio">sentiment_sad</span>
+      <h2>{{ idioma().toLowerCase() === 'es'
+        ? '¡Ouch! Parece que no hay eventos programados próximamente.'
+        : 'Ouch! It seems there are no upcoming events' }}</h2>
+      <p>{{ idioma().toLowerCase() === 'es'
+        ? 'Para mas información, consulta nuestro IG'
+        : 'For more info, check our IG' }}
+        <a href="https://www.instagram.com/letiende_parkway"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="enlace-ig">&#64;letiende_parkway</a>
+      </p>
+    </div>
+    }
+    } @else if (eventosCompleto()) {
+    <!-- JSON cargado pero sin estructura de idiomas -->
+    <div class="eventos-vacio">
+      <span class="material-symbols-outlined icono-vacio">sentiment_sad</span>
+      <h2>{{ idioma().toLowerCase() === 'es'
+        ? '¡Ouch! Parece que no hay eventos programados próximamente.'
+        : 'Ouch! It seems there are no upcoming events' }}</h2>
+      <p>{{ idioma().toLowerCase() === 'es'
+        ? 'Para mas información, consulta nuestro IG'
+        : 'For more info, check our IG' }}
+        <a href="https://www.instagram.com/letiende_parkway"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="enlace-ig">&#64;letiende_parkway</a>
+      </p>
+    </div>
+    } @else {
+    <!-- Estado carga -->
+    <div class="eventos-cargando">
+      <p-progressSpinner />
+    </div>
+    }
+  </div>
+</div>

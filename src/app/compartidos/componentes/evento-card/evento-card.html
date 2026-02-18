@@ -1,0 +1,170 @@
+<div class="evento-card"
+     [class.evento-card--destacado]="evento().destacado">
+  <!-- Media -->
+  <div class="evento-card__media">
+    <lt-evento-media
+      [mediaId]="evento().media_id"
+      [tipoMedia]="evento().media_tipo" />
+    @if (evento().destacado) {
+      <span class="evento-card__badge-destacado">
+        {{ esES() ? 'Destacado' : 'Featured' }}
+      </span>
+    }
+  </div>
+
+  <!-- Contenido -->
+  <div class="evento-card__cuerpo">
+    <!-- Titulo -->
+    <h2 class="evento-card__titulo">{{ evento().titulo }}</h2>
+
+    <!-- Fecha y hora -->
+    <div class="evento-card__fecha">
+      <span class="material-symbols-outlined">calendar_month</span>
+      <span>{{ evento().fecha_inicio | date: 'EEEE, d MMMM y - h:mm a' : '' : localeIdioma() }}</span>
+    </div>
+
+    <!-- Ubicacion -->
+    <div class="evento-card__ubicacion">
+      <span class="material-symbols-outlined">location_on</span>
+      <span>{{ evento().ubicacion }}</span>
+    </div>
+
+    <!-- Descripcion -->
+    <p class="evento-card__descripcion">{{ evento().descripcion }}</p>
+
+    <!-- Artistas -->
+    @if (evento().artistas.length > 0) {
+      <div class="evento-card__artistas">
+        <h3 class="evento-card__subtitulo">{{ esES() ? 'Artistas' : 'Artists' }}</h3>
+        @for (artista of evento().artistas; track artista.nombre) {
+          <div class="evento-card__artista">
+            <span class="evento-card__artista-nombre">{{ artista.nombre }}</span>
+            <span class="evento-card__artista-bio">{{ artista.bio }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Precios -->
+    @if (evento().precios.length > 0) {
+      <div class="evento-card__precios">
+        <h3 class="evento-card__subtitulo">{{ esES() ? 'Precios' : 'Prices' }}</h3>
+        <div class="evento-card__precios-grid">
+          @for (precio of evento().precios; track precio.categoria) {
+            <div class="evento-card__precio">
+              <span class="evento-card__precio-categoria">{{ precio.categoria }}</span>
+              <span class="evento-card__precio-valor">{{ precio.valor | currency: precio.moneda : 'symbol-narrow' : '1.0-0' }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Formas de pago -->
+    @if (evento().forma_pago.length > 0) {
+      <div class="evento-card__formas-pago">
+        <h3 class="evento-card__subtitulo">{{ esES() ? 'Formas de pago' : 'Payment methods' }}</h3>
+        <div class="evento-card__tags">
+          @for (fp of evento().forma_pago; track fp) {
+            <p-tag [value]="obtenerTextoFormaPago(fp)"
+                   [rounded]="true" />
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Categorias -->
+    @if (evento().categorias.length > 0) {
+      <div class="evento-card__categorias">
+        <div class="evento-card__tags">
+          @for (cat of evento().categorias; track cat) {
+            <p-tag [value]="cat"
+                   severity="info"
+                   [rounded]="true" />
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Disponibilidad -->
+    @if (evento().capacidad > 0) {
+      <div class="evento-card__disponibilidad">
+        <div class="evento-card__disponibilidad-texto">
+          <span class="material-symbols-outlined">confirmation_number</span>
+          <span>{{ evento().entradas_disponibles }} / {{ evento().capacidad }}
+            {{ esES() ? 'disponibles' : 'available' }}</span>
+        </div>
+        <p-tag [value]="porcentajeVendido().toFixed(0) + '% ' + (esES() ? 'vendido' : 'sold')"
+               [severity]="severidadDisponibilidad()"
+               [rounded]="true" />
+      </div>
+    }
+
+    <!-- Codigo PULEP -->
+    @if (evento().codigo_pulep) {
+      <div class="evento-card__pulep">
+        <span class="material-symbols-outlined">verified</span>
+        <span>PULEP: {{ evento().codigo_pulep }}</span>
+      </div>
+    }
+
+    <!-- Footer: enlaces -->
+    <div class="evento-card__footer">
+      @if (evento().enlace_boletas) {
+        <a [href]="evento().enlace_boletas"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="evento-card__boton evento-card__boton--primario">
+          <span class="material-symbols-outlined">shopping_cart</span>
+          {{ esES() ? 'Comprar boletas' : 'Buy tickets' }}
+        </a>
+      }
+
+      <div class="evento-card__acciones">
+        <!-- Redes sociales -->
+        @if (evento().enlace_instagram) {
+          <a [href]="evento().enlace_instagram"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="evento-card__icono-enlace"
+             title="Instagram">
+            <span class="pi pi-instagram"></span>
+          </a>
+        }
+        @if (evento().enlace_tiktok) {
+          <a [href]="evento().enlace_tiktok"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="evento-card__icono-enlace"
+             title="TikTok">
+            <span class="pi pi-tiktok"></span>
+          </a>
+        }
+        @if (evento().enlace_web) {
+          <a [href]="evento().enlace_web"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="evento-card__icono-enlace"
+             title="Web">
+            <span class="pi pi-globe"></span>
+          </a>
+        }
+
+        <!-- Calendario -->
+        <a [href]="enlaceGoogleCalendar()"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="evento-card__icono-enlace"
+           title="Google Calendar">
+          <span class="pi pi-google"></span>
+        </a>
+        <a [href]="enlaceICS()"
+           download="{{ evento().id }}.ics"
+           class="evento-card__icono-enlace"
+           title="iCal">
+          <span class="pi pi-download"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
