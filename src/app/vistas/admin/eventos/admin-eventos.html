@@ -107,10 +107,12 @@
             [closable]="true"
             [draggable]="false"
             (onHide)="cerrarDialogo()">
+    @if (dialogoVisible()) {
     <lt-form-evento [eventoEditando]="eventoEditando()"
                     [modoFormulario]="modoFormulario()"
                     (guardar)="guardarEvento($event)"
                     (cancelar)="cerrarDialogo()" />
+    }
   </p-dialog>
 
   <p-toast />
