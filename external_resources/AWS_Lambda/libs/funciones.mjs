@@ -83,7 +83,7 @@ export const formateaEmail = (data) => {
         Data: asunto,
       },
     },
-    Source: 'info@ocastelblanco.com',
+    Source: process.env.SES_FROM_ADDRESS || 'no-responder@letiende.co',
     ReplyToAddresses: [],
   };
 };

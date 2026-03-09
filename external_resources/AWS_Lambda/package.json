@@ -1,0 +1,9 @@
+{
+  "name": "letiende-api",
+  "version": "1.0.0",
+  "description": "API backend para letiende.co",
+  "type": "module",
+  "dependencies": {
+    "disconnect": "^1.2.2"
+  }
+}
