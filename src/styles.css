@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+
+/* Paleta de marca Le Tiende. Fuente de verdad: docs/DESIGN.md §1. */
+@theme {
+  --color-primary: #230c00;
+  --color-secondary: #e8630a;
+  --color-tertiary: #00b7a3;
+  --color-neutral: #ffe7b3;
+  --color-surface: #fff8f1;
+  --color-danger: #c0392b;
+
+  --font-sans:
+    'Poppins', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+}
+
+body {
+  background-color: var(--color-surface);
+}
