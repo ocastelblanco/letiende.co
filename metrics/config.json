@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "project_id": "letiende-co",
+  "tz_display": "America/Bogota",
+
+  "human_hourly_rate": 50,
+  "_human_hourly_rate": "USD/hora. Declarado por el humano el 01/09/2026.",
+
+  "billing": {
+    "anthropic:claude-code-cli": {
+      "regime": "flat_rate",
+      "plan": "Pro",
+      "monthly_usd": 20,
+      "allocation": "token_share"
+    }
+  },
+
+  "review_gap_max_s": 900,
+  "_review_gap_max_s": "Por encima de este hueco el tiempo cuenta como human_wait_s, no como human_review_s.",
+
+  "stages_extra": [],
+
+  "report": {
+    "lead_with": ["OR", "VT", "CPAC"],
+    "stratify_by": ["capture_level", "provider"]
+  }
+}
