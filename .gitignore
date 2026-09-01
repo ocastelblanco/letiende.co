@@ -47,8 +47,20 @@ Thumbs.db
 .runtimeconfig.json
 
 # Secretos
+.env
+.env.*
 secrets.ts
 setup-secrets.sh
+*.pem
+serviceAccount*.json
 
 # Serverless
 .serverless
+
+# Estado local de herramientas (no versionado)
+.omc/state/
+metrics/.state/
+
+# Python
+__pycache__/
+*.pyc
