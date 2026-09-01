@@ -317,7 +317,7 @@ Propios de este proyecto, **a verificar durante la implementación**:
 | Certificado ACM creado fuera de `us-east-1` | CloudFront no lo acepta, sin importar dónde viva el stack. Siempre `us-east-1` |
 | Staging indexable | `robots.txt` con `Disallow: /` en staging. Si no, compite contra producción por las mismas palabras |
 | Ágora compilada con `--base-href /cartelera/` abierta por su URL cruda | Los activos se piden bajo el prefijo y la página se ve rota. A partir de T-11 se prueba por `staging.letiende.co/cartelera` |
-| Los hooks de `.claude/settings.json` apuntan a `.claude/skills/ai-effort-tracking`, que es un **symlink a una ruta absoluta fuera del repo** | Los hooks solo resuelven en esta máquina. En una sesión cloud o en otro equipo fallan en silencio y el registro queda incompleto sin avisar. **Decisión pendiente:** copiar la skill dentro del repo o instalarla como plugin disponible en la nube. Ver `capture-levels.md`, requisito de `init` |
+| Copiar un directorio de skill con `cp -RL` desde `~/.claude/skills/` | Arrastra `.omc/state/` (estado de sesión de **otra** sesión) y `__pycache__/`. Ninguno de los dos debe versionarse. Se podó a mano tras copiar y se reforzó `.gitignore` con `**/.omc/`, `**/__pycache__/`, `**/*.pyc` |
 | Mapa del sitio de Ágora emitiendo direcciones de `agora.letiende.co` | Debe emitirlas con el prefijo `/cartelera` tras el cutover |
 | Babel no tiene mapa del sitio | Hay que agregárselo (T-12) |
 
@@ -369,6 +369,12 @@ Tres ajustes pedidos por el humano tras leer el planteamiento, ya incorporados:
    una prueba repetible.
 3. **`/cartelera` en vez de `/agora`** (ADR-008 reescrita), decidido antes del cutover, que es cuando
    el cambio todavía es barato.
+
+Además, `.claude/skills/ai-effort-tracking` y `.claude/skills/project-docs-bootstrap` se copiaron
+dentro del repositorio (antes eran symlinks a `~/Documents/AgentesIA/...`), para que los hooks del
+registro de esfuerzo funcionen en cualquier entorno, incluidas las sesiones cloud. Al copiar se
+arrastraron `.omc/state/` de otra sesión y `__pycache__/`; se podaron a mano y `.gitignore` quedó
+reforzado para que no vuelva a pasar (§7).
 
 **Próxima tarea sugerida:** T-0001 de `TODO.md` — andamiaje de la aplicación Angular 22 con SSR y
 Tailwind 4.

@@ -60,6 +60,9 @@ serviceAccount*.json
 # Estado local de herramientas (no versionado)
 .omc/state/
 metrics/.state/
+**/.omc/
+**/__pycache__/
+**/*.pyc
 
 # Python
 __pycache__/
