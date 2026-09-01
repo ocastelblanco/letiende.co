@@ -1,0 +1,449 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1776098496378,
+  "projectRoot": "/Users/ocastelblanco/Documents/LeTiende/letiende.co/letiende.co",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "@angular/core",
+        "version": "21.1.3",
+        "category": "frontend"
+      },
+      {
+        "name": "express",
+        "version": "5.1.0",
+        "category": "backend"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": "npm test",
+    "lintCommand": null,
+    "devCommand": "npm run start",
+    "scripts": {
+      "ng": "ng",
+      "start": "ng serve",
+      "build": "ng build",
+      "watch": "ng build --watch --configuration development",
+      "test": "ng test",
+      "serve:ssr:letiende.co": "node dist/letiende.co/server/server.mjs",
+      "build:ssr": "ng build --configuration production",
+      "build:ssr:dev": "ng build --configuration production --base-href /dev/",
+      "build:ssr:prod": "ng build --configuration production --base-href /",
+      "deploy:dev": "npm run build:ssr:dev && sls deploy --stage dev",
+      "deploy:prod": "npm run build:ssr:prod && sls deploy --stage prod",
+      "deploy": "npm run deploy:dev"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": "ES modules",
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "public",
+      "src"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 0,
+      "lastAccessed": 1776098496367,
+      "keyFiles": []
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 12,
+      "lastAccessed": 1776098496367,
+      "keyFiles": [
+        "AGENTS.md",
+        "AWS_EMAIL_SYSTEM.md",
+        "esquema-contenido.json",
+        "fix-google-apps-script-origin.md",
+        "plan-servicio-email.md"
+      ]
+    },
+    "external_resources": {
+      "path": "external_resources",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1776098496372,
+      "keyFiles": [
+        "lambda-updated.zip",
+        "lambda_actual.zip"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 3,
+      "lastAccessed": 1776098496373,
+      "keyFiles": [
+        "categorias.json",
+        "eventos_backup.json",
+        "menu.json"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 7,
+      "lastAccessed": 1776098496373,
+      "keyFiles": [
+        "index.html",
+        "main.server.ts",
+        "main.ts",
+        "secrets.ts",
+        "server.ts"
+      ]
+    },
+    "src/app": {
+      "path": "src/app",
+      "purpose": "Application code",
+      "fileCount": 8,
+      "lastAccessed": 1776098496375,
+      "keyFiles": [
+        "app.config.server.ts",
+        "app.config.ts",
+        "app.html"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "docs/respuestas/2025-10-29-InstruccionesActualizacionAPI.md",
+      "accessCount": 10,
+      "lastAccessed": 1776127873162,
+      "type": "file"
+    },
+    {
+      "path": ".mcp.json",
+      "accessCount": 9,
+      "lastAccessed": 1776099891170,
+      "type": "file"
+    },
+    {
+      "path": "MEMORY.md",
+      "accessCount": 9,
+      "lastAccessed": 1776127897160,
+      "type": "file"
+    },
+    {
+      "path": "TODO.md",
+      "accessCount": 8,
+      "lastAccessed": 1776127846921,
+      "type": "file"
+    },
+    {
+      "path": "docs/plan-servicio-email.md",
+      "accessCount": 4,
+      "lastAccessed": 1776127878677,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 3,
+      "lastAccessed": 1776118607491,
+      "type": "file"
+    },
+    {
+      "path": "docs/prompt_02.md",
+      "accessCount": 3,
+      "lastAccessed": 1776127879786,
+      "type": "file"
+    },
+    {
+      "path": "docs/prompt_03.md",
+      "accessCount": 3,
+      "lastAccessed": 1776127880575,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 3,
+      "lastAccessed": 1776127884869,
+      "type": "directory"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 2,
+      "lastAccessed": 1776100575411,
+      "type": "file"
+    },
+    {
+      "path": "serverless.yml",
+      "accessCount": 2,
+      "lastAccessed": 1776100576142,
+      "type": "file"
+    },
+    {
+      "path": "src/app/app.routes.ts",
+      "accessCount": 2,
+      "lastAccessed": 1776100579777,
+      "type": "file"
+    },
+    {
+      "path": "src/app/app.config.ts",
+      "accessCount": 2,
+      "lastAccessed": 1776100580205,
+      "type": "file"
+    },
+    {
+      "path": "src/app/app.config.server.ts",
+      "accessCount": 2,
+      "lastAccessed": 1776100584952,
+      "type": "file"
+    },
+    {
+      "path": "PRD.md",
+      "accessCount": 2,
+      "lastAccessed": 1776120642381,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/servicios/admin-eventos.service.ts",
+      "accessCount": 2,
+      "lastAccessed": 1776125619644,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/servicios/datos.ts",
+      "accessCount": 2,
+      "lastAccessed": 1776125623626,
+      "type": "file"
+    },
+    {
+      "path": "tsconfig.json",
+      "accessCount": 1,
+      "lastAccessed": 1776100575777,
+      "type": "file"
+    },
+    {
+      "path": "firebase.json",
+      "accessCount": 1,
+      "lastAccessed": 1776100576351,
+      "type": "file"
+    },
+    {
+      "path": "docs/AGENTS.md",
+      "accessCount": 1,
+      "lastAccessed": 1776100579761,
+      "type": "file"
+    },
+    {
+      "path": "docs/servicio-email.md",
+      "accessCount": 1,
+      "lastAccessed": 1776100580383,
+      "type": "file"
+    },
+    {
+      "path": "docs/AWS_EMAIL_SYSTEM.md",
+      "accessCount": 1,
+      "lastAccessed": 1776100580463,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/servicios/lt-config.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100581040,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/servicios/firebase-config.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100581213,
+      "type": "file"
+    },
+    {
+      "path": "docs/redireccion-emails.md",
+      "accessCount": 1,
+      "lastAccessed": 1776100583830,
+      "type": "file"
+    },
+    {
+      "path": "docs/fix-google-apps-script-origin.md",
+      "accessCount": 1,
+      "lastAccessed": 1776100584117,
+      "type": "file"
+    },
+    {
+      "path": "docs/prompt_01.md",
+      "accessCount": 1,
+      "lastAccessed": 1776100584505,
+      "type": "file"
+    },
+    {
+      "path": "src/app/vistas/inicio/inicio.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100589159,
+      "type": "file"
+    },
+    {
+      "path": "src/app/vistas/menu/menu.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100589614,
+      "type": "file"
+    },
+    {
+      "path": "src/app/vistas/eventos/eventos.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100589778,
+      "type": "file"
+    },
+    {
+      "path": "src/app/vistas/admin/admin.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100590074,
+      "type": "file"
+    },
+    {
+      "path": "src/app/vistas/admin/eventos/admin-eventos.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100590478,
+      "type": "file"
+    },
+    {
+      "path": "src/app/vistas/admin/eventos/form-evento/form-evento.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100590579,
+      "type": "file"
+    },
+    {
+      "path": "docs/prompt_04.md",
+      "accessCount": 1,
+      "lastAccessed": 1776100591582,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/servicios/auth.service.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100593063,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/guards/auth.guard.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100593656,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/servicios/cloudinary-config.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100594080,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/servicios/cloudinary-api.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100594284,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/servicios/meta.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100594636,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/servicios/breakpoint-service.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100597178,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/servicios/calendario.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100597337,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/componentes/navbar/navbar.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100597793,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/componentes/evento-card/evento-card.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100597986,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/componentes/menu-lateral/menu-lateral.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100598424,
+      "type": "file"
+    },
+    {
+      "path": "src/app/app.routes.server.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100598618,
+      "type": "file"
+    },
+    {
+      "path": "src/app/app.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100601884,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/componentes/dialogo-login/dialogo-login.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100602503,
+      "type": "file"
+    },
+    {
+      "path": "src/app/compartidos/modulos/primeng/primeng-module.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776100602614,
+      "type": "file"
+    },
+    {
+      "path": "tech-specs.md",
+      "accessCount": 1,
+      "lastAccessed": 1776101544786,
+      "type": "file"
+    },
+    {
+      "path": "docs/instrucciones-inicio.md",
+      "accessCount": 1,
+      "lastAccessed": 1776122151172,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

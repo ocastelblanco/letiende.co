@@ -1,0 +1,13 @@
+{
+  "session_id": "5ab671e1-3ee6-434f-85ab-9559c5e4b0f9",
+  "started_at": "2026-02-05T17:01:26.262Z",
+  "ended_at": "2026-02-05T17:02:07.666Z",
+  "reason": "prompt_input_exit",
+  "agents_spawned": 4,
+  "agents_completed": 4,
+  "modes_used": [
+    "ralph",
+    "ultrawork"
+  ],
+  "duration_ms": 41404
+}
