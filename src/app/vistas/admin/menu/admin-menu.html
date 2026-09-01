@@ -1,0 +1,112 @@
+<div class="admin-container"
+     [class]="modoTema() + ' ' + bp()"
+     lt-imagen-fondo
+     publicID="Admin">
+  <div class="admin-contenido">
+    <!-- Menu lateral -->
+    <lt-menu-lateral class="lateral"
+                     [bp]="bp()"
+                     [modoTema]="modoTema()"
+                     [datosMenu]="menuItemsLateral" />
+
+    <div class="admin-main">
+      <!-- Header -->
+      <div class="admin-header">
+        <div class="admin-header-info">
+          <h1>Administrar Menú</h1>
+          @if (menuCompleto()) {
+          <span class="admin-header-meta">
+            {{ categoriasEs().length }} categorías · {{ totalItems() }} ítems
+          </span>
+          }
+        </div>
+        <button pButton
+                icon="pi pi-save"
+                label="Guardar cambios"
+                [loading]="guardando()"
+                [disabled]="!menuCompleto() || guardando()"
+                (click)="guardarCambios()"></button>
+      </div>
+
+      <!-- Panel de contenido -->
+      <div class="admin-panel">
+        @if (!menuCompleto()) {
+        <!-- Estado de carga -->
+        <div class="admin-cargando">
+          <p-progressSpinner strokeWidth="4"
+                             [style]="{ width: '50px', height: '50px' }" />
+          <span>Cargando menú...</span>
+        </div>
+        } @else if (categoriasEs().length === 0) {
+        <!-- Estado vacío -->
+        <div class="admin-vacio">
+          <span class="material-symbols-outlined icono-vacio">fork_spoon</span>
+          <h2>No hay categorías en el menú.</h2>
+          <p>El menú se actualiza desde Google Sheets. Verifica que el archivo de contenido esté publicado.</p>
+        </div>
+        } @else {
+        <!-- Lista de categorías -->
+        @for (categoria of categoriasEs(); track categoria.id) {
+        <div class="categoria-bloque">
+          <div class="categoria-header">
+            <span class="material-symbols-outlined">{{ categoria.icono.nombre }}</span>
+            <div class="categoria-info">
+              <h3>{{ categoria.nombre }}</h3>
+              <span class="categoria-desc">{{ categoria.descripcion }}</span>
+            </div>
+            <p-tag [value]="categoria.items.length + ' ítems'"
+                   severity="secondary" />
+          </div>
+
+          <p-table [value]="categoria.items"
+                   [tableStyle]="{ 'min-width': '40rem' }"
+                   styleClass="menu-tabla">
+            <ng-template #header>
+              <tr>
+                <th>Ítem</th>
+                <th>Descripción</th>
+                <th style="width:8rem">Precio</th>
+                <th style="width:7rem">Disponible</th>
+              </tr>
+            </ng-template>
+            <ng-template #body
+                         let-item>
+              <tr>
+                <td>
+                  <span class="item-nombre">{{ item.nombre }}</span>
+                </td>
+                <td>
+                  <span class="item-descripcion">{{ item.descripcion }}</span>
+                </td>
+                <td>
+                  <span class="item-precio">{{ item.precio | number:'1.0-0' }} {{ item.moneda }}</span>
+                </td>
+                <td>
+                  @if (item.disponible) {
+                  <p-tag value="Disponible"
+                         severity="success"
+                         [rounded]="true" />
+                  } @else {
+                  <p-tag value="No disponible"
+                         severity="danger"
+                         [rounded]="true" />
+                  }
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+              <tr>
+                <td colspan="4"
+                    class="tabla-vacia">Esta categoría no tiene ítems.</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+        }
+        }
+      </div>
+    </div>
+  </div>
+
+  <p-toast />
+</div>

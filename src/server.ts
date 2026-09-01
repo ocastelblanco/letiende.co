@@ -40,6 +40,34 @@ console.log(`[SERVER.TS] Environment variables:`, {
 
 const app = express();
 
+// ─── Headers de seguridad HTTP (OWASP A05) ────────────────────────────────────
+// Aplica a TODAS las respuestas: SSR, API y assets estáticos.
+// Nota CSP: 'unsafe-inline' es requerido por Angular 21 SSR para los scripts
+// de hydration (withEventReplay). frame-src accounts.google.com es requerido
+// por Firebase Auth signInWithPopup (abre ventana nueva, no iframe).
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://fonts.cdnfonts.com",
+      "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://fonts.cdnfonts.com",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://assets.letiende.co",
+      "connect-src 'self' https://*.firebaseapp.com https://*.firebaseio.com https://*.googleapis.com https://api.letiende.co https://assets.letiende.co https://cdn.jsdelivr.net",
+      "frame-src https://accounts.google.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+    ].join('; ')
+  );
+  next();
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Crear AngularNodeAppEngine
 let angularApp: AngularNodeAppEngine;
 try {

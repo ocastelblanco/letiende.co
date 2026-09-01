@@ -9,6 +9,23 @@ import { apiGoogleBooks } from './libs/googlebooks.mjs';
 import { leePOST, formateaEmail, validaReCAPTCHA, leeJSON, guardarContenidoS3 } from './libs/funciones.mjs';
 import { SendEmailCommand, SESClient } from "@aws-sdk/client-ses";
 
+/**
+ * Valida que una URL sea segura para fetch server-side (anti-SSRF).
+ * Solo permite HTTPS hacia dominios *.discogs.com
+ * @param {string} url - URL a validar
+ * @returns {boolean}
+ */
+const esUrlDiscogSegura = (url) => {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return false;
+    if (!parsed.hostname.endsWith('.discogs.com')) return false;
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const REGION = 'us-east-1';
 
 /**
@@ -54,6 +71,11 @@ export const handler = async (event, context, callback) => {
       }
 
       case 'coverDiscogs': {
+        const coverUrl = event.queryStringParameters?.cover;
+        if (!coverUrl || !esUrlDiscogSegura(coverUrl)) {
+          salida({ error: 'URL de portada no válida o no permitida.' }, 400);
+          break;
+        }
         const dataImg = await apiCoverDiscogs(event);
         salida(dataImg);
         break;

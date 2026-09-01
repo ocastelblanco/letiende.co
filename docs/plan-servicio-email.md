@@ -77,8 +77,8 @@ Gestiona la Lambda, el SNS topic y sus permisos. Los parámetros actuales son:
 
 #### Lambda — Función de envío saliente
 
-- **Nombre:** `generica`
-- **ARN:** `arn:aws:lambda:us-east-1:696912647258:function:generica`
+- **Nombre:** `letiende-api`
+- **ARN:** `arn:aws:lambda:us-east-1:696912647258:function:letiende-api`
 - **Endpoint relevante:** `POST /mensaje` — usa `@aws-sdk/client-ses` con `SendEmailCommand`
 - **Problema:** Remitente hardcodeado en `funciones.mjs` como `'info@ocastelblanco.com'` (dominio personal, no de Le Tiende)
 
@@ -95,7 +95,7 @@ Gestiona la Lambda, el SNS topic y sus permisos. Los parámetros actuales son:
 | Recepción y reenvío (SNS → Lambda) | Funciona, pero solo a un Gmail | Agregar mapeo por cuenta |
 | Runtime de la Lambda de reenvío | **nodejs14.x (EOL)** | Actualizar a nodejs20.x |
 | Mapeo de cuentas (`info@`, `eventos@`, etc.) | **No existe** | Implementar FORWARD_MAP |
-| Envío desde Lambda `generica` | Funciona pero con remitente incorrecto | Cambiar `Source` a `@letiende.co` |
+| Envío desde Lambda `letiende-api` | Funciona pero con remitente incorrecto | Cambiar `Source` a `@letiende.co` |
 
 ---
 
@@ -142,7 +142,7 @@ ENVIO (corrección puntual)
 --------------------------------------
 Angular App / Formulario de contacto
   --> POST /mensaje (api.letiende.co)
-  --> Lambda `generica` (corrección de Source)
+  --> Lambda `letiende-api` (corrección de Source)
   --> SES SendEmailCommand
   --> Destinatario
 ```
@@ -152,7 +152,7 @@ Angular App / Formulario de contacto
 | Componente | Tipo de cambio | Impacto en producción |
 |---|---|---|
 | Lambda de reenvío | Actualizar runtime + lógica de FORWARD_MAP | Hay ventana breve sin reenvío durante deploy |
-| `funciones.mjs` (Lambda `generica`) | Cambiar `Source` hardcodeado a variable de entorno | Bajo |
+| `funciones.mjs` (Lambda `letiende-api`) | Cambiar `Source` hardcodeado a variable de entorno | Bajo |
 | SSM Parameter Store | Agregar `/letiende/{stage}/SES_FROM_ADDRESS` | Ninguno |
 | SES — verificar identidades de email | Verificar nuevas direcciones (`eventos@`, `reservas@`, etc.) | Ninguno |
 | Route 53 — SPF | Agregar registro TXT SPF | Ninguno (mejora reputación) |
@@ -233,7 +233,7 @@ aws ses verify-email-identity --email-address admin@letiende.co --region us-east
 
 ---
 
-### Fase 3 — Corrección del envío saliente (Lambda `generica`)
+### Fase 3 — Corrección del envío saliente (Lambda `letiende-api`)
 
 **Objetivo:** Corregir el remitente hardcodeado en `funciones.mjs`.
 
@@ -259,7 +259,7 @@ Source: 'info@ocastelblanco.com',
 Source: process.env.SES_FROM_ADDRESS || 'no-responder@letiende.co',
 ```
 
-**Paso 3.3 — Agregar variable al `serverless.yml` de la Lambda `generica`** y redesplegar.
+**Paso 3.3 — Agregar variable al `serverless.yml` de la Lambda `letiende-api`** y redesplegar.
 
 **Paso 3.4 — Verificar permisos IAM** del rol de `generica` (debe tener `ses:SendEmail` y `ses:SendRawEmail`).
 
@@ -421,7 +421,7 @@ El sistema ya opera dentro del Free Tier de AWS. Las mejoras propuestas no incre
 ### Fase 3 — Corrección de envío
 - [ ] Parámetro SSM `SES_FROM_ADDRESS` creado en dev y prod
 - [ ] `funciones.mjs` modificado (línea 86: `Source` desde variable de entorno)
-- [ ] Lambda `generica` redesplegada
+- [ ] Lambda `letiende-api` redesplegada
 - [ ] Prueba: correo de prueba llega desde `no-responder@letiende.co`
 
 ### Fase 4 — Lambda de reenvío actualizada

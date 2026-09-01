@@ -1,7 +1,7 @@
 # Instrucciones Adicionales - Actualización API Lambda a Node.js 22.x
 
 **Fecha**: 29 de octubre de 2025
-**Función Lambda**: `generica` (arn:aws:lambda:us-east-1:696912647258:function:generica)
+**Función Lambda**: `letiende-api` (arn:aws:lambda:us-east-1:696912647258:function:letiende-api)
 **Estado**: ✅ Completado exitosamente
 
 ## Resumen de Cambios Realizados
@@ -72,7 +72,7 @@ const Discogs = require('disconnect').Client;
 ### 1. Actualización del Runtime
 ```bash
 aws lambda update-function-configuration \
-  --function-name arn:aws:lambda:us-east-1:696912647258:function:generica \
+  --function-name arn:aws:lambda:us-east-1:696912647258:function:letiende-api \
   --runtime nodejs22.x
 ```
 
@@ -82,7 +82,7 @@ cd external_resources/AWS_Lambda
 zip -r ../lambda-updated.zip .
 cd ..
 aws lambda update-function-code \
-  --function-name arn:aws:lambda:us-east-1:696912647258:function:generica \
+  --function-name arn:aws:lambda:us-east-1:696912647258:function:letiende-api \
   --zip-file fileb://lambda-updated.zip
 ```
 
@@ -127,7 +127,7 @@ curl "https://api.letiende.co/discogs?barcode=14470085"
 ### 1. Monitoreo y Logs
 Para revisar los logs de ejecución:
 ```bash
-aws logs tail /aws/lambda/generica --follow
+aws logs tail /aws/lambda/letiende-api --follow
 ```
 
 ### 2. Validación de Endpoints
@@ -232,7 +232,7 @@ aws lambda publish-layer-version \
 4. Actualizar función para usar nueva versión:
 ```bash
 aws lambda update-function-configuration \
-  --function-name generica \
+  --function-name letiende-api \
   --layers arn:aws:lambda:us-east-1:696912647258:layer:externalAPIs:3
 ```
 
@@ -255,15 +255,15 @@ Configurar alarmas para:
 
 ```bash
 aws cloudwatch put-metric-alarm \
-  --alarm-name lambda-generica-errors \
-  --alarm-description "Lambda generica error rate" \
+  --alarm-name lambda-letiende-api-errors \
+  --alarm-description "Lambda letiende-api error rate" \
   --metric-name Errors \
   --namespace AWS/Lambda \
   --statistic Sum \
   --period 300 \
   --threshold 10 \
   --comparison-operator GreaterThanThreshold \
-  --dimensions Name=FunctionName,Value=generica \
+  --dimensions Name=FunctionName,Value=letiende-api \
   --evaluation-periods 1
 ```
 

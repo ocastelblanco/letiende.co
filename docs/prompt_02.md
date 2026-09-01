@@ -23,5 +23,5 @@ Sigue las siguientes instrucciones:
 1. Revisa detalladamente los contenidos de los archivos en ./external_resources/AWS_Lambda/.
 2. Modifícalos según sea necesario.
 3. Actualiza AWS CLI a su última versión.
-4. Actualiza lo necesario en AWS Lambda usando el CLI de AWS; el arn de esa función es arn:aws:lambda:us-east-1:696912647258:function:generica
+4. Actualiza lo necesario en AWS Lambda usando el CLI de AWS; el arn de esa función es arn:aws:lambda:us-east-1:696912647258:function:letiende-api
 5. Escribe las instrucciones adicionales que requieras que yo ejecute, a través de la Consola de AWS o del medio que consideres necesario, en los productos AWS que consideres necesarios, en ./.claude/respuestas/2025-10-28-InstruccionesActualizacionAPI.md.

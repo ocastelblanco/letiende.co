@@ -21,6 +21,12 @@ export const routes: Routes = [
         loadComponent: () => import('@vistas/admin/eventos/admin-eventos').then(m => m.AdminEventos),
         title: 'Administrar Eventos - Le Tiende',
       },
+      {
+        path: 'menu',
+        loadComponent: () => import('@vistas/admin/menu/admin-menu').then(m => m.AdminMenu),
+        canActivate: [authGuard],
+        title: 'Administrar Menú - Le Tiende',
+      },
     ],
   },
   { path: '**', redirectTo: '', pathMatch: 'full' },

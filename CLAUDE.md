@@ -455,6 +455,193 @@ git tag -d v2.0.0-alpha.1
 git push origin :refs/tags/v2.0.0-alpha.1
 ```
 
+## Seguridad (OWASP)
+
+Las siguientes reglas son **obligatorias** y se aplican a toda la arquitectura: Angular SSR, Lambdas Node.js, Firebase, Cloudinary y AWS S3. Están mapeadas a las categorías OWASP Top 10 (2021) relevantes para esta solución. Cualquier código generado debe cumplirlas sin excepción.
+
+---
+
+### A01 — Control de Acceso Roto
+
+**Angular (guards y rutas):**
+- El `authGuard` retorna `true` en SSR por diseño (Angular no puede verificar Firebase en el servidor). Por eso, **toda operación sensible debe validarse también en el servidor** — nunca confiar únicamente en el guard del cliente.
+- Las rutas `/admin/**` nunca deben exponer datos reales en el HTML del SSR; retornar una página de carga neutral si el usuario no está autenticado.
+- No agregar rutas nuevas al panel admin sin protegerlas con `authGuard`.
+
+**Lambda `api.letiende.co`:**
+- El endpoint `POST /actualizarContenido` **debe verificar un token secreto compartido** (header `X-API-Key` con valor desde SSM) además de la validación de origen. La validación de User-Agent o header `Origin` puede ser falsificada y no es suficiente como control de acceso.
+- El endpoint `POST /mensaje` (envío de email) **nunca debe ejecutarse sin un token reCAPTCHA válido previamente verificado**. Validar el captcha en la misma request, antes de llamar a SES.
+- Los endpoints de búsqueda (`/discogs`, `/libros`) son de solo lectura y pueden ser públicos, pero deben tener **rate limiting** para evitar abuso (ej. máximo 30 requests/minuto por IP usando el header `X-Forwarded-For` de API Gateway).
+
+**Cloudinary (firma de uploads):**
+- El endpoint `POST /api/cloudinary/signature` en `server.ts` **solo debe ser accesible para usuarios autenticados**. Antes de generar la firma, verificar el Firebase ID token enviado en el header `Authorization: Bearer <idToken>` usando el Admin SDK de Firebase o la API REST de verificación de tokens de Google.
+- Restringir los parámetros permitidos en la firma: nunca firmar `allowed_formats` o `upload_preset` enviados directamente por el cliente. Definir estos valores en el servidor.
+
+---
+
+### A02 — Fallas Criptográficas
+
+- `CLOUDINARY_API_SECRET` **nunca debe existir en el cliente**. Si aparece en un `InjectionToken` del cliente, en `app.config.ts`, o en la salida de Transfer State, es un bug crítico.
+- Las credenciales de Firebase transmitidas via Transfer State (`FirebaseConfig`) son públicas por diseño (la `apiKey` de Firebase no es un secreto). Sin embargo, **nunca** agregar a Transfer State variables con "SECRET", "KEY_SECRET", "PRIVATE_KEY" o equivalentes.
+- `src/secrets.ts` está en `.gitignore`. **Nunca** generar código que importe `secrets.ts` en archivos que puedan ser commiteados o que no estén también en `.gitignore`.
+- Al generar el archivo `secrets.ts` (ej. desde `setup-secrets.sh`), asegurarse de que el script no imprima los valores en consola (`set +x` en bash antes de las asignaciones sensibles).
+
+---
+
+### A03 — Inyección (XSS, Inyección en APIs externas)
+
+**Angular — prevención de XSS:**
+- **Prohibido usar `[innerHTML]`** con contenido proveniente de los archivos JSON de S3 (eventos, menú, etc.) o de cualquier fuente externa. Angular escapa el HTML en interpolación `{{ }}` por defecto; aprovechar eso.
+- Si en algún caso excepcional se requiere renderizar HTML (ej. descripción de evento con formato), usar `DomSanitizer.sanitize(SecurityContext.HTML, valor)` y documentar el motivo con un comentario `// REVISIÓN DE SEGURIDAD`.
+- **Prohibido usar `bypassSecurityTrust*`** en ninguna variante (`bypassSecurityTrustHtml`, `bypassSecurityTrustScript`, etc.) sin una justificación técnica explícita y revisión.
+- Las URLs dinámicas en `[href]`, `[src]` y `[routerLink]` deben validarse: nunca interpolar directamente un valor de una API externa en estos atributos sin verificar que empieza con `https://` o es una ruta relativa conocida.
+
+**Lambda — validación de entradas:**
+- En `POST /actualizarContenido`: validar el JSON recibido contra el esquema de `docs/esquema-contenido.json` **antes** de escribirlo en S3. Si la estructura no coincide con el esquema esperado para la `seccion` indicada, rechazar con HTTP 400. Nunca guardar el payload crudo.
+- La clave `seccion` debe compararse contra una lista blanca estricta usando comparación exacta: `['inicio','menu','eventos','auditorio','libreria','contacto','nosotros'].includes(seccion)`. No usar expresiones regulares ni comparaciones parciales.
+- El nombre de archivo en S3 debe construirse **solo** a partir del valor sanitizado de `seccion`: `\`data/${seccion}.json\``. Nunca construir rutas S3 con input del usuario sin sanitizar (prevención de path traversal).
+- En `POST /mensaje`: sanitizar el contenido del campo `html` del email con una biblioteca como `sanitize-html` antes de pasarlo a SES, para evitar que un atacante inyecte headers SMTP o contenido malicioso.
+
+---
+
+### A05 — Configuración de Seguridad Incorrecta
+
+**Headers de seguridad HTTP:**
+Agregar los siguientes headers en `server.ts` para todas las respuestas SSR:
+
+```typescript
+// En server.ts, antes del handler de Angular
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://assets.letiende.co",
+      "connect-src 'self' https://*.firebaseapp.com https://*.googleapis.com https://api.letiende.co https://assets.letiende.co",
+      "frame-src https://accounts.google.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+    ].join('; ')
+  );
+  next();
+});
+```
+
+**CORS en Lambdas:**
+- La validación de origen en `api.letiende.co` debe usar una lista blanca estricta: `['https://letiende.co', 'https://www.letiende.co', 'https://script.google.com']`. No permitir `*`.
+- Si el origen no está en la lista, responder con HTTP 403 y no procesar la request.
+- Los headers CORS deben incluir solo el origen validado, nunca reflejar el origen de la request directamente (`res.setHeader('Access-Control-Allow-Origin', origenValidado)`).
+
+**S3 (`letiende-assets`):**
+- El bucket debe tener **Block Public Access** desactivado solo para las rutas `/data/*` (lecturas de JSON). Las demás rutas deben ser privadas.
+- La política del bucket debe usar condición `StringLike` en el ARN del recurso, no `/*` sobre todo el bucket.
+- Nunca habilitar escritura pública en el bucket. Solo la Lambda con rol IAM específico puede hacer `s3:PutObject` sobre `/data/*`.
+
+**Firebase Security Rules (Firestore y Storage):**
+- Cuando se implemente el uso de Firestore o Firebase Storage, las reglas deben negar todo por defecto y abrir solo lo necesario:
+
+```javascript
+// Firestore — regla base: denegar todo
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false; // negar todo hasta definir reglas específicas
+    }
+  }
+}
+```
+
+---
+
+### A07 — Fallas de Identificación y Autenticación
+
+**Firebase ID Token — verificación server-side:**
+- Para cualquier endpoint de `server.ts` que requiera autenticación (ej. `/api/cloudinary/signature`), el cliente debe enviar el ID token de Firebase en el header `Authorization: Bearer <idToken>`.
+- Verificar el token con la API pública de Google:
+  ```
+  GET https://oauth2.googleapis.com/tokeninfo?id_token=<idToken>
+  ```
+  Validar que `aud` coincide con el `FIREBASE_PROJECT_ID` y que `exp` no ha vencido. Alternativamente, usar el Firebase Admin SDK si se agrega como dependencia.
+- **Nunca confiar en el `uid` enviado en el body** de la request. Solo usar el `uid` extraído del token verificado.
+
+**Gestión de sesión:**
+- Firebase maneja la sesión con tokens de corta duración (1 hora) y refresh tokens. No implementar sesiones propias ni almacenar el ID token en `localStorage`. Firebase SDK lo gestiona en memoria y con cookies httpOnly cuando se usa con SSR.
+- Al hacer logout (`AuthService.logout()`), llamar siempre a `signOut()` de Firebase, que invalida el refresh token local.
+
+**Acceso al panel admin:**
+- La lista de usuarios con acceso al admin se gestiona exclusivamente desde Firebase Console. No hardcodear emails o UIDs de usuarios en el código fuente.
+
+---
+
+### A08 — Fallas de Integridad de Datos y Software
+
+**Validación de esquema en `/actualizarContenido`:**
+- El contenido guardado en S3 define lo que renderiza el sitio. Un payload malformado puede romper el SSR o inyectar contenido. Antes de `s3.putObject()`, validar:
+  1. Que `seccion` sea una de las secciones válidas (lista blanca).
+  2. Que `idiomas.es` exista y tenga los campos mínimos esperados para esa sección.
+  3. Que ningún campo de texto supere una longitud máxima razonable (ej. 5000 caracteres para descripciones).
+  4. Que los campos que deben ser URLs (`imagen_id`, `enlaces.*`) no contengan `javascript:`, `data:` ni protocolos no esperados.
+
+**Dependencias npm:**
+- Ejecutar `npm audit` antes de cada deploy a producción. No ignorar vulnerabilidades de severidad alta o crítica.
+- No instalar dependencias que no estén en el stack definido en `CLAUDE.md` sin justificación explícita.
+- Fijar versiones exactas en `package.json` para dependencias de producción (sin `^` ni `~`) en los paquetes de infraestructura crítica (`@codegenie/serverless-express`, `express`).
+
+---
+
+### A10 — Server-Side Request Forgery (SSRF)
+
+**Endpoint `/coverDiscogs` — riesgo crítico:**
+- Este endpoint recibe una URL en el parámetro `cover` y hace fetch a esa URL desde la Lambda. Es un vector de SSRF clásico que permitiría a un atacante hacer que la Lambda consulte el metadata de EC2/Lambda (`http://169.254.169.254`), servicios internos de AWS, o cualquier host arbitrario.
+- **Regla obligatoria:** antes de hacer el fetch, validar la URL con estas condiciones:
+  1. El protocolo debe ser exactamente `https:` (rechazar `http:`, `ftp:`, `file:`, etc.).
+  2. El hostname debe terminar en `.discogs.com` o ser exactamente `i.discogs.com`. Usar `new URL(cover).hostname` para extraerlo (nunca regex en la URL completa).
+  3. Si la URL no pasa estas validaciones, responder HTTP 400 sin hacer ningún fetch.
+
+```javascript
+// Ejemplo de validación anti-SSRF para /coverDiscogs
+function validarUrlDiscogs(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return false;
+    if (!parsed.hostname.endsWith('.discogs.com')) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+```
+
+- Aplicar el mismo patrón a cualquier otro endpoint que reciba URLs externas como parámetro en el futuro.
+- **Nunca** hacer `fetch(req.query.url)` o equivalente sin validación de dominio.
+
+---
+
+### Resumen de prohibiciones absolutas
+
+| Prohibición | Vulnerabilidad |
+|---|---|
+| `[innerHTML]` con datos de APIs externas o S3 | XSS (A03) |
+| `bypassSecurityTrust*` sin revisión documentada | XSS (A03) |
+| `CLOUDINARY_API_SECRET` en el cliente o Transfer State | Exposición de secretos (A02) |
+| Construir rutas S3 con input del usuario sin sanitizar | Path traversal / Inyección (A03) |
+| `fetch(urlDelCliente)` sin validar protocolo y dominio | SSRF (A10) |
+| Endpoint `/actualizarContenido` sin verificación de API key | Control de acceso (A01) |
+| Endpoint `/mensaje` sin reCAPTCHA verificado | Control de acceso / Abuso (A01) |
+| Firma de Cloudinary sin verificar Firebase ID token | Control de acceso (A01) |
+| CORS con `Access-Control-Allow-Origin: *` en Lambdas | Configuración incorrecta (A05) |
+| Hardcodear emails o UIDs de admins en el código | Autenticación (A07) |
+
+---
+
 ## IMPORTANTE
 - TODO en español de Colombia: respuestas en el chat, código, comentarios, documentación, mensajes de error. Así las instrucciones se entreguen en inglés.
 - Toda sugerencia de servicios externos debe ser gratuita.

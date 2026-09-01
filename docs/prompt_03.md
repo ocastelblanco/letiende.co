@@ -14,7 +14,7 @@ Las variables de entorno están en Lambda; como son tokens de autenticación, pr
 ## 5. Package.json
 No hay `package.json` en esa función porque (me acabo de acordar) lo que hice fue incluirlas todas en una 'capa'.
 
-Creo que, antes que nada, deberías bajar la función completa usando AWS CLI (recuerda que el arn de esa función es arn:aws:lambda:us-east-1:696912647258:function:generica) para que tengas todo el material a mano. Reemplaza, si es necesario, el contenido de la carpeta `./external_resources/AWS_Lambda/`.
+Creo que, antes que nada, deberías bajar la función completa usando AWS CLI (recuerda que el arn de esa función es arn:aws:lambda:us-east-1:696912647258:function:letiende-api) para que tengas todo el material a mano. Reemplaza, si es necesario, el contenido de la carpeta `./external_resources/AWS_Lambda/`.
 
 Además, veo algo que podría afectar mi respuesta a la pregunta 2: parece que 'disconnect', la librería de Discogs para Node.js solo es CommonJS. Revisa la documentación en https://github.com/bartve/disconnect
 

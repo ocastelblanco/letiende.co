@@ -6,7 +6,7 @@
 
 ## Identidad del Proyecto
 
-- **Propietario:** Oliver
+- **Propietario:** Oliver Castelblanco
 - **Proyectos cubiertos:** ACG, conectatech.co, letiende.co
 - **Stack principal:** Angular (frontend), PHP y Node.js/TypeScript (backends), AWS (infraestructura)
 - **Infraestructura de correo:** Amazon SES + S3 + Lambda + Route 53

@@ -1,0 +1,244 @@
+@use "../../../../tema/mixins.scss" as mixins;
+
+.admin-container {
+  min-height: 100vh;
+  padding: 80px 8px 24px;
+}
+
+.admin-contenido {
+  display: flex;
+  justify-content: space-between;
+  height: calc(100vh - 104px);
+
+  .lateral {
+    margin-left: 0;
+    height: 100%;
+  }
+
+  .admin-main {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0 1rem;
+    overflow-y: auto;
+  }
+}
+
+.admin-header {
+  @include mixins.glass-heavy;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-radius: 20px;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .admin-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .admin-header-meta {
+    font-size: 0.8rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.admin-panel {
+  @include mixins.glass-frosted;
+  padding: 1.5rem;
+  border-radius: 20px;
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.admin-cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem;
+  min-height: 300px;
+
+  span {
+    opacity: 0.7;
+  }
+}
+
+.admin-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  text-align: center;
+
+  .icono-vacio {
+    font-size: 3.5rem;
+    color: var(--p-text-muted-color);
+    opacity: 0.5;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--p-text-color);
+  }
+
+  p {
+    margin: 0;
+    color: var(--p-text-secondary-color);
+    max-width: 400px;
+    line-height: 1.5;
+  }
+}
+
+// Bloques de categoría
+.categoria-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.categoria-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--p-content-border-color);
+
+  .material-symbols-outlined {
+    font-size: 1.5rem;
+    color: var(--p-primary-color);
+  }
+
+  .categoria-info {
+    flex: 1;
+
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--p-text-color);
+    }
+
+    .categoria-desc {
+      font-size: 0.8rem;
+      color: var(--p-text-muted-color);
+    }
+  }
+}
+
+// Tabla de ítems
+::ng-deep .menu-tabla {
+  .p-datatable-table {
+    background: transparent;
+  }
+
+  .p-datatable-thead > tr > th {
+    background: transparent;
+    border-color: var(--p-content-border-color);
+    color: var(--p-text-muted-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .p-datatable-tbody > tr {
+    background: transparent;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: var(--lt-glass-hover-bg);
+    }
+
+    > td {
+      border-color: var(--p-content-border-color);
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.item-nombre {
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+
+.item-descripcion {
+  color: var(--p-text-secondary-color);
+  font-size: 0.85rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.item-precio {
+  font-weight: 600;
+  color: var(--p-primary-color);
+}
+
+.tabla-vacia {
+  text-align: center;
+  color: var(--p-text-muted-color);
+  font-style: italic;
+  padding: 1.5rem !important;
+}
+
+// Responsive
+.admin-container {
+  &.xs {
+    .admin-contenido {
+      position: relative;
+
+      .lateral {
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        z-index: 9;
+      }
+
+      .admin-main {
+        margin-top: 72px;
+        padding: 0 0.5rem;
+      }
+    }
+
+    .admin-header {
+      padding: 0.75rem 1rem;
+
+      h1 {
+        font-size: 1.125rem;
+      }
+    }
+
+    .admin-panel {
+      padding: 1rem;
+    }
+  }
+
+  &.sm {
+    .admin-contenido {
+      .admin-main {
+        padding: 0 0.75rem;
+      }
+    }
+  }
+}

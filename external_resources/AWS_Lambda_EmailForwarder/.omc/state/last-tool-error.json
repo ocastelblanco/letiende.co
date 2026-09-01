@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd /Users/ocastelblanco/Documents/LeTiende/letiende.co/letiende.co/external_resources/AWS_Lambda && \\\\\\nnpm install --omit=dev 2>&1 && \\\\\\necho \\\"Instalado: $(du -sh node_modules | cut -f1...",
+  "error": "Exit code 1\nnpm error code ETARGET\nnpm error notarget No matching version found for disconnect@^2.1.0.\nnpm error notarget In most cases you or one of your dependencies are requesting\nnpm error notarget a package version that doesn't exist.\nnpm error A complete log of this run can be found in: /Users/ocastelblanco/.npm/_logs/2026-03-09T18_21_23_222Z-debug-0.log",
+  "timestamp": "2026-03-09T18:21:24.156Z",
+  "retry_count": 1
+}
