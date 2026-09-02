@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje Angular 22 + SSR + Tailwind 4, `README`/`LICENSE`, sin páginas propias todavía |
-| **Fase** | T-0001 y T-0002 fusionados a `main`; T-0003 y T-0004 activas |
+| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE`. Todavía sin portada real ni páginas institucionales |
+| **Fase** | T-0001, T-0002 y T-0003 fusionados a `main`; T-0004 y T-0005 activas |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `docs/readme-bilingue` (desde `main`) |
+| **Rama** | `feature/barra-navegacion-comun` (desde `main`) |
 | **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: el andamiaje aún no se ha desplegado |
 | **Staging** | No existe aún |
-| **Última sesión** | 02/09/2026 — T-0002: `README.md`/`README.es.md`/`LICENSE`; además Node local a v24 y CLI de Angular global actualizado |
+| **Última sesión** | 02/09/2026 — T-0003: barra de navegación y pie de página comunes, verificados en SSR real |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -34,9 +34,9 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 - [x] Andamiaje Angular 22 + SSR + Tailwind 4 (T-0001)
 - [x] `node` global apuntando a v24, CLI de Angular global actualizado
 - [x] `README.md`, `README.es.md` y `LICENSE` (T-0002)
+- [x] Barra de navegación y pie de página comunes (T-0003)
 
 ### Pendientes
-- [ ] Barra de navegación y pie de página comunes
 - [ ] Portada con próximos eventos
 - [ ] Páginas institucionales (nosotros, contacto, preguntas frecuentes)
 - [ ] Capa de SEO/AEO
@@ -200,6 +200,27 @@ ya vive dentro de Ágora y de Babel, y sus guards siguen aplicando a través del
 **Consecuencia.** El proxy **no es un control de acceso** y no debe usarse como tal (`CLAUDE.md` §5,
 A01).
 
+### ADR-010 — `PaginaPendiente`: un placeholder de ruta compartido, no una por página
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0003
+
+**Contexto.** T-0003 necesitaba que `/nosotros` y `/contacto` fueran rutas reales de Angular (para
+poder probar `routerLinkActive`) antes de que existieran sus páginas de verdad (T-5). Además, al
+agregar esas dos rutas, `/` dejó de tener una entrada `path: ''` y el build dejó de prerenderizarla
+— el servidor SSR respondía **404** en la raíz. Regresión encontrada y corregida en la misma tarea.
+
+**Decisión.** Un único componente `PaginaPendiente` (`src/app/shared/pagina-pendiente/`), montado en
+las tres rutas (`''`, `/nosotros`, `/contacto`) mientras T-4 y T-5 no existen, en vez de tres
+componentes-cáscara casi idénticos.
+
+**Razón.** Es exactamente el mismo contenido ("página en construcción") repetido tres veces; una
+abstención prematura de crear tres archivos donde uno basta. T-5 lo reemplaza por las páginas reales,
+sin que este componente sobreviva más allá de esa tarea.
+
+**Consecuencia.** Cualquier tarea que agregue una ruta nueva a `app.routes.ts` debe recordar que
+**`path: ''` es obligatorio** para que la raíz siga prerenderizando — no es opcional solo porque
+"ya estaba así". Es la lección concreta de esta ADR, no solo el placeholder en sí.
+
 ---
 
 ## 4. Dependencias
@@ -327,6 +348,12 @@ Propios de este proyecto, **a verificar durante la implementación**:
 | Copiar un directorio de skill con `cp -RL` desde `~/.claude/skills/` | Arrastra `.omc/state/` (estado de sesión de **otra** sesión) y `__pycache__/`. Ninguno de los dos debe versionarse. Se podó a mano tras copiar y se reforzó `.gitignore` con `**/.omc/`, `**/__pycache__/`, `**/*.pyc` |
 | Mapa del sitio de Ágora emitiendo direcciones de `agora.letiende.co` | Debe emitirlas con el prefijo `/cartelera` tras el cutover |
 | Babel no tiene mapa del sitio | Hay que agregárselo (T-12) |
+
+Encontrado durante T-0003 (barra de navegación):
+
+| Situación | Solución |
+|---|---|
+| Agregar rutas a `app.routes.ts` sin una entrada `path: ''` | El build deja de prerenderizar la raíz (`ng build` reporta menos rutas de las esperadas) y el servidor SSR responde **404 en `/`**, no un error visible en el build. Ver ADR-010 |
 
 Encontrados durante T-0001 (andamiaje), **verificados en esta máquina**:
 
@@ -476,3 +503,41 @@ máquina. Detalle completo en §7.
 **Próxima tarea sugerida:** abrir el PR de `docs/readme-bilingue`; motor JIT recalculado — T-0003
 (barra de navegación) sigue activa, se agrega T-0004 (pruebas continuas y ganchos de pre-commit,
 `/slim-continuous-testing`).
+
+---
+
+**02/09/2026 — T-0003: barra de navegación y pie de página comunes.**
+
+En rama `feature/barra-navegacion-comun` (desde `main`):
+
+- `BarraNavegacion` (`src/app/shared/navegacion/`), con el marcado exacto de `DESIGN.md` §7. Colapso
+  móvil implementado a mano, sin librería: `signal<boolean>` para el estado, `@if` para el panel,
+  `effect()` + `viewChild()` para mover el foco al botón de cierre cuando el panel se abre y de
+  regreso al botón de menú cuando se cierra (por clic o por `Escape`, capturado con
+  `(keydown.escape)` en el contenedor del panel — el evento burbujea desde cualquier enlace enfocado
+  dentro).
+- `PiePagina`, con contenido placeholder marcado explícitamente como tal en un comentario (dirección,
+  horarios y redes reales llegan en T-5).
+- Dos cosas fuera de la lista de archivos original de T-0003, ambas necesarias:
+  - `public/logo_blanco_sin_fondo.svg`, copiado de Ágora — el header de `DESIGN.md` §7 lo referencia
+    y no existía ningún activo de marca en el repo todavía (`DESIGN.md` §9 ya lo documentaba como
+    activo canónico; no fue una decisión nueva, solo ejecutar una ya tomada).
+  - Rutas placeholder para `''`, `/nosotros` y `/contacto` con un componente compartido
+    `PaginaPendiente` (ADR-010) — necesarias para poder probar `routerLinkActive` de verdad, tal
+    como T-0003 ya autorizaba ("con rutas placeholder si hace falta").
+- **Regresión encontrada y corregida en la misma tarea:** al agregar `/nosotros` y `/contacto` sin
+  una entrada `path: ''`, el build dejó de prerenderizar la raíz y el servidor SSR respondía **404
+  en `/`** — nada en el build lo advertía, solo se vio al servir y curlear de verdad. Ver ADR-010 y
+  el gotcha nuevo en §7.
+
+Verificado, no solo en pruebas unitarias sino sirviendo el build real: `curl` contra `/`, `/nosotros`,
+`/contacto` y el SVG del logo, los cuatro HTTP 200; `/nosotros` trae `text-secondary` en su propio
+enlace y no en el de `/contacto` (y viceversa al navegar); `/cartelera` y `/libros` son `<a href>`
+planos en el HTML, ausentes del árbol de rutas de Angular. 9/9 pruebas pasan, incluida una que
+simula clic en el botón de menú → `Escape` → verifica que `document.activeElement` vuelve a ser ese
+mismo botón. `tsc --noEmit` limpio en `app` y `spec`.
+
+**Próxima tarea sugerida:** abrir el PR de `feature/barra-navegacion-comun`; motor JIT recalculado —
+T-0004 (pruebas continuas) sigue activa, se agrega **T-0005** (portada con próximos eventos, T-4 del
+roadmap), que introduce `src/environments/` por primera vez — verificar las URLs de Ágora contra
+`MEMORY.md` §5 antes de escribirlas, no de memoria.

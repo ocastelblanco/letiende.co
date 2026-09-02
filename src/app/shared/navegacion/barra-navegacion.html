@@ -1,0 +1,87 @@
+<header class="sticky top-0 z-50 bg-primary text-neutral">
+  <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4" aria-label="Navegación principal">
+    <a href="/" class="shrink-0" aria-label="Le Tiende — inicio">
+      <img src="/logo_blanco_sin_fondo.svg" alt="Le Tiende" class="h-8 w-auto" />
+    </a>
+
+    <ul class="hidden items-center gap-6 text-sm font-semibold tracking-wider uppercase md:flex">
+      <li><a href="/cartelera" class="hover:text-secondary">Cartelera</a></li>
+      <li><a href="/libros" class="hover:text-secondary">Librería</a></li>
+      <li>
+        <a
+          routerLink="/nosotros"
+          routerLinkActive="text-secondary"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="hover:text-secondary"
+          >Nosotros</a
+        >
+      </li>
+      <li>
+        <a
+          routerLink="/contacto"
+          routerLinkActive="text-secondary"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="hover:text-secondary"
+          >Contacto</a
+        >
+      </li>
+    </ul>
+
+    <button
+      #botonMenu
+      type="button"
+      class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary md:hidden"
+      [attr.aria-expanded]="menuAbierto()"
+      aria-controls="panel-menu-movil"
+      [attr.aria-label]="menuAbierto() ? 'Cerrar menú' : 'Abrir menú'"
+      (click)="alternarMenu()"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-7 w-7" aria-hidden="true">
+        <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </nav>
+
+  @if (menuAbierto()) {
+    <div
+      id="panel-menu-movil"
+      class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 bg-primary text-neutral md:hidden"
+      (keydown.escape)="cerrarMenu()"
+    >
+      <button
+        #botonCerrar
+        type="button"
+        class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary absolute right-4 top-4"
+        aria-label="Cerrar menú"
+        (click)="cerrarMenu()"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-7 w-7" aria-hidden="true">
+          <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+
+      <ul class="flex flex-col items-center gap-6 text-lg font-semibold tracking-wider uppercase">
+        <li><a href="/cartelera" (click)="cerrarMenu()">Cartelera</a></li>
+        <li><a href="/libros" (click)="cerrarMenu()">Librería</a></li>
+        <li>
+          <a
+            routerLink="/nosotros"
+            routerLinkActive="text-secondary"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="cerrarMenu()"
+            >Nosotros</a
+          >
+        </li>
+        <li>
+          <a
+            routerLink="/contacto"
+            routerLinkActive="text-secondary"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="cerrarMenu()"
+            >Contacto</a
+          >
+        </li>
+      </ul>
+    </div>
+  }
+</header>
