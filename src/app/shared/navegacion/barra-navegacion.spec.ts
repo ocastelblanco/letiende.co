@@ -32,12 +32,16 @@ describe('BarraNavegacion', () => {
     await router.navigateByUrl('/nosotros');
     fixture.detectChanges();
 
-    const enlaces = fixture.nativeElement.querySelectorAll('a[href="/nosotros"]') as NodeListOf<HTMLAnchorElement>;
+    const enlaces = fixture.nativeElement.querySelectorAll(
+      'a[href="/nosotros"]',
+    ) as NodeListOf<HTMLAnchorElement>;
     expect(enlaces.length).toBeGreaterThan(0);
     for (const enlace of enlaces) {
       expect(enlace.classList).toContain('text-secondary');
     }
-    const contacto = fixture.nativeElement.querySelector('a[href="/contacto"]') as HTMLAnchorElement;
+    const contacto = fixture.nativeElement.querySelector(
+      'a[href="/contacto"]',
+    ) as HTMLAnchorElement;
     expect(contacto.classList).not.toContain('text-secondary');
   });
 
@@ -55,7 +59,9 @@ describe('BarraNavegacion', () => {
     const fixture = TestBed.createComponent(BarraNavegacion);
     fixture.detectChanges();
 
-    const boton = fixture.nativeElement.querySelector('button[aria-controls="panel-menu-movil"]') as HTMLButtonElement;
+    const boton = fixture.nativeElement.querySelector(
+      'button[aria-controls="panel-menu-movil"]',
+    ) as HTMLButtonElement;
     expect(fixture.nativeElement.querySelector('#panel-menu-movil')).toBeNull();
 
     boton.click();

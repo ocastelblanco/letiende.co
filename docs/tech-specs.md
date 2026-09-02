@@ -446,12 +446,22 @@ Las de código están en `CLAUDE.md` §4; las de git, en `CLAUDE.md` §6.
 | Unitarias frontend | Vitest vía `@angular/build:unit-test` | Servicios, componentes, SEO | 80% de líneas |
 | Unitarias backend | Vitest | Handlers y utilidades de `server/` | 80% de líneas |
 | Estático | ESLint + `angular-eslint` + `tsc --noEmit` | Todo el repositorio | 0 errores |
-| Secretos | GitGuardian / `detect-secrets` | Pre-commit y CI | 0 hallazgos |
+| Secretos | `scripts/verificar-secretos.mjs`, en pre-commit | Archivos en stage | 0 hallazgos |
 | Humo | `curl` contra `/api/salud` | Tras cada despliegue | HTTP 200 |
 | Accesibilidad y SEO | Lighthouse CI | Portada y contacto | A11y ≥ 95, SEO = 100 |
 
 `isolate: true` en el builder de pruebas es obligatorio: sin él, un `vi.mock` de un archivo se filtra
 a otro y las pruebas fallan según el orden de ejecución (verificado en Ágora, no es teoría).
+
+**Secretos, no GitGuardian.** Ágora y Babel dependen de la GitHub App de GitGuardian (`.gitguardian.
+yaml` en Ágora es solo su lista de falsos positivos ignorados) — una integración a nivel de cuenta
+de GitHub, no de código, fuera del alcance de un commit en este repositorio. `detect-secrets` es
+Python, y habría metido un segundo lenguaje de tooling en un proyecto puramente Node. En su lugar,
+T-0004 escribió un escáner propio de patrones conocidos (llaves de AWS, encabezados de llave privada,
+tokens de OpenAI/Stripe/GitHub/Slack/Google), sin dependencias, ejecutado en cada commit. Es una red
+más angosta que GitGuardian — decisión consciente, no un descuido — documentada en `MEMORY.md` §3
+(ADR-011). Instalar la GitHub App de GitGuardian para este repositorio sigue siendo una mejora
+disponible, y es del humano decidirla, no de un agente.
 
 ---
 
