@@ -589,6 +589,12 @@ Encontrado durante T-0005 (portada):
 | `RenderMode.Prerender` en una ruta que depende de datos remotos (la portada, con eventos de Ágora) | El `ng build` hace la llamada real en tiempo de build y la congela en el HTML hasta el próximo despliegue — verificado con `curl` contra la API real. Esa ruta necesita `RenderMode.Server`. Ver ADR-012 |
 | `HttpClient` se inyecta sin `provideHttpClient()` explícito en `app.config.ts` | No es un descuido ni hace falta agregarlo: verificado con un diagnóstico desechable que la inyección funciona igual (Angular 22 parece proveerlo por defecto). Ver ADR-014 |
 
+Encontrado durante T-0006 (páginas institucionales), en revisión humana tras el PR:
+
+| Situación | Solución |
+|---|---|
+| `public/favicon.ico` seguía siendo el genérico de `ng new` (T-0001) — nunca se detectó como faltante porque el archivo ya existía en `public/`, así que la tarea de íconos (T-0006) copió el resto de los archivos de Ágora pero pasó por alto reemplazar este | Reemplazado por el `favicon.ico` real de Ágora (`bef745f6b7cac5d3465f7887d37c0256` vs. el anterior `05bcfe9a02b93e1c5a5da14bfda8c41f`). **Lección:** que un archivo ya exista en el repo no significa que sea el correcto — hay que comparar contenido, no solo presencia |
+
 Encontrados durante T-0001 (andamiaje), **verificados en esta máquina**:
 
 | Situación | Solución |
