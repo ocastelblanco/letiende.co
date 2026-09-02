@@ -1,8 +1,0 @@
-{"t":0,"agent":"a2c39c0","agent_type":"Explore","event":"agent_start","parent_mode":"none"}
-{"t":0,"agent":"a6ed6f7","agent_type":"Explore","event":"agent_start","parent_mode":"none"}
-{"t":0,"agent":"a2c39c0","agent_type":"Explore","event":"agent_stop","success":true,"duration_ms":73428}
-{"t":0,"agent":"a6ed6f7","agent_type":"Explore","event":"agent_stop","success":true,"duration_ms":95760}
-{"t":0,"agent":"ae9f39e","agent_type":"Plan","event":"agent_start","parent_mode":"none"}
-{"t":0,"agent":"ae9f39e","agent_type":"Plan","event":"agent_stop","success":true,"duration_ms":224303}
-{"t":0,"agent":"system","event":"skill_invoked","skill_name":"letiende-serverless"}
-{"t":0,"agent":"ac32d6c","agent_type":"unknown","event":"agent_stop","success":true}

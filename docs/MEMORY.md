@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — sin código todavía |
-| **Fase** | Documentación completa; andamiaje pendiente |
+| **Versión** | 0.0.0 — andamiaje Angular 22 + SSR + Tailwind 4 recién generado, sin páginas propias todavía |
+| **Fase** | T-0001 completo, en revisión (PR pendiente) |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `main` (limpia tras el borrado del intento de 2025) |
-| **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior** |
+| **Rama** | `feature/andamiaje-angular-ssr` (desde `main`) |
+| **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: el andamiaje aún no se ha desplegado |
 | **Staging** | No existe aún |
-| **Última sesión** | 01/09/2026 — planteamiento del proyecto y documentación inicial |
+| **Última sesión** | 01/09/2026 — T-0001: andamiaje generado, verificado localmente (build, SSR, pruebas, `tsc`) |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -30,10 +30,11 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 - [x] Decisión de arquitectura de integración (ADR-001)
 - [x] Documentación: `CLAUDE.md`, `PRD.md`, `tech-specs.md`, `DESIGN.md`, `MEMORY.md`, `TODO.md`
 - [x] Registro de esfuerzo inicializado
+- [x] Eliminación del sitio estático anterior (2025)
+- [x] Andamiaje Angular 22 + SSR + Tailwind 4 (T-0001)
 
 ### Pendientes
 
-- [ ] Andamiaje Angular 22 + SSR + Tailwind 4
 - [ ] `README.md` y `README.es.md`
 - [ ] Barra de navegación y pie de página comunes
 - [ ] Portada con próximos eventos
@@ -203,19 +204,26 @@ A01).
 
 ## 4. Dependencias
 
-Ninguna instalada todavía. Versiones objetivo, verificadas contra el registro de npm el 01/09/2026:
+**Instaladas** (T-0001, 01/09/2026). Versiones leídas de `node_modules/*/package.json` tras
+`npm install`, no de memoria — el rango declarado en `package.json` es el que dejó el generador del
+CLI (`^22.1.0`, `^4.1.12`, etc.); la columna "resuelta" es lo que realmente trajo `npm install` el
+mismo día, dentro de ese rango:
 
-| Paquete | Versión objetivo | Nota |
+| Paquete | Rango en `package.json` | Resuelta el 01/09/2026 |
 |---|---|---|
-| `@angular/*` | `~22.1.x` | CLI publicado: 22.1.6; core: 22.1.4 |
-| `@angular/ssr` | `~22.1.x` | — |
-| `typescript` | `~6.0.x` | **No 7.0.2**, aunque sea la última publicada: Angular 22 aún no la soporta |
-| `tailwindcss` + `@tailwindcss/postcss` | `^4.3.3` | Última estable |
-| `vitest` | `^4.1.x` | Publicada: 4.1.11 |
-| `serverless` | `4.41.1` | Ágora y Babel están en 4.39.0 |
-| `express` | `^5.x` | — |
-| `@codegenie/serverless-express` | `^5.x` | — |
-| `@aws-sdk/client-ses` | `^3.x` | — |
+| `@angular/core` | `^22.1.0` | 22.1.4 |
+| `@angular/cli` | `^22.1.2` | 22.1.6 |
+| `@angular/ssr` | `^22.1.2` | 22.1.6 |
+| `@angular/build` | `^22.1.2` | 22.1.6 |
+| `typescript` | `~6.0.2` | 6.0.3 — **no 7.x**: Angular 22 aún no la soporta |
+| `tailwindcss` + `@tailwindcss/postcss` | `^4.1.12` | 4.3.3 |
+| `vitest` | `^4.0.8` | 4.1.11 |
+| `express` | `^5.1.0` | 5.2.1 |
+| `serverless` | — | **aún no instalado**, se agrega en T-8. Ágora y Babel están en 4.39.0; objetivo 4.41.x |
+| `@aws-sdk/client-ses` | — | **aún no instalado**, se agrega en T-7 |
+
+No se fijó ninguna versión a mano: todas llegaron dentro del rango `^` que dejó
+`npx @angular/cli@22 new`, que ya apunta a "última estable" por sí solo.
 
 ---
 
@@ -321,6 +329,17 @@ Propios de este proyecto, **a verificar durante la implementación**:
 | Mapa del sitio de Ágora emitiendo direcciones de `agora.letiende.co` | Debe emitirlas con el prefijo `/cartelera` tras el cutover |
 | Babel no tiene mapa del sitio | Hay que agregárselo (T-12) |
 
+Encontrados durante T-0001 (andamiaje), **verificados en esta máquina**:
+
+| Situación | Solución |
+|---|---|
+| `node` global resuelve a v22.23.2 (`~/.hermes/node/bin/node`, antepuesto en `PATH` por otra herramienta), no al Node 24 de Homebrew | No se tocó el `PATH` global — es de otra herramienta, fuera del alcance de este proyecto. Para instalar/compilar aquí: `export PATH="/opt/homebrew/Cellar/node@24/24.20.0/bin:$PATH"` antes de `npm install`/`npm run build`. Homebrew ya tiene `node@24` instalado, solo falta enlazarlo o anteponerlo por sesión |
+| TypeScript 6.x deprecó `baseUrl` (error TS5101) | Los `paths` de `tsconfig.json` van **sin** `baseUrl`, con rutas relativas explícitas (`"./src/app/core/*"`, no `"src/app/core/*"`) — si no, TS5090 |
+| `security.allowedHosts` de `angular.json` se hornea en el bundle del **servidor** SSR, no solo en el dev-server | `AngularNodeAppEngine` responde "Header host... is not allowed" incluso en `node dist/.../server.mjs`. Con `[]` (default del CLI) rechaza todo. Se fijó `["localhost"]` para desarrollo local. **Pendiente antes de T-13/T-15:** el mismo artefacto de build se despliega a `staging.letiende.co` y a `letiende.co` (ADR-002) — falta decidir cómo esta lista static-en-build-time cubre ambos hosts sin rebuildear por stage |
+| Angular CLI 22 genera el script `serve:ssr:<nombre-del-proyecto>` | Se renombró a `serve:ssr` a secas en `package.json`, para que coincida con `CLAUDE.md` §3 y con la convención de Ágora |
+| `--ai-config` del `ng new` de Angular 22 no acepta el valor `agents` que documenta la skill `angular-new-app` | Los valores reales son `claude-code\|cursor\|gemini-cli\|none\|open-ai-codex\|vscode`. Se usó `none`: ya existe un `CLAUDE.md`/`AGENTS.md` curado a mano, y un generador genérico lo habría pisado o entrado en conflicto |
+| `ng new --directory .` sobre un repositorio no vacío | Falla con "merge conflicted" en cualquier archivo que ya exista (`.gitignore` en este caso). Se generó en un directorio temporal y se fusionó a mano — exactamente lo que T-0001 ya anticipaba |
+
 ---
 
 ## 8. Documentos de referencia
@@ -381,3 +400,35 @@ Tailwind 4.
 
 **Decisiones pendientes:** ninguna abierta. La única pregunta viva es la de la etapa 2 (cómo publica
 Comandante su lista de precios), y no bloquea nada de la etapa 1.
+
+---
+
+**01/09/2026 (tarde) — T-0001: andamiaje.**
+
+En rama `feature/andamiaje-angular-ssr` (desde `main`), en dos commits:
+
+1. `chore`: elimina los ~290 archivos del intento de 2025 que quedaban sin commitear (era el
+   *wipeout* local previo a esta sesión), y copia dentro del repo las 6 skills que aún eran symlinks
+   (`angular-developer`, `angular-new-app`, `seo-aeo-best-practices`, `slim-badges`,
+   `slim-continuous-testing`, `slim-readme`) — mismo tratamiento que las dos anteriores.
+2. `feat`: `npx @angular/cli@22 new` generado en un directorio temporal y fusionado a mano
+   (`--style=tailwind --ssr --routing --zoneless --test-runner=vitest --ai-config=none`), más los
+   ajustes manuales de T-0001: `@theme` con la paleta de `DESIGN.md` en `styles.css`, Poppins en
+   `index.html`, alias de rutas en `tsconfig.json`, `isolate: true` en el target `test`,
+   `provideZonelessChangeDetection()` explícito, y una plantilla mínima en `app.html` (reemplaza el
+   "Welcome to Angular" del CLI) que sirve de prueba de humo visual para la paleta.
+
+Verificado localmente, no asumido: `tsc --noEmit` limpio, `npm run build -- --configuration=production`
+genera SSR + prerender, `node dist/letiende-co/server/server.mjs` responde HTTP 200 con HTML ya
+renderizado (`<h1>Le Tiende</h1>` presente en la respuesta, no un `<app-root>` vacío), el CSS
+compilado resuelve `.bg-primary` a `#230c00`, y `npm test -- --watch=false` pasa (2/2).
+
+Cinco gotchas nuevos, todos en la tabla de §7: el `node` global de esta máquina no es el de Homebrew,
+`tsconfig.json` no admite `baseUrl` en TS 6.x, `security.allowedHosts` se hornea en el servidor SSR
+(no solo en el dev-server) y queda **pendiente de resolver antes de T-13/T-15** para que el mismo
+artefacto sirva a `staging.letiende.co` y a `letiende.co`, el script de `serve:ssr` se renombró, y
+`--ai-config` de Angular 22 no admite el valor que documenta la skill (se usó `none`).
+
+**Próxima tarea sugerida:** abrir el PR de esta rama; motor JIT recalculado en `TODO.md` — T-0002
+(README) sigue activa y se agrega T-0003 (barra de navegación y pie de página comunes, sin tocar aún
+Ágora ni Babel).
