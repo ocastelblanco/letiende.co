@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje Angular 22 + SSR + Tailwind 4 recién generado, sin páginas propias todavía |
-| **Fase** | T-0001 completo, en revisión (PR pendiente) |
+| **Versión** | 0.0.0 — andamiaje Angular 22 + SSR + Tailwind 4, `README`/`LICENSE`, sin páginas propias todavía |
+| **Fase** | T-0001 y T-0002 fusionados a `main`; T-0003 y T-0004 activas |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `feature/andamiaje-angular-ssr` (desde `main`) |
+| **Rama** | `docs/readme-bilingue` (desde `main`) |
 | **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: el andamiaje aún no se ha desplegado |
 | **Staging** | No existe aún |
-| **Última sesión** | 01/09/2026 — T-0001: andamiaje generado, verificado localmente (build, SSR, pruebas, `tsc`) |
+| **Última sesión** | 02/09/2026 — T-0002: `README.md`/`README.es.md`/`LICENSE`; además Node local a v24 y CLI de Angular global actualizado |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -32,10 +32,10 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 - [x] Registro de esfuerzo inicializado
 - [x] Eliminación del sitio estático anterior (2025)
 - [x] Andamiaje Angular 22 + SSR + Tailwind 4 (T-0001)
+- [x] `node` global apuntando a v24, CLI de Angular global actualizado
+- [x] `README.md`, `README.es.md` y `LICENSE` (T-0002)
 
 ### Pendientes
-
-- [ ] `README.md` y `README.es.md`
 - [ ] Barra de navegación y pie de página comunes
 - [ ] Portada con próximos eventos
 - [ ] Páginas institucionales (nosotros, contacto, preguntas frecuentes)
@@ -334,6 +334,12 @@ Encontrados durante T-0001 (andamiaje), **verificados en esta máquina**:
 |---|---|
 | ~~`node` global resolvía a v22.23.2 (`~/.hermes/node/bin/node`, antepuesto en `PATH` por Hermes, otra herramienta de IA instalada en la máquina)~~ | **Resuelto (02/09/2026).** Se agregó `export PATH="/opt/homebrew/opt/node@24/bin:$PATH"` al final de `~/.zshrc` — gana sobre `~/.local/bin` (Hermes) y sobre el `node` sin versionar de Homebrew (v26.8.1) por ser el último `PATH=` que se ejecuta al abrir la shell. No se tocaron los symlinks de Hermes: es un cambio de orden en `PATH`, reversible quitando esa línea. `node --version` en una shell nueva ya da 24.20.0 |
 | Dos instalaciones globales de Angular CLI en la máquina, con distinto *prefix* de npm (`~/.local` y `/opt/homebrew`), una de ellas (`/opt/homebrew`) desactualizada a 20.3.5 | **Actualizada (02/09/2026)** a 22.1.6, junto con `@angular-devkit/architect`, `@angular-devkit/core`, `@angular-devkit/schematics` y `@schematics/angular` — estaban instalados como paquetes globales sueltos, no solo como dependencia interna de `@angular/cli`. La de `~/.local` (la que gana en `PATH`) ya estaba en 22.1.6. No se eliminó ninguna de las dos instalaciones, solo se actualizaron ambas; consolidarlas en una sola es una decisión de la máquina, no de este proyecto |
+
+Encontrado durante T-0002 (README y `LICENSE`), en el repositorio de **Ágora**, no en este:
+
+| Situación | Solución |
+|---|---|
+| El badge y el README de Ágora dicen `license-MIT`, pero su archivo `LICENSE` real es Apache License 2.0 (201 líneas, encabezado `Apache License Version 2.0` — verificado leyendo el archivo, no el badge) | No se copió el `LICENSE` de Ágora como decía la tarea original. Se usó el de Babel, que sí es MIT de verdad (21 líneas, coincide con su propio badge). La inconsistencia de Ágora **no se corrigió** — es un repositorio distinto, fuera del alcance de esta tarea — pero queda anotada aquí por si alguien la resuelve más adelante |
 | TypeScript 6.x deprecó `baseUrl` (error TS5101) | Los `paths` de `tsconfig.json` van **sin** `baseUrl`, con rutas relativas explícitas (`"./src/app/core/*"`, no `"src/app/core/*"`) — si no, TS5090 |
 | `security.allowedHosts` de `angular.json` se hornea en el bundle del **servidor** SSR, no solo en el dev-server | `AngularNodeAppEngine` responde "Header host... is not allowed" incluso en `node dist/.../server.mjs`. Con `[]` (default del CLI) rechaza todo. Se fijó `["localhost"]` para desarrollo local. **Pendiente antes de T-13/T-15:** el mismo artefacto de build se despliega a `staging.letiende.co` y a `letiende.co` (ADR-002) — falta decidir cómo esta lista static-en-build-time cubre ambos hosts sin rebuildear por stage |
 | Angular CLI 22 genera el script `serve:ssr:<nombre-del-proyecto>` | Se renombró a `serve:ssr` a secas en `package.json`, para que coincida con `CLAUDE.md` §3 y con la convención de Ágora |
@@ -432,3 +438,41 @@ artefacto sirva a `staging.letiende.co` y a `letiende.co`, el script de `serve:s
 **Próxima tarea sugerida:** abrir el PR de esta rama; motor JIT recalculado en `TODO.md` — T-0002
 (README) sigue activa y se agrega T-0003 (barra de navegación y pie de página comunes, sin tocar aún
 Ágora ni Babel).
+
+---
+
+**02/09/2026 — Tooling de máquina + T-0002.**
+
+Antes de arrancar T-0002, dos tareas de tooling pedidas explícitamente (PR fusionado por separado):
+`node` global apuntado a v24 vía `PATH` en `~/.zshrc` (el culpable era Hermes, otra herramienta de IA
+en la máquina), y el CLI global de Angular actualizado en las dos instalaciones que había en la
+máquina. Detalle completo en §7.
+
+**T-0002 — README bilingüe y `LICENSE`.** En rama `docs/readme-bilingue` (desde `main`):
+
+- `README.md` (inglés) y `README.es.md` (español), siguiendo `/slim-readme`, con la estructura de
+  Babel como referencia pero **mucho más corto** — proporcional a un proyecto que todavía no tiene
+  páginas propias ni está en producción. Sin tablas de Pareto ni historia de incidentes: eso es lo
+  que Babel ganó por ser un proyecto maduro y entregado; replicarlo aquí habría sido relleno, no
+  información real.
+- Insignias según `/slim-badges`: estado ("en desarrollo", no "en producción"), licencia, Angular 22,
+  AWS (Lambda · CloudFront · API Gateway — **sin DynamoDB**, a diferencia de Ágora/Babel, porque este
+  proyecto no tiene base de datos propia), Serverless, SLIM, idioma recíproco, y autoría.
+- **La insignia de autoría se calculó, no se adivinó.** Se leyeron los 8 eventos de
+  `metrics/events/`, separando labor (`agent_active_s` + `human_review_s`) de espera entre sesiones
+  (`human_wait_s`, excluida del cálculo). Resultado: **73,4% humano / 26,6% agente** sobre el tiempo
+  de labor medido — el reparto opuesto al de Babel (20/80), esperable en la etapa de especificación e
+  interview de un proyecto que recién arranca. Badge elegido: **AI-assisted**.
+- `LICENSE`: **no se copió el de Ágora como decía la tarea original.** Al leerlo se encontró que,
+  pese a que el badge y el README de Ágora dicen "MIT", el archivo real es Apache License 2.0. Se usó
+  el de Babel en su lugar (MIT de verdad, coincide con su propio badge). Inconsistencia de Ágora
+  anotada en §7, no corregida — es un repositorio ajeno a esta tarea.
+- Los tres comandos de la sección de arranque rápido (`npm run build -- --configuration=production`,
+  `npm run serve:ssr`, `npm test`) se ejecutaron y verificaron antes de documentarlos. Se dejaron
+  fuera, a propósito, los de `CLAUDE.md` §3 que hoy no funcionan todavía (`npm run lint`, `npm run
+  format`, `npm run build:infra`, los de `serverless`): documentar un comando roto es peor que no
+  documentarlo, y esas piezas llegan con T-0004 y T-8.
+
+**Próxima tarea sugerida:** abrir el PR de `docs/readme-bilingue`; motor JIT recalculado — T-0003
+(barra de navegación) sigue activa, se agrega T-0004 (pruebas continuas y ganchos de pre-commit,
+`/slim-continuous-testing`).

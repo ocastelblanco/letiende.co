@@ -9,39 +9,41 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0002 — [DOCS] `README.md` en inglés y `README.es.md` en español
+## Tarea T-0004 — [FEATURE] Pruebas continuas: ESLint, `tsc` y ganchos de pre-commit
 
-**Origen:** Requisito explícito del planteamiento · `tech-specs.md` §11, T-2
-**Independiente de T-0001:** todo su contenido sale del PRD, de tech-specs y de `CLAUDE.md` §3.
+**Origen:** Requisito explícito del planteamiento (`/slim-continuous-testing`) · `tech-specs.md` §10,
+§11 T-10
 
-**Archivos:** `README.md`, `README.es.md`, `LICENSE`
+**Archivos:**
+
+- `eslint.config.js` (nuevo)
+- `package.json` (scripts `lint`, `format`, dependencias de dev)
+- `.husky/pre-commit` (nuevo)
+- `.lintstagedrc.json` o bloque `lint-staged` en `package.json`
 
 **Qué hacer:**
 
-1. Seguir la estructura de `/slim-readme`, tomando como referencia de tono y estructura el
-   `README.es.md` de Babel (`~/Documents/LeTiende/letiende.co/babel/README.es.md`).
+1. Instalar y configurar ESLint con `angular-eslint`, siguiendo `/slim-continuous-testing`, con las
+   reglas de `CLAUDE.md` §4 activas donde el linter pueda exigirlas (nada de `any`, sin `*ngIf`).
 
-2. Insignias según `/slim-badges`, en la línea de las de Babel: estado, licencia, SLIM, Angular 22,
-   AWS, Serverless, y la insignia de autoría que corresponda al reparto real de esfuerzo — que sale
-   de `metrics/`, **no de una estimación**.
+2. `npm run lint` y `npm run format` como scripts reales en `package.json` — hoy `CLAUDE.md` §3 los
+   documenta pero no existen todavía; esta tarea los crea.
 
-3. Secciones mínimas: qué es y qué problema resuelve, estado del proyecto, stack, arranque rápido,
-   arquitectura en una frase con enlace a `tech-specs.md`, cómo contribuir, licencia, soporte.
+3. Ganchos de pre-commit con `husky` + `lint-staged`: `tsc --noEmit`, `eslint --fix` y `prettier
+   --write` sobre los archivos en stage, más un escaneo de secretos (`detect-secrets` o equivalente,
+   `tech-specs.md` §10) antes de cada commit.
 
-4. Enlace recíproco entre las dos versiones, con insignia de idioma como hace Babel.
-
-5. Explicar la arquitectura de proxy en dos frases. Es lo primero que confunde a quien llega nuevo:
-   hay que decir de entrada que la cartelera y el catálogo **no viven en este repositorio**.
-
-6. `LICENSE`: copiar el de Ágora (MIT), verificando titular y año.
+4. **No** intentar aquí la cobertura del 80%, el humo contra `/api/salud` ni Lighthouse CI
+   (`tech-specs.md` §10): no hay páginas propias todavía (T-4/T-5) ni CI (T-9) para correrlos. Esta
+   tarea deja el terreno listo para que T-9 los enchufe.
 
 **Definition of done:**
 
-- [ ] Los dos archivos existen y cada uno enlaza al otro
-- [ ] Todos los enlaces internos resuelven (`docs/PRD.md`, `docs/tech-specs.md`, `LICENSE`)
-- [ ] Todas las insignias renderizan (ninguna con URL rota)
-- [ ] Los comandos de la sección de arranque coinciden con los de `CLAUDE.md` §3
-- [ ] Ninguna insignia afirma una cifra de esfuerzo que no salga de `metrics/`
+- [ ] `npm run lint` corre sin errores sobre el andamiaje actual
+- [ ] Un commit con un error de lint o de `tsc` es rechazado por el gancho de pre-commit; corregido,
+      el commit pasa
+- [ ] `npm run build -- --configuration=production` sigue pasando sin errores
+- [ ] `docs/MEMORY.md` actualizado con las herramientas y versiones realmente instaladas
 
 ---
 
@@ -104,22 +106,28 @@ Babel es T-11/T-12, que van **después** de T-13 (ADR-002) — no adelantar esa 
   Verificado: build de producción con SSR, `serve:ssr` responde HTML ya renderizado, `.bg-primary`
   resuelve a `#230c00`, pruebas y `tsc --noEmit` limpios. Detalle completo en `MEMORY.md` §9.
 
+- **T-0002** — [DOCS] `README.md` en inglés y `README.es.md` en español. Completada 02/09/2026.
+  `LICENSE` en MIT, copiada de Babel (no de Ágora: su badge dice MIT pero el archivo real es Apache
+  2.0 — inconsistencia detectada y no propagada; ver `MEMORY.md` §7). Insignia de autoría
+  **AI-assisted**, calculada desde `metrics/events/` (73,4% humano / 26,6% agente sobre tiempo de
+  labor medido, sin contar pausas entre sesiones), no estimada. Los tres comandos del arranque
+  rápido se ejecutaron y verificaron antes de documentarlos.
+
 ---
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
 
 En orden, según `tech-specs.md` §11:
 
-1. **T-10** Pruebas y ganchos de pre-commit
-2. **T-4** Portada con próximos eventos
-3. **T-5** Páginas institucionales
-4. **T-8** `serverless.yml` del contenedor
-5. **T-6** Capa de SEO/AEO
-6. **T-7** Lambda de contacto con SES y antiabuso
-7. **T-9** CI/CD con GitHub Actions
-8. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
-9. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
-10. **T-14 → T-15** Redirecciones 301 y cutover
+1. **T-4** Portada con próximos eventos
+2. **T-5** Páginas institucionales
+3. **T-8** `serverless.yml` del contenedor
+4. **T-6** Capa de SEO/AEO
+5. **T-7** Lambda de contacto con SES y antiabuso
+6. **T-9** CI/CD con GitHub Actions
+7. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
+8. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
+9. **T-14 → T-15** Redirecciones 301 y cutover
 
 > El orden de T-13 frente a T-11/T-12 no es arbitrario: el `--base-href /cartelera/` de Ágora solo se
 > puede validar detrás de un CloudFront, y desde ADR-002 existe uno en staging para hacerlo.
