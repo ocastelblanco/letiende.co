@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { BarraNavegacion } from '@shared/navegacion/barra-navegacion';
 import { PiePagina } from '@shared/navegacion/pie-pagina';
+import { AnalyticsService } from '@core/analytics/analytics.service';
 
 @Component({
   selector: 'app-root',
@@ -9,4 +10,8 @@ import { PiePagina } from '@shared/navegacion/pie-pagina';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
 })
-export class App {}
+export class App {
+  // La inyección basta para construir el singleton y disparar su
+  // afterNextRender interno — ver AnalyticsService.
+  private readonly analytics = inject(AnalyticsService);
+}
