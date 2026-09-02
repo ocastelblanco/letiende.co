@@ -53,62 +53,50 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0005 — [FEATURE] Portada con próximos eventos
+## Tarea T-0007 — [FEATURE] `serverless.yml` del contenedor (solo SSR)
 
-**Origen:** PRD §5 F-1, prioridad alta · `tech-specs.md` §11, T-4 · `tech-specs.md` §4.3, §5
+**Origen:** `tech-specs.md` §11, T-8 · depende solo de T-1 (hecha)
+
+**Alcance de esta tarea:** únicamente la función `ssr`. La función `contacto` es T-7 (todavía sin
+handler real) — no crear un handler vacío aquí solo para llenar el archivo; T-7 agrega su propio
+bloque cuando exista código real que desplegar.
 
 **Archivos:**
 
-- `src/environments/environment.ts` y `src/environments/environment.production.ts` (nuevos)
-- `src/app/core/api/eventos-publicos.service.ts` (+ `.spec.ts`)
-- `src/app/features/inicio/inicio.ts` (+ `.html`, `.spec.ts`)
-- `src/app/app.routes.ts` (la ruta `''` deja de apuntar a `PaginaPendiente`)
+- `serverless.yml` (nuevo, raíz del repo)
+- `package.json` (script `build:infra`, hoy documentado en `CLAUDE.md` §3 pero inexistente)
 
 **Qué hacer:**
 
-1. Crear `src/environments/` — no existe todavía (Angular 22 ya no lo genera por defecto). Cada
-   archivo expone `urlBaseApiAgora`, **una dirección pública, nunca un secreto** (`CLAUDE.md` §5,
-   A02):
+1. Usar el `serverless.yml` de Ágora (`~/Documents/LeTiende/letiende.co/agora/serverless.yml`) como
+   referencia de estructura — no copiarlo entero, este proyecto no tiene DynamoDB ni Firebase.
+   Obligatorio de `tech-specs.md` §7.4 / `CLAUDE.md` §5: `logRetentionInDays: 14`, `stackTags` y
+   `tags` con `Proyecto: letiende-co`, `deploymentBucket.maxPreviousDeploymentArtifacts: 5`.
 
-   ```ts
-   // environment.ts (desarrollo) y environment.production.ts — mismo valor de producción
-   // en ambos hasta que exista un stage de staging real para Ágora con dominio propio.
-   export const environment = {
-     urlBaseApiAgora: 'https://agora.letiende.co',
-   };
-   ```
+2. Una sola función `ssr`, runtime `nodejs24.x`, con `@codegenie/serverless-express` envolviendo el
+   `server.ts` ya generado por T-0001 — verificar si hace falta un adaptador Lambda nuevo o si el
+   `server.mjs` que ya produce `ng build` sirve tal cual (Ágora usa un `server/ssr/handler.mjs`
+   propio; revisar si Angular 22 lo simplificó).
 
-   Verificar contra `MEMORY.md` §5 antes de escribir el valor — **no asumirlo de memoria**. El de
-   staging es `https://ttukw9i82m.execute-api.us-east-1.amazonaws.com` (Ágora no tiene dominio propio
-   en staging todavía); decidir si vale la pena diferenciarlo aquí o esperar a que este mismo
-   proyecto tenga su propio staging (ADR-002) antes de que la distinción importe.
+3. HTTP API con ruta comodín `/{proxy+}` `ANY` hacia la función `ssr` — **sin** las rutas de
+   `/cartelera/*` ni `/libros/*`: esas viven en CloudFront (T-13), no en este `serverless.yml`
+   (`tech-specs.md` §7.2 — no confundir el proxy de CloudFront con las rutas de este API).
 
-2. Agregar el `fileReplacements` correspondiente en `angular.json` (`configurations.production`),
-   como ya lo documenta `tech-specs.md` §3.
+4. **No** definir todavía `staging.letiende.co` ni `letiende.co` como dominios propios de este API —
+   eso es T-13. Este `serverless.yml` debe poder desplegarse con `npx serverless package --stage
+   staging` sin fallar, aunque no tenga dominio ni CloudFront delante todavía.
 
-3. `EventosPublicosService` con `httpResource()` (`tech-specs.md` §4.1, §4.3) contra
-   `${environment.urlBaseApiAgora}/api/eventos-publicos`, tipado con la interfaz
-   `EventoEnCartelera` ya declarada en `tech-specs.md` §4.3 — copiarla tal cual, es un subconjunto
-   deliberadamente parcial de lo que expone Ágora.
-
-4. `InicioComponent`: muestra hasta 3 próximos eventos con `computed()` sobre el recurso, **con
-   encadenamiento opcional obligatorio** (`datos()?.eventos ?? []`, nunca `datos().eventos` —
-   `MEMORY.md` §6). Si Ágora no responde, la portada se renderiza igual, sin la sección de eventos
-   — nunca falla entera (`tech-specs.md` §5).
-
-5. Reemplazar la ruta `path: ''` en `app.routes.ts`: hoy apunta al placeholder `PaginaPendiente` de
-   T-0003, pasa a apuntar a `InicioComponent`.
+5. `npm run build:infra` como script nuevo: `npm run build && npm run build:api` — no hay
+   `server/api/` con lógica propia todavía (eso llega con T-7), así que por ahora es solo el build
+   de Angular. Ajustar cuando T-7 agregue código de backend real.
 
 **Definition of done:**
 
-- [ ] `npm run build -- --configuration=production` sin errores, con el `environment.production.ts`
-      real inyectado (verificar que el bundle no contiene `ttukw9i82m` si el de producción no lo usa)
-- [ ] Con la API de Ágora accesible, `/` muestra hasta 3 eventos reales
-- [ ] Con la API de Ágora simulada como caída (mock que rechaza), `/` sigue respondiendo 200 con el
-      resto de la portada, sin la sección de eventos y sin error no controlado
-- [ ] `npm test -- --watch=false` pasa
-- [ ] `npx tsc --noEmit` no reporta errores
-- [ ] Ningún secreto ni credencial en `src/environments/*` — solo la URL pública
+- [ ] `npx serverless package --stage staging` sin errores (no hace falta desplegar de verdad)
+- [ ] `logRetentionInDays`, `stackTags`, `tags` y el tope de `deploymentBucket` presentes y
+      verificables por lectura del YAML, no solo declarados
+- [ ] `docs/MEMORY.md` actualizado con el nombre real del stack y cualquier decisión tomada sobre el
+      adaptador Lambda del SSR
 
 ---
 
@@ -149,20 +137,32 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
   no silenciado. DoD verificado de punta a punta: un commit con un error de `tsc` real fue rechazado
   por el gancho, y el mismo commit corregido pasó. Detalle completo en `MEMORY.md` §9.
 
+- **T-0005** — [FEATURE] Portada con próximos eventos. Completada 02/09/2026. `httpResource()` contra
+  `GET /api/eventos-publicos` de Ágora. Tres hallazgos reales, no solo implementación: (1) los
+  nombres de campo que `tech-specs.md` documentaba desde la planeación original (`titulo`,
+  `fechaInicio`, `imagenAfiche`, `lugar`) eran adivinados y ninguno existe en la respuesta real —
+  corregidos contra `evento.model.ts` de Ágora (son `nombre`, `fechaHora`, `imagenUrl`; `lugar` no
+  existe); (2) `resource.value()` **lanza** en estado de error, el patrón de encadenamiento opcional
+  documentado desde la planeación era insuficiente — hace falta `hasValue()` (ADR-013); (3)
+  `RenderMode.Prerender` en la portada congelaba los eventos en el estado del último build — se
+  verificó con `curl` real contra la Ágora de producción, y se corrigió a `RenderMode.Server`
+  (ADR-012). De regalo: `HttpClient` se inyecta sin `provideHttpClient()` explícito en Angular 22,
+  verificado con un diagnóstico desechable (ADR-014). `tech-specs.md` y `MEMORY.md` corregidos en
+  los tres puntos, no solo el código. Detalle completo en `MEMORY.md` §9.
+
 ---
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
 
 En orden, según `tech-specs.md` §11:
 
-1. **T-8** `serverless.yml` del contenedor
-2. **T-6** Capa de SEO/AEO
-3. **T-7** Lambda de contacto con SES y antiabuso
-4. **T-9** CI/CD con GitHub Actions
-5. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
-6. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
-7. **T-14 → T-15** Redirecciones 301 y cutover
-8. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
+1. **T-6** Capa de SEO/AEO
+2. **T-7** Lambda de contacto con SES y antiabuso
+3. **T-9** CI/CD con GitHub Actions
+4. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
+5. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
+6. **T-14 → T-15** Redirecciones 301 y cutover
+7. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
 
 > El orden de T-13 frente a T-11/T-12 no es arbitrario: el `--base-href /cartelera/` de Ágora solo se
 > puede validar detrás de un CloudFront, y desde ADR-002 existe uno en staging para hacerlo.

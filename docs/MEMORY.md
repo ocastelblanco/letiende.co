@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas. Todavía sin portada real ni páginas institucionales |
-| **Fase** | T-0001 a T-0004 fusionados a `main`; T-0005 y T-0006 activas |
+| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora. Todavía sin páginas institucionales |
+| **Fase** | T-0001 a T-0005 fusionados a `main`; T-0006 y T-0007 activas |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `feature/pruebas-continuas-pre-commit` (desde `main`) |
+| **Rama** | `feature/portada-proximos-eventos` (desde `main`) |
 | **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: el andamiaje aún no se ha desplegado |
 | **Staging** | No existe aún |
-| **Última sesión** | 02/09/2026 — T-0004: ESLint, Prettier, y ganchos de pre-commit con husky + lint-staged |
+| **Última sesión** | 02/09/2026 — T-0005: portada con eventos reales de Ágora, `httpResource()`, `RenderMode.Server` |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -36,9 +36,9 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 - [x] `README.md`, `README.es.md` y `LICENSE` (T-0002)
 - [x] Barra de navegación y pie de página comunes (T-0003)
 - [x] Batería de pruebas y ganchos de pre-commit (T-0004)
+- [x] Portada con próximos eventos (T-0005)
 
 ### Pendientes
-- [ ] Portada con próximos eventos
 - [ ] Páginas institucionales (nosotros, contacto, preguntas frecuentes)
 - [ ] Capa de SEO/AEO
 - [ ] Lambda de contacto con SES
@@ -248,6 +248,88 @@ conocidos (llaves de AWS, encabezados de llave privada, tokens de OpenAI/Stripe/
 no escaneo de entropía genérico ni la base de datos de GitGuardian. Es una red local mientras la
 decisión de la GitHub App no se tome, no un reemplazo permanente pensado como equivalente.
 
+### ADR-012 — La portada usa `RenderMode.Server`, no `RenderMode.Prerender`
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0005
+
+**Contexto.** T-0001 dejó `{ path: '**', renderMode: RenderMode.Prerender }` como única regla de
+`app.routes.server.ts`. Al agregar la portada real con eventos de Ágora, el build (`ng build
+--configuration=production`) **hizo una llamada real a `https://agora.letiende.co/api/eventos-
+publicos` en tiempo de build** — verificado con `curl` contra la API real de producción antes y
+comparando con el contenido servido — y ese resultado quedó congelado en el HTML estático de `/`
+hasta el próximo despliegue. Un evento publicado en Ágora entre despliegues nunca habría aparecido.
+
+**Decisión.** `/` pasa a `RenderMode.Server` (SSR dinámico, por petición); el resto de las rutas
+(`/nosotros`, `/contacto` — contenido estático, sin datos remotos) siguen bajo `RenderMode.Prerender`
+vía el comodín `'**'`. El orden en el arreglo importa: la regla específica de `''` va **antes** del
+comodín.
+
+**Consecuencia.** El build de producción ya no depende de que Ágora esté arriba para completarse
+(antes de este cambio, una Ágora caída durante un despliegue habría fallado o colgado el build — no
+se llegó a probar ese caso límite porque se corrigió antes). La portada sí hace una petición real a
+Ágora en cada visita, en el servidor — el patrón de degradación de ADR anterior (§ debajo) es lo que
+evita que una Ágora caída en producción rompa la página.
+
+### ADR-013 — `hasValue()` antes de `value()`, no `?.`/`??`, para degradar sin romper
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0005
+
+**Contexto.** `MEMORY.md` §6 y `tech-specs.md` §4.1 documentaban, desde la sesión de planeación
+original, que un `computed()` sobre un recurso remoto debía usar encadenamiento opcional
+(`datos()?.campo ?? []`) para no romper el render mientras la respuesta no ha llegado. Al escribir
+`InicioComponent` y probar el caso de Ágora caída con `HttpTestingController` (`peticion.error(...)`,
+`tech-specs.md` §5), la prueba **lanzó una excepción real** dentro de la evaluación del `computed()`.
+
+**Hallazgo.** `resource.value()` (y por lo tanto `httpResource(...).value()`) **relanza el error
+subyacente cuando el recurso está en estado de error** — no devuelve `undefined`. El encadenamiento
+opcional no alcanza a proteger nada: la excepción salta al evaluar `.value()`, antes de que `?.` o
+`??` puedan actuar sobre el resultado. Esto no estaba mal documentado por descuido — era un supuesto
+nunca verificado contra el comportamiento real de la API, escrito durante la planeación inicial antes
+de que existiera código real que lo ejercitara.
+
+**Decisión.** Toda lectura de un recurso que pueda fallar usa `resource.hasValue()` como guardia
+antes de `resource.value()`:
+
+```ts
+protected readonly proximosEventos = computed(() => {
+  const recurso = this.eventosPublicos.cartelera;
+  return recurso.hasValue() ? recurso.value().slice(0, 3) : [];
+});
+```
+
+**Consecuencia.** `MEMORY.md` §6 y `tech-specs.md` §4.1 quedaron corregidos con el patrón real. El
+encadenamiento opcional (`?.`, `??`) sigue siendo válido y necesario para el estado *previo a la
+primera respuesta* (`value()` en `undefined`, eso no lanza) — la corrección es que **no basta** para
+el estado de error; hace falta `hasValue()` además. Verificado con una prueba que fuerza el estado de
+error real vía `HttpTestingController`, no solo inferido de la documentación de Angular.
+
+### ADR-014 — `HttpClient` funciona sin `provideHttpClient()` explícito en Angular 22
+
+**Fecha:** 02/09/2026 · **Estado:** registrado (no es una decisión, es un hallazgo)
+
+**Contexto.** `EventosPublicosService` usa `httpResource()`, que internamente inyecta `HttpClient` de
+forma obligatoria (`injector.get(HttpClient)`, sin `optional: true` — verificado leyendo
+`node_modules/@angular/common/fesm2022/http.mjs`). `app.config.ts` (T-0001) **nunca llamó
+`provideHttpClient()`**. La expectativa razonable era que esto fallara con `NullInjectorError` al
+construir `InicioComponent`.
+
+**Verificado, no asumido.** Se armó un servicio de diagnóstico desechable que inyectaba `HttpClient`
+directamente y lo registraba por consola, montado temporalmente en `App`; se compiló, se sirvió el
+build de producción, y se confirmó por consola: `HttpClient` se inyecta sin error. El diagnóstico se
+descartó (`git checkout -- src/app/app.ts`, `rm` del archivo) antes de continuar — nunca llegó a un
+commit.
+
+**Explicación probable, no confirmada al 100%:** el mensaje de deprecación de XHR en
+`@angular/platform-server` menciona "the HttpClient fetch backend... is the default since Angular
+22", lo que sugiere que `HttpClient` pasó a proveerse por defecto en la raíz en esta versión. No se
+rastreó el proveedor exacto dentro del código fuente de Angular — el hallazgo que importa para este
+proyecto es el comportamiento observado, no la implementación interna.
+
+**Consecuencia.** No se agregó `provideHttpClient()` a `app.config.ts`: hacerlo habría sido writing
+código redundante para "arreglar" algo que no estaba roto. Si una versión futura de Angular deja de
+proveerlo por defecto, el build fallaría de forma ruidosa (`NullInjectorError`) — no en silencio — así
+que no hace falta una prueba centinela para esto.
+
 ---
 
 ## 4. Dependencias
@@ -329,27 +411,32 @@ Node, que sí funciona. Verificado el 01/09/2026.
 
 ## 6. Patrones de código establecidos
 
-Todavía no hay código propio. Estos patrones vienen de Ágora y Babel y son los que este proyecto
-debe seguir desde el primer archivo:
-
-**Vista (patrón de componente de página):**
+**Vista (patrón de componente de página):** `InicioComponent` (T-0005,
+`src/app/features/inicio/inicio.ts`) es la referencia real, no un ejemplo inventado:
 
 ```ts
 @Component({
   selector: 'app-inicio',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './inicio.component.html',
+  templateUrl: './inicio.html',
 })
 export class InicioComponent {
-  private readonly meta = inject(MetaService);
-  private readonly eventos = inject(EventosPublicosService);
+  private readonly eventosPublicos = inject(EventosPublicosService);
 
-  protected readonly proximos = computed(() => this.eventos.cartelera()?.slice(0, 3) ?? []);
+  protected readonly proximosEventos = computed(() => {
+    const recurso = this.eventosPublicos.cartelera;
+    return recurso.hasValue() ? recurso.value().slice(0, 3) : [];
+  });
 }
 ```
 
-**Encadenamiento opcional obligatorio sobre datos remotos.** Un `computed()` sobre un recurso HTTP
-se evalúa antes de que llegue la respuesta: `datos()?.eventos ?? []`, nunca `datos().eventos`.
+**`resource.value()` lanza en estado de error — verificado en vivo en T-0005, no solo documentado
+por Angular.** El patrón original de esta memoria (`datos()?.campo ?? []`) era **insuficiente**: el
+encadenamiento opcional protege el estado previo a la primera respuesta (`value()` en `undefined`,
+no lanza), pero no el estado de error, donde `value()` relanza el error subyacente antes de que
+`?.`/`??` puedan actuar. La única lectura no explosiva es `hasValue()` primero, como en el ejemplo de
+arriba. `GET /api/eventos-publicos` de Ágora devuelve el arreglo sin envoltorio (verificado en su
+handler), así que aquí `hasValue() ? recurso.value() : []` — sin un `.campo` intermedio.
 
 **Pruebas aisladas.** `angular.json` lleva `"test": { "options": { "isolate": true } }`.
 Sin eso, un `vi.mock` de un archivo se filtra a los demás y las pruebas fallan según el orden.
@@ -398,6 +485,15 @@ Encontrado durante T-0004 (ESLint):
 | Situación | Solución |
 |---|---|
 | `ng add @angular-eslint/schematics` sobre el panel del menú móvil de T-0003 reportó `interactive-supports-focus`: un `<div>` con `(keydown.escape)` pero sin ser focuseable | No se silenció la regla — el hallazgo era real. Se agregó `role="dialog"`, `aria-modal="true"`, `aria-label` y `tabindex="-1"` al panel: el patrón correcto de diálogo modal, no un parche para pasar el linter |
+
+Encontrado durante T-0005 (portada):
+
+| Situación | Solución |
+|---|---|
+| Los nombres de campo de `EventoEnCartelera` en `tech-specs.md` (`titulo`, `fechaInicio`, `imagenAfiche`, `lugar`) eran adivinados de la sesión de planeación original, no verificados | Ninguno existe en la respuesta real de Ágora. Corregidos contra `agora/src/app/core/models/evento.model.ts` (interfaz `EventoPublico`): son `nombre`, `fechaHora`, `imagenUrl` — y `lugar` no existe, Ágora no rastrea un lugar por evento. Ver ADR (docs/tech-specs.md §4.3) |
+| `resource.value()` de `httpResource()` **lanza** cuando el recurso está en estado de error, en vez de devolver `undefined` | El encadenamiento opcional (`?.`, `??`) no protege nada aquí — la excepción salta antes. Usar `resource.hasValue()` como guardia primero. Ver ADR-013 |
+| `RenderMode.Prerender` en una ruta que depende de datos remotos (la portada, con eventos de Ágora) | El `ng build` hace la llamada real en tiempo de build y la congela en el HTML hasta el próximo despliegue — verificado con `curl` contra la API real. Esa ruta necesita `RenderMode.Server`. Ver ADR-012 |
+| `HttpClient` se inyecta sin `provideHttpClient()` explícito en `app.config.ts` | No es un descuido ni hace falta agregarlo: verificado con un diagnóstico desechable que la inyección funciona igual (Angular 22 parece proveerlo por defecto). Ver ADR-014 |
 
 Encontrados durante T-0001 (andamiaje), **verificados en esta máquina**:
 
@@ -624,3 +720,42 @@ configuration=production` sin errores, `npm test -- --watch=false` 9/9, `tsc --n
 recalculado — T-0005 (portada) sigue activa, se agrega **T-0006** (páginas institucionales: Nosotros
 y Contacto, T-5 del roadmap) — su contenido debe salir estrictamente de `PRD.md`, sin inventar
 dirección, horarios ni cifras.
+
+---
+
+**02/09/2026 — T-0005: portada con próximos eventos.**
+
+En rama `feature/portada-proximos-eventos` (desde `main`). Antes de escribir nada, se verificó contra
+el código real de Ágora en vez de confiar en lo que `tech-specs.md` ya documentaba — y ese chequeo
+encontró que la documentación estaba mal:
+
+1. **Los nombres de campo de `EventoEnCartelera` eran adivinados**, escritos en la sesión de
+   planeación original sin leer el código de Ágora. `nombre`/`fechaHora`/`imagenUrl` reemplazan a
+   `titulo`/`fechaInicio`/`imagenAfiche`; `lugar` se eliminó por completo, no existe (Ágora no
+   rastrea un lugar por evento). Corregido en `tech-specs.md` §4.3, no solo en el código nuevo.
+
+2. **`resource.value()` lanza en estado de error.** La prueba que simula Ágora caída
+   (`HttpTestingController`, `peticion.error(...)`) hizo explotar el `computed()` con el patrón de
+   encadenamiento opcional que `MEMORY.md`/`tech-specs.md` ya recomendaban desde la planeación
+   original. `hasValue()` como guardia antes de `value()` es el patrón correcto — ADR-013, con la
+   guía de ambos documentos corregida.
+
+3. **`RenderMode.Prerender` en la portada era el modo equivocado.** El build hacía una llamada real
+   a `https://agora.letiende.co/api/eventos-publicos` en tiempo de compilación (confirmado con
+   `curl` directo contra la API de producción — sí hay salida a internet desde este entorno) y
+   congelaba ese resultado en el HTML hasta el siguiente despliegue. Cambiado a `RenderMode.Server`
+   para `''`, manteniendo `Prerender` para el resto vía el comodín — ADR-012.
+
+4. **Hallazgo colateral:** `HttpClient` se inyecta sin `provideHttpClient()` en `app.config.ts`,
+   verificado con un servicio de diagnóstico desechable montado temporalmente en `App` y descartado
+   antes de commitear nada (`git checkout -- src/app/app.ts`) — ADR-014.
+
+Verificado en vivo, no solo con mocks: `curl` contra la API real de Ágora confirmó que hoy no hay
+eventos publicados (arreglo vacío), y la portada respondió 200 sin la sección de eventos —
+comportamiento correcto, no un bug. `npm run lint`, `format:check`, build de producción, 13/13
+pruebas y `tsc --noEmit` (app y spec), todos limpios tras las tres correcciones.
+
+**Próxima tarea sugerida:** abrir el PR de `feature/portada-proximos-eventos`; motor JIT
+recalculado — T-0006 (páginas institucionales) sigue activa, se agrega **T-0007** (`serverless.yml`
+del contenedor, solo la función `ssr` — T-7/contacto queda para después, sin handler que empaquetar
+todavía).
