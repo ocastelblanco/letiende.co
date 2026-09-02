@@ -1,0 +1,34 @@
+<div class="bg-surface px-4 py-8">
+  <div class="mx-auto max-w-6xl">
+    <h1 class="text-3xl font-bold tracking-tight text-primary sm:text-4xl">Le Tiende</h1>
+
+    @if (proximosEventos().length > 0) {
+      <section class="mt-8" aria-labelledby="titulo-proximos-eventos">
+        <h2 id="titulo-proximos-eventos" class="text-xl font-semibold tracking-tight text-primary">
+          Próximos eventos
+        </h2>
+
+        <ul class="mt-4 grid gap-4 sm:grid-cols-3">
+          @for (evento of proximosEventos(); track evento.slug) {
+            <li>
+              <a
+                href="/cartelera/evento/{{ evento.slug }}"
+                class="block rounded-2xl bg-white p-4 shadow-[0_4px_16px_rgba(35,12,0,0.08)]"
+              >
+                @if (evento.imagenUrl) {
+                  <img
+                    [src]="evento.imagenUrl"
+                    alt=""
+                    class="aspect-[3/4] w-full rounded-xl object-cover"
+                  />
+                }
+                <p class="mt-2 text-sm font-semibold text-primary">{{ evento.nombre }}</p>
+                <p class="text-xs text-primary/70">{{ evento.fechaHora | date: 'longDate' }}</p>
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+</div>

@@ -167,8 +167,22 @@ control de flujo `@if`/`@for`, aplicación *zoneless*, formularios reactivos, ce
 Para datos remotos se usa `httpResource()`, no `HttpClient` + `subscribe` manual: da estado de carga,
 error y valor en un solo signal, y funciona en SSR sin trabajo extra.
 
-Todo `computed()` sobre datos remotos usa encadenamiento opcional (`datos()?.eventos`): el recurso
-empieza en `undefined` y el primer render ocurre antes de la respuesta.
+**`resource.value()` lanza cuando el recurso está en estado de error — verificado en vivo en T-0005,
+no es solo lo que dice la documentación de Angular.** El encadenamiento opcional (`?.`, `??`) no
+alcanza a proteger nada: la excepción salta al leer `.value()`, antes de que esos operadores
+puedan actuar. La única lectura no explosiva es `resource.hasValue()` primero:
+
+```ts
+protected readonly proximosEventos = computed(() => {
+  const recurso = this.eventosPublicos.cartelera;
+  return recurso.hasValue() ? recurso.value().slice(0, 3) : [];
+});
+```
+
+`datos() ?? []`/`datos()?.campo` solo son seguros para el estado *previo a la primera respuesta*
+(`value()` en `undefined`, no lanza); para el estado de error hace falta `hasValue()`. `GET
+/api/eventos-publicos` de Ágora devuelve el arreglo directamente, sin envoltorio — verificado contra
+`agora/server/api/handlers/eventos-publicos.ts` (`respuestaJson(200, eventos)`), no asumido.
 
 ### 4.2 Rutas
 
@@ -197,13 +211,15 @@ El contenedor **no tiene modelo de datos propio persistido**. Solo dos formas le
 
 ```ts
 // core/api/eventos-publicos.service.ts — subconjunto de lo que expone Ágora.
-// Se declara solo lo que la portada usa; no se copia el modelo completo de Ágora.
+// Nombres de campo verificados contra agora/src/app/core/models/evento.model.ts
+// (interfaz EventoPublico) el 02/09/2026, no adivinados: no existen `titulo`,
+// `fechaInicio`, `imagenAfiche` ni `lugar` en la respuesta real de Ágora — Ágora
+// no rastrea un campo de lugar por evento (siempre es el mismo teatro).
 export interface EventoEnCartelera {
   readonly slug: string;
-  readonly titulo: string;
-  readonly fechaInicio: string;   // ISO-8601
-  readonly imagenAfiche: string | null;
-  readonly lugar: string;
+  readonly nombre: string;
+  readonly fechaHora: string;   // ISO-8601
+  readonly imagenUrl?: string;  // ausente si el evento no tiene imagenKey — usar un placeholder
 }
 
 // core/api/contacto.service.ts — lo que viaja al backend propio.
