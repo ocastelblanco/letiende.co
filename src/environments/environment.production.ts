@@ -7,4 +7,11 @@
 // docs/MEMORY.md, ADR-012.
 export const environment = {
   urlBaseApiAgora: 'https://agora.letiende.co',
+  // Llaves públicas por diseño de Google, restringidas por dominio del lado
+  // de Google Cloud, no por secreto — CLAUDE.md §5, A02. Este mismo artefacto
+  // sirve a staging y a producción; AnalyticsService evita que staging
+  // contamine las métricas reales comprobando el host en tiempo de ejecución
+  // (solo carga gtag.js en letiende.co, nunca en staging.letiende.co).
+  googleAnalyticsId: '__GOOGLE_ANALYTICS_ID__',
+  googleMapsApiKey: '__GOOGLE_MAPS_API_KEY__',
 };
