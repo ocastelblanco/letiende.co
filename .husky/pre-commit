@@ -1,0 +1,4 @@
+npx lint-staged
+node scripts/verificar-secretos.mjs
+npx tsc --noEmit -p tsconfig.app.json
+npx tsc --noEmit -p tsconfig.spec.json

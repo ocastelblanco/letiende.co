@@ -11,6 +11,9 @@
 npm-debug.log
 yarn-error.log
 
+# Husky (regenerado por el script "prepare" en cada npm install)
+.husky/_
+
 # IDEs and editors
 .idea/
 .project

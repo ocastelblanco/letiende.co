@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE`. Todavía sin portada real ni páginas institucionales |
-| **Fase** | T-0001, T-0002 y T-0003 fusionados a `main`; T-0004 y T-0005 activas |
+| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas. Todavía sin portada real ni páginas institucionales |
+| **Fase** | T-0001 a T-0004 fusionados a `main`; T-0005 y T-0006 activas |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `feature/barra-navegacion-comun` (desde `main`) |
+| **Rama** | `feature/pruebas-continuas-pre-commit` (desde `main`) |
 | **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: el andamiaje aún no se ha desplegado |
 | **Staging** | No existe aún |
-| **Última sesión** | 02/09/2026 — T-0003: barra de navegación y pie de página comunes, verificados en SSR real |
+| **Última sesión** | 02/09/2026 — T-0004: ESLint, Prettier, y ganchos de pre-commit con husky + lint-staged |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -35,6 +35,7 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 - [x] `node` global apuntando a v24, CLI de Angular global actualizado
 - [x] `README.md`, `README.es.md` y `LICENSE` (T-0002)
 - [x] Barra de navegación y pie de página comunes (T-0003)
+- [x] Batería de pruebas y ganchos de pre-commit (T-0004)
 
 ### Pendientes
 - [ ] Portada con próximos eventos
@@ -42,7 +43,6 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 - [ ] Capa de SEO/AEO
 - [ ] Lambda de contacto con SES
 - [ ] `serverless.yml` y CI/CD
-- [ ] Batería de pruebas y ganchos de pre-commit
 - [ ] Certificados ACM (`staging.letiende.co` y `letiende.co`) en `us-east-1`
 - [ ] Distribuciones de CloudFront de staging y de producción
 - [ ] Cambios en Ágora y en Babel (base href, barra común, mapas del sitio, 301)
@@ -221,6 +221,33 @@ sin que este componente sobreviva más allá de esa tarea.
 **`path: ''` es obligatorio** para que la raíz siga prerenderizando — no es opcional solo porque
 "ya estaba así". Es la lección concreta de esta ADR, no solo el placeholder en sí.
 
+### ADR-011 — Pre-commit con `husky` + `lint-staged`, escáner de secretos propio
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0004
+
+**Contexto.** La skill `/slim-continuous-testing` que originó T-0004 trae, por defecto, la plantilla
+del framework `pre-commit` de Python (`pip install pre-commit`). `tech-specs.md` §10 documentaba
+"GitGuardian / `detect-secrets`" para el escaneo de secretos, sin comprometerse a cuál.
+
+**Decisión.** Ganchos con `husky` + `lint-staged` (el estándar del ecosistema Node, no el framework
+Python), y un escáner de secretos propio (`scripts/verificar-secretos.mjs`) en vez de GitGuardian o
+`detect-secrets`.
+
+**Razón.**
+- Este proyecto —y Ágora y Babel— son puramente Node/TypeScript. El framework `pre-commit` de Python
+  habría metido un segundo lenguaje de tooling solo para un gancho de git.
+- **GitGuardian no es una decisión de código.** Al revisar Ágora se encontró que su `.gitguardian.
+  yaml` es únicamente su lista de falsos positivos ignorados — la protección real es una GitHub App
+  instalada a nivel de cuenta/organización, algo que un commit en este repositorio no puede activar.
+  Instalarla para `letiende.co` sigue disponible como mejora, pero es una decisión del humano en la
+  configuración de GitHub, no de un agente escribiendo archivos.
+- `detect-secrets` también es Python, con el mismo problema del framework `pre-commit`.
+
+**Consecuencia.** El escaneo de secretos local es más angosto que GitGuardian: cubre patrones
+conocidos (llaves de AWS, encabezados de llave privada, tokens de OpenAI/Stripe/GitHub/Slack/Google),
+no escaneo de entropía genérico ni la base de datos de GitGuardian. Es una red local mientras la
+decisión de la GitHub App no se tome, no un reemplazo permanente pensado como equivalente.
+
 ---
 
 ## 4. Dependencias
@@ -242,6 +269,17 @@ mismo día, dentro de ese rango:
 | `express` | `^5.1.0` | 5.2.1 |
 | `serverless` | — | **aún no instalado**, se agrega en T-8. Ágora y Babel están en 4.39.0; objetivo 4.41.x |
 | `@aws-sdk/client-ses` | — | **aún no instalado**, se agrega en T-7 |
+
+**Agregadas en T-0004** (02/09/2026), pruebas continuas y ganchos de pre-commit:
+
+| Paquete | Rango en `package.json` | Resuelta el 02/09/2026 |
+|---|---|---|
+| `eslint` | `^10.9.0` | 10.9.1 |
+| `angular-eslint` | `22.2.0` | 22.2.0 — instalado con `ng add @angular-eslint/schematics`, la vía oficial |
+| `typescript-eslint` | `8.67.0` | 8.67.0 |
+| `husky` | `^9.1.7` | 9.1.7 |
+| `lint-staged` | `^17.4.1` | 17.4.1 |
+| `prettier` | `^3.8.1` (ya estaba) | 3.9.6 |
 
 No se fijó ninguna versión a mano: todas llegaron dentro del rango `^` que dejó
 `npx @angular/cli@22 new`, que ya apunta a "última estable" por sí solo.
@@ -354,6 +392,12 @@ Encontrado durante T-0003 (barra de navegación):
 | Situación | Solución |
 |---|---|
 | Agregar rutas a `app.routes.ts` sin una entrada `path: ''` | El build deja de prerenderizar la raíz (`ng build` reporta menos rutas de las esperadas) y el servidor SSR responde **404 en `/`**, no un error visible en el build. Ver ADR-010 |
+
+Encontrado durante T-0004 (ESLint):
+
+| Situación | Solución |
+|---|---|
+| `ng add @angular-eslint/schematics` sobre el panel del menú móvil de T-0003 reportó `interactive-supports-focus`: un `<div>` con `(keydown.escape)` pero sin ser focuseable | No se silenció la regla — el hallazgo era real. Se agregó `role="dialog"`, `aria-modal="true"`, `aria-label` y `tabindex="-1"` al panel: el patrón correcto de diálogo modal, no un parche para pasar el linter |
 
 Encontrados durante T-0001 (andamiaje), **verificados en esta máquina**:
 
@@ -541,3 +585,42 @@ mismo botón. `tsc --noEmit` limpio en `app` y `spec`.
 T-0004 (pruebas continuas) sigue activa, se agrega **T-0005** (portada con próximos eventos, T-4 del
 roadmap), que introduce `src/environments/` por primera vez — verificar las URLs de Ágora contra
 `MEMORY.md` §5 antes de escribirlas, no de memoria.
+
+---
+
+**02/09/2026 — T-0004: pruebas continuas y ganchos de pre-commit.**
+
+En rama `feature/pruebas-continuas-pre-commit` (desde `main`):
+
+- **ESLint** vía `ng add @angular-eslint/schematics` — la vía oficial del propio equipo de Angular,
+  no una configuración manual. Generó `eslint.config.js`, el target `lint` en `angular.json`, y el
+  script `npm run lint` en `package.json` (ya venía incluido por el schematic, no hubo que agregarlo
+  a mano).
+- **Un hallazgo real de accesibilidad**, no ruido: el linter marcó el panel del menú móvil de T-0003
+  (`interactive-supports-focus` — un `<div>` con `(keydown.escape)` pero sin ser focuseable). Se
+  corrigió con `role="dialog"`, `aria-modal="true"`, `aria-label` y `tabindex="-1"` — el patrón
+  correcto de diálogo modal, no un `eslint-disable` para pasar el linter.
+- **Prettier** ya estaba en el andamiaje de T-0001; se agregaron los scripts `format`/`format:check`
+  y se reformateó todo `src/**` una vez (10 archivos, la mayoría generados por el CLI que nunca
+  habían pasado por Prettier).
+- **Pre-commit con `husky` + `lint-staged`**, no el framework Python `pre-commit` que trae por
+  defecto `/slim-continuous-testing` — decisión documentada en ADR-011, junto con la de no usar
+  GitGuardian/`detect-secrets` para el escaneo de secretos. En su lugar,
+  `scripts/verificar-secretos.mjs`: sin dependencias, cubre los patrones de token que se han usado
+  a mano toda la sesión (AWS, llaves privadas, OpenAI/Stripe, GitHub, Slack, Google).
+- **El DoD se verificó de punta a punta, no se dio por sentado por la configuración:** se creó un
+  archivo con un error real de `tsc`, se intentó commitear, el gancho lo rechazó (`husky - pre-commit
+  script failed`), se confirmó con `git log`/`git status` que el commit **no existía**; se corrigió
+  el archivo, se volvió a commitear, y esta vez pasó. El archivo de prueba se descartó después
+  (`git reset --soft` + borrar el archivo), nunca llegó a la rama real.
+- El escáner de secretos también se probó con un hallazgo real plantado (`AKIA...` falso): lo detectó
+  y bloqueó, antes de confiar en que "sin hallazgos" significaba que el script funcionaba.
+
+Verificado: `npm run lint` limpio, `npm run format:check` limpio, `npm run build --
+configuration=production` sin errores, `npm test -- --watch=false` 9/9, `tsc --noEmit` limpio en
+`app` y `spec`.
+
+**Próxima tarea sugerida:** abrir el PR de `feature/pruebas-continuas-pre-commit`; motor JIT
+recalculado — T-0005 (portada) sigue activa, se agrega **T-0006** (páginas institucionales: Nosotros
+y Contacto, T-5 del roadmap) — su contenido debe salir estrictamente de `PRD.md`, sin inventar
+dirección, horarios ni cifras.
