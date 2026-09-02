@@ -9,47 +9,49 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0006 — [FEATURE] Páginas institucionales: Nosotros y Contacto
+## Tarea T-0008 — [FEATURE] Capa de SEO/AEO
 
-**Origen:** PRD §5 F-5, F-6, prioridad alta · `tech-specs.md` §11, T-5
+**Origen:** PRD §8 (requisito de primer orden, no un acabado) · `tech-specs.md` §4.5, T-6 ·
+depende de T-0005 y T-0006 (hechas)
 
 **Archivos:**
 
-- `src/app/features/nosotros/nosotros.ts` (+ `.html`, `.spec.ts`)
-- `src/app/features/contacto/contacto.ts` (+ `.html`, `.spec.ts`)
-- `src/app/app.routes.ts` (`/nosotros` y `/contacto` dejan de apuntar a `PaginaPendiente`)
+- `src/app/core/seo/meta.service.ts` (+ `.spec.ts`)
+- `src/app/core/seo/*.ts` — helpers de JSON-LD (`Organization`, `WebSite`, `LocalBusiness`,
+  `ItemList`/`Event`, `AboutPage`, `ContactPage`, `BreadcrumbList`)
+- `public/robots.txt`
+- Endpoint o ruta de `/sitemap.xml`
+- Cada componente de página (`inicio`, `nosotros`, `contacto`) inyecta `MetaService`
 
 **Qué hacer:**
 
-1. `NosotrosComponent`: contenido derivado **estrictamente** de `PRD.md` §2 y §3 — qué es Le Tiende,
-   qué pasa ahí. No inventar hechos que no estén en `PRD.md`; si falta algo (una cifra, una fecha),
-   se omite, no se completa a criterio propio.
+1. `MetaService`: título y `meta description` únicos por ruta, canónica siempre
+   `https://letiende.co/...` (incluso detrás del proxy), Open Graph y Twitter Card con imagen propia
+   por sección.
 
-2. `ContactoComponent`: formulario (nombre, correo, mensaje, casilla de consentimiento — `CLAUDE.md`
-   §5, Ley 1581) más dirección, horarios y mapa. **Dirección y horarios van "por confirmar"**, igual
-   que ya hace `PiePagina` (T-0003) — no inventar una dirección real.
+2. JSON-LD por página, según la tabla de `tech-specs.md` §4.5: `Organization` + `WebSite` con
+   `SearchAction` en todas; `LocalBusiness` → `PerformingArtsTheater` con `openingHoursSpecification`,
+   `geo` y `address` en la portada (ya hay datos reales en `@core/negocio/datos-negocio`, T-0006);
+   `ItemList` de próximos eventos en la portada; `AboutPage` en `/nosotros`; `ContactPage` +
+   repetición de `LocalBusiness` en `/contacto`; `BreadcrumbList` donde haya jerarquía. `FAQPage`
+   queda fuera: no existe `/preguntas-frecuentes` todavía (roadmap de prioridad media, PRD §6).
 
-   El formulario se construye completo (`ReactiveFormsModule`, validaciones, mensajes de error) pero
-   **su envío no puede funcionar todavía**: `POST /api/contacto` es T-7, que no existe. Dejar el
-   `(ngSubmit)` conectado a un método que hoy solo valida y deja evidencia clara en el propio
-   componente (un `signal` de estado, no una llamada HTTP real) de que falta conectar el backend.
+3. `robots.txt` apunta al mapa del sitio. La ruta comodín debe responder HTTP 404 real, no 200
+   (`CLAUDE.md` §5, A05) — verificar con `curl`, no asumir.
 
-3. Reemplazar `PaginaPendiente` en ambas rutas de `app.routes.ts`. La ruta `''` (portada) sigue
-   usando `PaginaPendiente` hasta T-0005 — no tocarla aquí.
-
-4. Seguir el patrón de contenedor de `DESIGN.md` §3 (`max-w-3xl` para Nosotros, `max-w-lg` para el
-   formulario de Contacto) y las clases de input/botón de `DESIGN.md` §5, §6.
+4. `/sitemap.xml` como índice que agrega el propio contenedor, Ágora y Babel — verificar primero si
+   Ágora y Babel ya exponen el suyo (`tech-specs.md` §4.5 avisa que el de Ágora hoy emite
+   `agora.letiende.co`, no `/cartelera`; ese ajuste es de T-11, fuera de esta tarea).
 
 **Definition of done:**
 
 - [ ] `npm run build -- --configuration=production` sin errores
 - [ ] `npm run lint` y `npx tsc --noEmit` sin errores
-- [ ] `npm test -- --watch=false` pasa, con pruebas de validación del formulario (campo vacío,
-      correo inválido, consentimiento no marcado — cada uno bloquea el envío)
-- [ ] Ningún dato inventado: dirección, horarios y cualquier cifra no presente en `PRD.md` dicen
-      explícitamente "por confirmar"
-- [ ] El componente de Contacto deja evidencia visible (no silenciosa) de que el envío real todavía
-      no está conectado
+- [ ] `npm test -- --watch=false` pasa
+- [ ] JSON-LD verificado como válido (parseable y con los campos obligatorios de cada tipo), no solo
+      presente en el HTML
+- [ ] `curl` real contra la ruta comodín confirma HTTP 404
+- [ ] Título y `meta description` verificados distintos entre `/`, `/nosotros` y `/contacto`
 
 ---
 
@@ -137,6 +139,38 @@ bloque cuando exista código real que desplegar.
   no silenciado. DoD verificado de punta a punta: un commit con un error de `tsc` real fue rechazado
   por el gancho, y el mismo commit corregido pasó. Detalle completo en `MEMORY.md` §9.
 
+- **T-0006** — [FEATURE] Páginas institucionales: Nosotros y Contacto — más íconos/manifest, Google
+  Maps y Google Analytics 4, agregados por decisión explícita del humano dentro de la misma tarea.
+  Completada 02/09/2026. `NosotrosComponent` con contenido derivado estrictamente de `PRD.md` §1, §2,
+  §3, §5 y §10 (sin inventar cifras). `ContactoComponent` con formulario reactivo completo
+  (`ReactiveFormsModule`), las tres validaciones bloqueantes exigidas por el DoD (campo vacío, correo
+  inválido, consentimiento no marcado) verificadas en el navegador real, no solo en pruebas, y un
+  `signal` de estado que muestra en pantalla que `POST /api/contacto` (T-7) todavía no existe.
+  `PaginaPendiente` se eliminó por completo (ADR-010 ya avisaba que no debía sobrevivir más allá de
+  esta tarea). Dirección y horarios **ya no son "por confirmar"**: el humano los dio directamente
+  (Carrera 24 #37-44, Bogotá; domingo a miércoles 2–8 p. m., jueves a sábado 2–10 p. m.), centralizados
+  en `core/negocio/datos-negocio.ts` para no repetirlos en tres archivos. Íconos y
+  `manifest.webmanifest` copiados de Ágora, ya documentados como contrato en `DESIGN.md` §9 pero nunca
+  ejecutados. Mapa de `/contacto` con Google Maps Embed API. Google Analytics 4 reemplaza la
+  integración legacy (Universal Analytics, descontinuada) vía `gtag.js`, cargado con
+  `afterNextRender` — nunca en el SSR — y con una guarda de host: solo carga en `letiende.co`, nunca
+  en `staging.letiende.co`, porque ambos stages despliegan el mismo artefacto
+  (`environment.production.ts`) y sin esa guarda el tráfico de staging contaminaría las métricas
+  reales. Ninguna de las dos llaves se versiona (ADR-017): el escáner de secretos bloqueó el primer
+  intento de commitearlas directamente (aunque son públicas por diseño de Google), así que
+  `environment.ts` lleva marcadores que `scripts/inyectar-llaves-publicas.mjs` sustituye sobre
+  `dist/` en el build, leyendo variables de entorno — ya guardadas como *secrets* de GitHub Actions
+  del repositorio para cuando exista T-9. Se evaluó y se descartó la integración con la API de Google
+  Business Profile: requiere un perfil verificado y activo 60+ días, aprobación manual de Google
+  (días a semanas) y OAuth2 con almacenamiento de refresh token — desproporcionado frente a datos que
+  el humano ya tenía a mano y que no cambian con frecuencia; queda como opción futura si algún día
+  hace falta sincronización en vivo.
+  Verificado en vivo: build de producción, SSR real (`curl` 200 en `/`, `/nosotros`, `/contacto`,
+  `manifest.webmanifest`, íconos), navegador real con Playwright/Chrome (mapa renderiza el punto
+  correcto en Bogotá, las 4 validaciones bloquean el envío una por una, el envío válido muestra el
+  aviso de backend pendiente, cero errores de hidratación ni de consola). 25/25 pruebas, `tsc --noEmit`
+  y `lint` limpios.
+
 - **T-0005** — [FEATURE] Portada con próximos eventos. Completada 02/09/2026. `httpResource()` contra
   `GET /api/eventos-publicos` de Ágora. Tres hallazgos reales, no solo implementación: (1) los
   nombres de campo que `tech-specs.md` documentaba desde la planeación original (`titulo`,
@@ -154,15 +188,14 @@ bloque cuando exista código real que desplegar.
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
 
-En orden, según `tech-specs.md` §11:
+En orden, según `tech-specs.md` §11 (T-6 ya es tarea activa, T-0008):
 
-1. **T-6** Capa de SEO/AEO
-2. **T-7** Lambda de contacto con SES y antiabuso
-3. **T-9** CI/CD con GitHub Actions
-4. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
-5. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
-6. **T-14 → T-15** Redirecciones 301 y cutover
-7. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
+1. **T-7** Lambda de contacto con SES y antiabuso
+2. **T-9** CI/CD con GitHub Actions
+3. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
+4. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
+5. **T-14 → T-15** Redirecciones 301 y cutover
+6. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
 
 > El orden de T-13 frente a T-11/T-12 no es arbitrario: el `--base-href /cartelera/` de Ágora solo se
 > puede validar detrás de un CloudFront, y desde ADR-002 existe uno en staging para hacerlo.
