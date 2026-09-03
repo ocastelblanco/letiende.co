@@ -3,8 +3,8 @@
     <p class="text-base font-semibold tracking-wider uppercase">Le Tiende</p>
 
     <p>{{ datosNegocio.direccion }}</p>
-    @for (bloque of datosNegocio.horarios; track bloque.dias) {
-      <p>{{ bloque.dias }}: {{ bloque.horario }}</p>
+    @for (bloque of datosNegocio.horarios; track bloque.diasEs) {
+      <p>{{ bloque.diasEs }}: {{ bloque.horarioEs }}</p>
     }
     <!-- Redes sociales: todavía por confirmar (docs/TODO.md, T-0006). -->
     <p class="text-neutral/70">Instagram · Facebook — por confirmar</p>

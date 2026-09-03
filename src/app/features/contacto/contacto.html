@@ -7,8 +7,8 @@
         Dónde y cuándo
       </h2>
       <p class="mt-2">{{ datosNegocio.direccion }}</p>
-      @for (bloque of datosNegocio.horarios; track bloque.dias) {
-        <p>{{ bloque.dias }}: {{ bloque.horario }}</p>
+      @for (bloque of datosNegocio.horarios; track bloque.diasEs) {
+        <p>{{ bloque.diasEs }}: {{ bloque.horarioEs }}</p>
       }
     </section>
 
