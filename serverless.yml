@@ -1,0 +1,85 @@
+service: letiende-co
+
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs24.x
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  httpApi:
+    cors: true
+  deploymentBucket:
+    # Sin este tope, cada despliegue deja su artefacto en S3 para siempre.
+    maxPreviousDeploymentArtifacts: 5
+  # Nunca el default infinito de CloudWatch Logs — CLAUDE.md §5, A05.
+  logRetentionInDays: 14
+  # Etiquetado obligatorio: la cuenta AWS es compartida con Ágora, Babel y
+  # Comandante — sin esto, Cost Explorer no puede separar el gasto de cada
+  # app (CLAUDE.md §5, tabla de "Configuración incorrecta").
+  stackTags:
+    Proyecto: letiende-co
+    Stage: ${sls:stage}
+  tags:
+    Proyecto: letiende-co
+    Stage: ${sls:stage}
+
+package:
+  individually: true
+
+functions:
+  ssr:
+    handler: server/ssr/handler.handler
+    role: !GetAtt SsrLambdaRole.Arn
+    description: >-
+      Renderizado SSR de Angular — todas las rutas salvo /api/contacto
+      (tech-specs.md §1). Sin permisos de DynamoDB ni de ningún otro
+      servicio de AWS: solo renderiza y lee de Ágora por HTTP.
+    memorySize: 512
+    environment:
+      # Protección SSRF de @angular/ssr (verificado leyendo
+      # node_modules/@angular/ssr/fesm2022/node.mjs — getAllowedHostsFromEnv()
+      # lee esta variable con prioridad sobre `allowedHosts` de angular.json,
+      # que solo trae `localhost` para desarrollo local). Sin ella, cualquier
+      # petición real a través de API Gateway responde 400 "Header host...
+      # is not allowed" — verificado invocando el handler local con un
+      # evento de API Gateway simulado, antes y después de fijar esta
+      # variable (docs/MEMORY.md, T-0007). El dominio propio
+      # (letiende.co / staging.letiende.co) se agrega en el mismo cambio que
+      # lo monte — T-13 —, nunca antes: no hay nada que "permitir" todavía
+      # para un host que no resuelve a esta Lambda.
+      NG_ALLOWED_HOSTS: !Sub '${HttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+    package:
+      patterns:
+        - '!**'
+        - 'dist/letiende-co/**'
+        - 'server/ssr/handler.mjs'
+        - 'node_modules/@codegenie/serverless-express/**'
+    events:
+      - httpApi:
+          path: /
+          method: get
+      - httpApi:
+          path: /{proxy+}
+          method: '*'
+
+resources:
+  Resources:
+    SsrLambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: letiende-co-ssr-role-${sls:stage}
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        # Sin política adicional (CLAUDE.md §5, A05: mínimo privilegio): el
+        # SSR no lee ni escribe en ningún recurso de AWS propio, solo hace
+        # una petición HTTP saliente de solo lectura a Ágora
+        # (GET /api/eventos-publicos, tech-specs.md §5) — eso no requiere
+        # permiso IAM, no es una llamada a un servicio de AWS.
