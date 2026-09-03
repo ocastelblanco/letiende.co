@@ -3,6 +3,9 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DATOS_NEGOCIO } from '@core/negocio/datos-negocio';
 import { environment } from '@environments/environment';
+import { MetaService } from '@core/seo/meta.service';
+import { JsonLdService } from '@core/seo/json-ld.service';
+import { esquemaContactPage, esquemaLocalBusiness, esquemaMigasDePan } from '@core/seo/esquemas';
 
 interface FormularioContacto {
   nombre: FormControl<string>;
@@ -21,6 +24,8 @@ type EstadoEnvio = 'inicial' | 'backend-pendiente';
 })
 export class ContactoComponent {
   private readonly sanitizador = inject(DomSanitizer);
+  private readonly meta = inject(MetaService);
+  private readonly jsonLd = inject(JsonLdService);
 
   protected readonly datosNegocio = DATOS_NEGOCIO;
 
@@ -50,6 +55,23 @@ export class ContactoComponent {
       DATOS_NEGOCIO.direccion,
     )}`,
   );
+
+  constructor() {
+    this.meta.actualizar({
+      titulo: 'Contacto - Le Tiende',
+      descripcion: `Escríbenos, encuentra la dirección y los horarios de Le Tiende. ${DATOS_NEGOCIO.direccion}.`,
+      ruta: '/contacto',
+    });
+
+    this.jsonLd.establecer('ld-pagina', [
+      esquemaContactPage(),
+      esquemaLocalBusiness(),
+      esquemaMigasDePan([
+        { nombre: 'Inicio', ruta: '/' },
+        { nombre: 'Contacto', ruta: '/contacto' },
+      ]),
+    ]);
+  }
 
   protected enviar(): void {
     if (this.formulario.invalid) {
