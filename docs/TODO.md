@@ -9,60 +9,6 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0012 — [FEATURE] Página de Preguntas frecuentes (F-7)
-
-**Origen:** `PRD.md` §5 F-7, roadmap §6 (prioridad Media, etapa 1) — único ítem de la cola priorizada
-que no depende de T-0011 (T-11/T-12/T-14/T-15 sí dependen; ver "Cola priorizada" al final de este
-documento)
-
-**Contexto.** F-7 pide horarios, parqueadero, accesibilidad y cómo programar un evento en el espacio.
-No hay contenido de terceros: es contenido propio, igual que Nosotros y Contacto (T-0006), así que no
-hay razón para esperar a Ágora/Babel/CloudFront (T-0011) para hacerla.
-
-**Archivos:**
-
-- `src/app/features/preguntas-frecuentes/preguntas-frecuentes.ts` + `.html` (nuevo componente de
-  página, mismo patrón que `NosotrosComponent`)
-- `src/app/app.routes.ts` (ruta `/preguntas-frecuentes`)
-- `src/app/app.routes.server.ts` (`RenderMode.Prerender`, contenido 100% estático — mismo criterio que
-  `nosotros`/`contacto`)
-- `src/app/shared/navegacion/barra-navegacion.html` (enlace nuevo, mismo patrón `routerLink` que
-  `/nosotros` y `/contacto` — versión de escritorio y versión de menú móvil)
-- `src/app/core/seo/esquemas.ts` (nuevo `esquemaFaqPage()`, schema.org `FAQPage`)
-- `server.ts` (agregar `/preguntas-frecuentes` a `/sitemap.xml`, mismo patrón que las otras dos rutas
-  propias, T-0008)
-
-**Qué hacer:**
-
-1. Contenido real, no inventado: horarios y dirección salen de `DATOS_NEGOCIO`
-   (`core/negocio/datos-negocio.ts`, ya existe, T-0006) — nunca repetidos a mano. Parqueadero,
-   accesibilidad y "cómo programar un evento" necesitan que el humano confirme el texto exacto antes
-   de publicarlo (mismo criterio que ya aplicó T-0006 con horarios/dirección: no inventar cifras ni
-   políticas).
-2. `esquemaFaqPage()` en `core/seo/esquemas.ts`, tipo `FAQPage` de schema.org
-   (`mainEntity: Question[]`, cada una con `acceptedAnswer.text`) — la razón real de esta tarea para
-   el objetivo OBJ-3 de visibilidad en asistentes de IA (`PRD.md`): es el tipo de dato estructurado
-   que los motores de respuesta citan directamente. Mismo patrón de escape de JSON-LD que las demás
-   páginas (`CLAUDE.md` §5, A03) — nunca concatenar cadenas.
-3. `MetaService.actualizar()` + `JsonLdService.establecer()` en el constructor del componente, patrón
-   ya establecido (`docs/MEMORY.md` §6) — nunca en `ngOnInit` ni `afterNextRender`.
-4. Sin acordeón con JavaScript ni librería de componentes (ADR-004): si hace falta colapsar/expandir
-   preguntas, evaluar primero `<details>`/`<summary>` nativos de HTML antes de escribir cualquier
-   `signal` de estado — más simple y accesible por defecto.
-
-**Definition of done:**
-
-- [ ] Contenido de horarios/dirección verificado como idéntico al de `DATOS_NEGOCIO` (no duplicado a
-      mano en la plantilla)
-- [ ] `curl` real en SSR: `/preguntas-frecuentes` responde 200 con HTML, JSON-LD `FAQPage` extraído del
-      HTML y verificado con `JSON.parse()` real (mismo criterio de verificación que T-0008)
-- [ ] `/sitemap.xml` incluye la ruta nueva
-- [ ] Enlace visible y funcional en `BarraNavegacion`, escritorio y menú móvil, con el mismo estado
-      "activo" (`routerLinkActive`) que `/nosotros` y `/contacto`
-- [ ] Pruebas unitarias del componente y del nuevo esquema JSON-LD, `tsc --noEmit` y `lint` limpios
-
----
-
 ## Tarea T-0011 — [INFRA] Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
 
 **Origen:** `tech-specs.md` §7, T-13 · T-0010 (CI/CD) completada — el pipeline ya despliega de verdad
@@ -119,9 +65,37 @@ bloqueo pendiente
 - [ ] `docs/MEMORY.md` actualizado con los IDs reales (certificado, distribución, registro DNS) en
       la tabla de "Por crear" de §5, que pasan a "Configuraciones vigentes"
 
+> **Nota sobre el motor JIT: solo 1 tarea activa, no 2.** Al completar T-0012 (04/09/2026), la cola
+> priorizada (`Cola priorizada` al final de este documento) queda con un único candidato listo:
+> T-11/T-12 y T-14→T-15 dependen explícitamente de que **T-0011 termine**, no solo de que esté activa
+> — todavía no terminó. La carta del café bar (F-8) y la actualización de la interfaz heredada (F-9)
+> son de etapa 2 (`PRD.md` §6), y la etapa 2 no empieza antes de que el objetivo de etapa 1
+> "Reemplazo del sitio actual sin ventana de caída" (OBJ-5, prioridad Alta) esté resuelto — que es
+> exactamente lo que hace T-0011/T-14/T-15. Forzar una segunda tarea activa hoy significaría escoger
+> algo bloqueado o fuera de etapa; se deja T-0011 como única tarea activa hasta que termine y destrabe
+> la siguiente de la cola.
+
 ---
 
 ## Historial
+
+- **T-0012** — [FEATURE] Página de Preguntas frecuentes (F-7). Completada 04/09/2026.
+  `PreguntasFrecuentesComponent`, mismo patrón que `NosotrosComponent`: horarios y dirección
+  derivados de `DATOS_NEGOCIO` (nunca repetidos a mano), parqueadero/accesibilidad/cómo-programar-un-
+  evento con texto confirmado explícitamente por el humano en la sesión (parqueadero: no hay propio;
+  accesibilidad: acceso limitado por escaleras, sin inventar rampas; evento propio: WhatsApp
+  +57 318 7056288, con enlace real `wa.me`). Sin acordeón con JavaScript ni librería (ADR-004):
+  `<details>`/`<summary>` nativos. Un único array `preguntas` en el componente alimenta tanto el
+  `@for` del template como `esquemaFaqPage()` nueva en `core/seo/esquemas.ts` (schema.org `FAQPage`,
+  `mainEntity: Question[]` con `acceptedAnswer.text`), para no declarar el contenido dos veces.
+  Ruta agregada a `app.routes.ts`, `app.routes.server.ts` (`RenderMode.Prerender`, contenido 100%
+  estático), `RUTAS_PROPIAS` de `server.ts` (ahora 4, no 3) y enlace en `BarraNavegacion` (escritorio
+  y menú móvil, mismo `routerLinkActive` que `/nosotros`/`/contacto`). Verificado en vivo, no solo con
+  pruebas: build de producción prerenderiza la ruta nueva, `curl` real contra el SSR responde 200 con
+  el JSON-LD `FAQPage` extraído del HTML y parseado con `JSON.parse()` real (no solo `grep`),
+  `/sitemap.xml` incluye la ruta. 48/48 pruebas (incluidas las nuevas del componente y del esquema),
+  `tsc --noEmit` y `lint` limpios. `docs/tech-specs.md` §4.5 y §7 corregidos (la fila de
+  `/preguntas-frecuentes` ya no dice "pendiente, la ruta todavía no existe").
 
 - **T-0010** — [FEATURE] CI/CD con GitHub Actions. Completada 03/09/2026, PR #14 (abierto, sin
   fusionar — solo humanos fusionan, `CLAUDE.md` §6). `.github/workflows/deploy.yml` con el mismo
@@ -340,13 +314,15 @@ bloqueo pendiente
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
 
-En orden, según `tech-specs.md` §11 (T-6 a T-9 ya hechas: T-0008, T-0009, T-0010; T-13 es la tarea
-activa T-0011; F-7 es la tarea activa T-0012):
+En orden, según `tech-specs.md` §11 (T-6 a T-10 ya hechas; F-7 ya hecha, T-0012; T-13 es la tarea
+activa T-0011):
 
-1. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13 (T-0011)
-2. **T-14 → T-15** Redirecciones 301 y cutover
-3. Carta del café bar (F-8, prioridad media, etapa 2 — depende de Comandante, todavía en etapa 2 del
-   roadmap propio de Le Tiende)
+1. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de que T-13 (T-0011) **termine**, no solo
+   esté activa
+2. **T-14 → T-15** Redirecciones 301 y cutover — cierra el objetivo de etapa 1 OBJ-5 (`PRD.md` §6)
+3. Etapa 2 (no empieza antes de que OBJ-5 esté resuelto, ver nota arriba): carta del café bar (F-8,
+   depende de Comandante) y actualización de la interfaz de datos heredada (F-9, `letiende-api`,
+   ADR-007 — pendiente averiguar quién la consume)
 
 > El orden de T-13 frente a T-11/T-12 no es arbitrario: el `--base-href /cartelera/` de Ágora solo se
 > puede validar detrás de un CloudFront, y desde ADR-002 existe uno en staging para hacerlo.

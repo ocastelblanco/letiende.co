@@ -19,6 +19,10 @@ export const serverRoutes: ServerRoute[] = [
     path: 'contacto',
     renderMode: RenderMode.Prerender,
   },
+  {
+    path: 'preguntas-frecuentes',
+    renderMode: RenderMode.Prerender,
+  },
   // Cualquier ruta no listada arriba: NoEncontradaComponent, renderizado por
   // petición con HTTP 404 real — una "página en construcción" que responde
   // 200 hace que los buscadores indexen basura (CLAUDE.md §5, A05,

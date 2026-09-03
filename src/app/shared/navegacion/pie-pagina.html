@@ -6,7 +6,14 @@
     @for (bloque of datosNegocio.horarios; track bloque.diasEs) {
       <p>{{ bloque.diasEs }}: {{ bloque.horarioEs }}</p>
     }
-    <!-- Redes sociales: todavía por confirmar (docs/TODO.md, T-0006). -->
-    <p class="text-neutral/70">Instagram · Facebook — por confirmar</p>
+    <p>
+      <a
+        [href]="datosNegocio.instagram.url"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-neutral/70 hover:text-neutral"
+        >Instagram: &#64;letiende_parkway</a
+      >
+    </p>
   </div>
 </footer>

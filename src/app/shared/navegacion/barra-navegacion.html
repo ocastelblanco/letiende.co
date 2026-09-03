@@ -28,6 +28,15 @@
           >Contacto</a
         >
       </li>
+      <li>
+        <a
+          routerLink="/preguntas-frecuentes"
+          routerLinkActive="text-secondary"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="hover:text-secondary"
+          >Preguntas frecuentes</a
+        >
+      </li>
     </ul>
 
     <button
@@ -100,6 +109,15 @@
             [routerLinkActiveOptions]="{ exact: true }"
             (click)="cerrarMenu()"
             >Contacto</a
+          >
+        </li>
+        <li>
+          <a
+            routerLink="/preguntas-frecuentes"
+            routerLinkActive="text-secondary"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="cerrarMenu()"
+            >Preguntas frecuentes</a
           >
         </li>
       </ul>

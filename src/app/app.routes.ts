@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { InicioComponent } from './features/inicio/inicio';
 import { NosotrosComponent } from './features/nosotros/nosotros';
 import { ContactoComponent } from './features/contacto/contacto';
+import { PreguntasFrecuentesComponent } from './features/preguntas-frecuentes/preguntas-frecuentes';
 import { NoEncontradaComponent } from './features/no-encontrada/no-encontrada';
 
 // El <title> lo fija MetaService (core/seo/), no la propiedad `title` de la
@@ -12,5 +13,6 @@ export const routes: Routes = [
   { path: '', component: InicioComponent, pathMatch: 'full' },
   { path: 'nosotros', component: NosotrosComponent },
   { path: 'contacto', component: ContactoComponent },
+  { path: 'preguntas-frecuentes', component: PreguntasFrecuentesComponent },
   { path: '**', component: NoEncontradaComponent },
 ];
