@@ -63,6 +63,33 @@ functions:
           path: /{proxy+}
           method: '*'
 
+  contacto:
+    handler: dist-server-bundle/contacto.handler
+    role: !GetAtt ContactoLambdaRole.Arn
+    description: >-
+      POST /api/contacto — envía el formulario de contacto por SES, con
+      honeypot y límite de peticiones por IP (CLAUDE.md §5, A07).
+    environment:
+      # Dirección verificada de SES — CLAUDE.md §5, A03: el remitente lo fija
+      # siempre el servidor, nunca el cuerpo de la petición. Sin el secreto
+      # en CI, resuelve a cadena vacía y el envío falla en tiempo de
+      # ejecución (con 500, no en silencio) — gotcha ya documentado,
+      # docs/MEMORY.md §7.
+      SES_REMITENTE: ${env:SES_REMITENTE, ''}
+    package:
+      # Depende de @aws-sdk/client-ses en tiempo de ejecución — se empaqueta
+      # con esbuild (npm run bundle:api, server/bundle-lambdas.mjs), no se
+      # copia node_modules/** a mano: el runtime gestionado de nodejs24.x no
+      # garantiza traer el SDK v3 modular preinstalado (mismo motivo,
+      # verificado en producción en Ágora, docs/MEMORY.md ADR/gotcha T-0009).
+      patterns:
+        - '!**'
+        - 'dist-server-bundle/contacto.js'
+    events:
+      - httpApi:
+          path: /api/contacto
+          method: post
+
 resources:
   Resources:
     SsrLambdaRole:
@@ -83,3 +110,33 @@ resources:
         # una petición HTTP saliente de solo lectura a Ágora
         # (GET /api/eventos-publicos, tech-specs.md §5) — eso no requiere
         # permiso IAM, no es una llamada a un servicio de AWS.
+
+    ContactoLambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: letiende-co-contacto-role-${sls:stage}
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        Policies:
+          # Mínimo privilegio (CLAUDE.md §5, A05): ses:SendEmail/SendRawEmail
+          # (no ses:*), acotado a la identidad verificada de letiende.co
+          # (verificado con la cuenta real: `aws sesv2 list-email-identities`
+          # confirma `letiende.co` como dominio verificado, SendingEnabled) —
+          # nunca Resource: '*'. Sin ninguna otra política: esta función no
+          # lee ni escribe en DynamoDB, S3 ni ningún otro recurso.
+          - PolicyName: letiende-co-contacto-ses-${sls:stage}
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ses:SendEmail
+                    - ses:SendRawEmail
+                  Resource: !Sub 'arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/letiende.co'
