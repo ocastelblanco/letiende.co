@@ -9,49 +9,61 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0008 — [FEATURE] Capa de SEO/AEO
+## Tarea T-0009 — [FEATURE] Lambda de contacto con SES y antiabuso
 
-**Origen:** PRD §8 (requisito de primer orden, no un acabado) · `tech-specs.md` §4.5, T-6 ·
-depende de T-0005 y T-0006 (hechas)
+**Origen:** PRD §5 F-6, `tech-specs.md` §5, T-7 · `CLAUDE.md` §5, A03/A07 · depende de T-0006 (hecha)
+
+**Contexto.** `ContactoComponent` (T-0006) ya tiene el formulario completo, validado en el navegador,
+con la casilla de consentimiento (Ley 1581). `enviar()` hoy solo pone `estadoEnvio` en
+`'backend-pendiente'` — no hace ninguna llamada HTTP real. Esta tarea es ese backend.
 
 **Archivos:**
 
-- `src/app/core/seo/meta.service.ts` (+ `.spec.ts`)
-- `src/app/core/seo/*.ts` — helpers de JSON-LD (`Organization`, `WebSite`, `LocalBusiness`,
-  `ItemList`/`Event`, `AboutPage`, `ContactPage`, `BreadcrumbList`)
-- `public/robots.txt`
-- Endpoint o ruta de `/sitemap.xml`
-- Cada componente de página (`inicio`, `nosotros`, `contacto`) inyecta `MetaService`
+- `server/api/handlers/contacto.ts` (nuevo)
+- `server/api/handlers/contacto.spec.ts`
+- `src/server.ts` (agrega `app.post('/api/contacto', …)`, junto a `/robots.txt` y `/sitemap.xml` de
+  T-0008)
+- `src/app/features/contacto/contacto.ts` (`enviar()` pasa a hacer la petición HTTP real)
+- `package.json` (`@aws-sdk/client-ses` como dependencia nueva)
 
 **Qué hacer:**
 
-1. `MetaService`: título y `meta description` únicos por ruta, canónica siempre
-   `https://letiende.co/...` (incluso detrás del proxy), Open Graph y Twitter Card con imagen propia
-   por sección.
+1. Handler que reciba `{ nombre, correo, mensaje, consentimientoDatos }`, limpie cada campo de texto
+   con algo equivalente a `v.replace(/[\r\n]/g, ' ').trim().slice(0, 200)` (CLAUDE.md §5, A03 —
+   inyección de encabezados de correo) y **rechace la petición si `consentimientoDatos` no es
+   `true`**, incluso si el navegador ya validó lo mismo: la validación del cliente no basta.
 
-2. JSON-LD por página, según la tabla de `tech-specs.md` §4.5: `Organization` + `WebSite` con
-   `SearchAction` en todas; `LocalBusiness` → `PerformingArtsTheater` con `openingHoursSpecification`,
-   `geo` y `address` en la portada (ya hay datos reales en `@core/negocio/datos-negocio`, T-0006);
-   `ItemList` de próximos eventos en la portada; `AboutPage` en `/nosotros`; `ContactPage` +
-   repetición de `LocalBusiness` en `/contacto`; `BreadcrumbList` donde haya jerarquía. `FAQPage`
-   queda fuera: no existe `/preguntas-frecuentes` todavía (roadmap de prioridad media, PRD §6).
+2. Envía por AWS SES con `@aws-sdk/client-ses`. `Source` es **siempre**
+   `process.env.SES_REMITENTE` — nunca un valor del cuerpo de la petición. El correo de quien escribe
+   va en `ReplyToAddresses`, nunca en `Source` (CLAUDE.md, prohibición absoluta).
 
-3. `robots.txt` apunta al mapa del sitio. La ruta comodín debe responder HTTP 404 real, no 200
-   (`CLAUDE.md` §5, A05) — verificar con `curl`, no asumir.
+3. Antiabuso, los tres a la vez, no por separado — es parte de la definición de terminado, no una
+   mejora posterior (CLAUDE.md §5, A07):
+   - Campo trampa oculto (*honeypot*): un campo que un humano nunca llena: si llega con contenido,
+     responder 200 sin enviar nada (no delatar al bot con un 4xx).
+   - Límite por dirección IP en una ventana de tiempo — decidir dónde vive el contador (¿DynamoDB
+     nuevo? PRD §9/D-1 dice sin base de datos propia fuera de lo estrictamente necesario; evaluar
+     alternativa en memoria de la Lambda vs. costo de un almacén nuevo antes de implementar).
+   - Tope de longitud por campo (ya cubierto por el `.slice(0, 200)` del punto 1, pero verificar que
+     `mensaje` tenga un tope propio, más generoso que nombre/correo).
 
-4. `/sitemap.xml` como índice que agrega el propio contenedor, Ágora y Babel — verificar primero si
-   Ágora y Babel ya exponen el suyo (`tech-specs.md` §4.5 avisa que el de Ágora hoy emite
-   `agora.letiende.co`, no `/cartelera`; ese ajuste es de T-11, fuera de esta tarea).
+4. **Nunca** escribir nombre, correo ni contenido del mensaje en los logs de CloudWatch (Ley 1581,
+   CLAUDE.md). Los mensajes no se almacenan: se envían y se acaban ahí.
+
+5. `ContactoComponent.enviar()` pasa a hacer `HttpClient.post('/api/contacto', …)` de verdad. El
+   `signal` de estado gana un caso más para el error del backend (además de `'backend-pendiente'`),
+   sin inventar mensajes de éxito que no correspondan a una respuesta real.
 
 **Definition of done:**
 
 - [ ] `npm run build -- --configuration=production` sin errores
 - [ ] `npm run lint` y `npx tsc --noEmit` sin errores
-- [ ] `npm test -- --watch=false` pasa
-- [ ] JSON-LD verificado como válido (parseable y con los campos obligatorios de cada tipo), no solo
-      presente en el HTML
-- [ ] `curl` real contra la ruta comodín confirma HTTP 404
-- [ ] Título y `meta description` verificados distintos entre `/`, `/nosotros` y `/contacto`
+- [ ] `npm test -- --watch=false` pasa, con pruebas del handler: consentimiento ausente rechaza,
+      inyección de `\r\n` en `nombre`/`correo` no llega a los encabezados de SES, honeypot lleno
+      responde 200 sin enviar
+- [ ] `Source` de SES verificado como `process.env.SES_REMITENTE` por lectura del código, nunca del
+      cuerpo de la petición
+- [ ] Verificado que nombre/correo/mensaje no aparecen en ningún `console.log` ni log de CloudWatch
 
 ---
 
@@ -166,10 +178,38 @@ bloque cuando exista código real que desplegar.
   el humano ya tenía a mano y que no cambian con frecuencia; queda como opción futura si algún día
   hace falta sincronización en vivo.
   Verificado en vivo: build de producción, SSR real (`curl` 200 en `/`, `/nosotros`, `/contacto`,
-  `manifest.webmanifest`, íconos), navegador real con Playwright/Chrome (mapa renderiza el punto
-  correcto en Bogotá, las 4 validaciones bloquean el envío una por una, el envío válido muestra el
-  aviso de backend pendiente, cero errores de hidratación ni de consola). 25/25 pruebas, `tsc --noEmit`
-  y `lint` limpios.
+  `manifest.webmanifest`, íconos), navegador real (mapa renderiza el punto correcto en Bogotá, las 4
+  validaciones bloquean el envío una por una, el envío válido muestra el aviso de backend pendiente,
+  cero errores de hidratación ni de consola). 25/25 pruebas, `tsc --noEmit` y `lint` limpios.
+
+  **Incidente tras el PR:** GitGuardian marcó una llave real de Google filtrada en el historial del
+  PR (un commit incluyó por error las llaves reales antes de que otro las reemplazara por marcadores).
+  Historial reescrito con `git filter-branch` y `push --force-with-lease` con autorización del humano.
+  Hallazgo: el commit viejo siguió siendo recuperable por SHA directo en GitHub incluso después del
+  force-push — reescribir no basta, solo rotar la llave neutraliza el riesgo de verdad. El humano
+  decidió no rotarla por ahora, riesgo explicado y aceptado. Detalle completo en `MEMORY.md` §9.
+
+- **T-0008** — [FEATURE] Capa de SEO/AEO. Completada 02/09/2026. `MetaService` (título, descripción,
+  canónica, Open Graph, Twitter Card) y `JsonLdService` (JSON-LD con el escape de `<` de CLAUDE.md §5
+  A03) en `core/seo/`, llamados desde el constructor de cada página — nunca desde `afterNextRender`,
+  que llegaría tarde para el SSR. Tres correcciones a la planeación original de `tech-specs.md` §4.5,
+  mismo patrón que las tres de T-0005: sin `SearchAction` (no hay búsqueda real en el sitio), sin
+  `geo` en `LocalBusiness` (nunca hubo coordenadas verificadas, y `geo` es opcional en schema.org), y
+  `/sitemap.xml` reducido a las tres rutas propias del contenedor en vez del índice de los tres
+  planeado — verificado con `curl` que Ágora expone su propio sitemap pero bajo su subdominio (no
+  `/cartelera`, eso es T-11) y que Babel no tiene sitemap propio en absoluto (T-12). `robots.txt` y
+  `sitemap.xml` pasaron de `public/` a rutas dinámicas de Express en `server.ts`, con el mismo patrón
+  de `AnalyticsService` (comprobar el host de la petición) para que staging responda `Disallow: /` sin
+  necesitar un segundo build. `NoEncontradaComponent` con HTTP 404 real, usando el campo `status` de
+  `ServerRoute` de `@angular/ssr` (verificado leyendo el tipo, no asumido) — esto también obligó a dar
+  a `nosotros` y `contacto` su propia entrada en `app.routes.server.ts`, porque el comodín pasó a
+  significar "ruta no encontrada". De regalo: se encontró que `tech-specs.md` documentaba `/contacto`
+  como `SSR` desde la planeación original, pero en el código ya era `Prerender` desde T-0006 — nadie
+  lo había notado; corregido en la documentación. Verificado en vivo: build + SSR real con `curl`
+  (200 en las tres rutas, **404 real** en una ruta inventada, `robots.txt`/`sitemap.xml` correctos), el
+  JSON-LD de las tres páginas extraído del HTML y verificado con `JSON.parse()` real, y en el
+  navegador (página 404, navegación entre rutas, cero errores de consola). 39/39 pruebas, `tsc
+  --noEmit` y `lint` limpios. Ver `MEMORY.md` ADR-018.
 
 - **T-0005** — [FEATURE] Portada con próximos eventos. Completada 02/09/2026. `httpResource()` contra
   `GET /api/eventos-publicos` de Ágora. Tres hallazgos reales, no solo implementación: (1) los
@@ -188,14 +228,13 @@ bloque cuando exista código real que desplegar.
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
 
-En orden, según `tech-specs.md` §11 (T-6 ya es tarea activa, T-0008):
+En orden, según `tech-specs.md` §11 (T-6 y T-7 ya son tareas activas, T-0008 y T-0009):
 
-1. **T-7** Lambda de contacto con SES y antiabuso
-2. **T-9** CI/CD con GitHub Actions
-3. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
-4. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
-5. **T-14 → T-15** Redirecciones 301 y cutover
-6. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
+1. **T-9** CI/CD con GitHub Actions
+2. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
+3. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
+4. **T-14 → T-15** Redirecciones 301 y cutover
+5. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
 
 > El orden de T-13 frente a T-11/T-12 no es arbitrario: el `--base-href /cartelera/` de Ágora solo se
 > puede validar detrás de un CloudFront, y desde ADR-002 existe uno en staging para hacerlo.

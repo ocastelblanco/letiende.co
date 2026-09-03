@@ -192,7 +192,7 @@ Todas públicas. **No hay guards en este proyecto** (PRD §9, D-4).
 |---|---|---|---|
 | `/` | `InicioComponent` | SSR | Portada. Consume la cartelera de Ágora para los próximos eventos |
 | `/nosotros` | `NosotrosComponent` | Prerender | Contenido estático |
-| `/contacto` | `ContactoComponent` | SSR | Formulario + mapa + horarios |
+| `/contacto` | `ContactoComponent` | Prerender | Formulario + mapa + horarios — nada depende de una petición por visita; verificado con `npm run build` (T-0006/T-0008: "Prerendered 2 static routes"), corregido frente al "SSR" de la planeación original |
 | `/preguntas-frecuentes` | `PreguntasFrecuentesComponent` | Prerender | Base del `FAQPage` para AEO |
 | `/cartelera/**` | — | — | **No es ruta de Angular.** La resuelve CloudFront contra Ágora |
 | `/libros/**` | — | — | **No es ruta de Angular.** La resuelve CloudFront contra Babel |
@@ -247,29 +247,33 @@ Requisito de primer orden (PRD §8), no un acabado.
 | `<title>` y `<meta description>` | Por ruta, vía `MetaService` | Únicos por página, escritos a mano |
 | Canónica | Por ruta | Siempre `https://letiende.co/...`, incluso en las rutas por proxy |
 | Open Graph y Twitter Card | Por ruta | Imagen propia por sección |
-| `robots.txt` | `public/robots.txt` | Apunta al mapa del sitio |
-| Mapa del sitio | `/sitemap.xml` | **Índice** que agrega los tres: contenedor, Ágora y Babel |
+| `robots.txt` | `GET /robots.txt` en `server.ts` (dinámico, no `public/`) | `Disallow: /` fuera de `letiende.co` (staging incluido) — el mismo artefacto sirve a los dos stages, así que el host de la petición es lo único que los distingue en tiempo de ejecución (ADR-015, ADR-018) |
+| Mapa del sitio | `GET /sitemap.xml` en `server.ts` | **Hoy solo las rutas propias** (`/`, `/nosotros`, `/contacto`), no el índice de los tres — ver ADR-018 |
 | Redirecciones 301 | `agora.letiende.co`, `babel.letiende.co` | Hacia la ruta equivalente. Evita competir contra sí mismo |
 | Datos estructurados | JSON-LD, `core/seo/` | Ver abajo |
 
-**JSON-LD por página:**
+**JSON-LD por página** (implementado en T-0008; `esquemaX()` vive en `core/seo/esquemas.ts`):
 
 | Página | Tipos |
 |---|---|
-| Todas | `Organization` + `WebSite` con `SearchAction` |
-| `/` | `LocalBusiness` → `PerformingArtsTheater`, con `openingHoursSpecification`, `geo`, `address` |
-| `/` | `ItemList` de los próximos eventos, cada uno como `Event` |
-| `/nosotros` | `AboutPage` |
-| `/contacto` | `ContactPage` + repetición de `LocalBusiness` |
-| `/preguntas-frecuentes` | `FAQPage` |
-| Cualquiera con jerarquía | `BreadcrumbList` |
+| Todas | `Organization` + `WebSite` (sin `SearchAction`: el sitio no tiene una función de búsqueda real — ver ADR-018) |
+| `/` | `LocalBusiness` → `PerformingArtsTheater`, con `openingHoursSpecification`, `address` (sin `geo`: no hay coordenadas verificadas) |
+| `/` | `ItemList` de los próximos eventos, cada uno como `Event`, solo si hay eventos que mostrar |
+| `/nosotros` | `AboutPage` + `BreadcrumbList` |
+| `/contacto` | `ContactPage` + repetición de `LocalBusiness` + `BreadcrumbList` |
+| `/preguntas-frecuentes` | `FAQPage` — pendiente, la ruta todavía no existe |
 
-Ágora ya emite `Event` en sus fichas y Babel debe emitir `Book`; el contenedor **no los duplica**.
+Ágora ya emite `Event` en sus fichas y Babel debe emitir `Book`; el contenedor **no los duplica**. El
+`ItemList` de la portada no es un duplicado: describe el resumen de eventos que aparece en la propia
+portada de `letiende.co`, contenido del contenedor, no de Ágora.
 
-> **Riesgo conocido del mapa del sitio:** Ágora ya expone `/sitemap.xml` propio, hoy en
-> `agora.letiende.co/sitemap.xml`. Al pasar a `letiende.co/cartelera/`, ese archivo tiene que emitir
-> direcciones con el nuevo prefijo, o apuntará a direcciones que redirigen. Babel todavía no tiene
-> mapa del sitio: hay que agregárselo. Ambos son cambios en los repos hermanos, no en este.
+> **Mapa del sitio: reducido a propósito frente al plan original.** Verificado con `curl` contra
+> `agora.letiende.co/sitemap.xml` (200, `<urlset>` vacío porque hoy no hay eventos publicados): Ágora
+> **ya** expone un sitemap real, pero sigue emitiendo bajo su propio subdominio, no bajo
+> `/cartelera` — ese ajuste es T-11. Babel **no tiene sitemap propio todavía** — T-12. Construir hoy
+> un índice que agregue los tres enviaría a los buscadores una entrada rota (Babel) y una con el
+> dominio equivocado (Ágora), peor que no tener índice. `/sitemap.xml` de este repo lista solo sus
+> tres rutas propias hasta que T-11/T-12 hagan del índice de tres algo real (ver ADR-018).
 
 ---
 
