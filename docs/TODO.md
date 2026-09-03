@@ -9,75 +9,130 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0011 — [INFRA] Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
+## Tarea T-0013 — [INFRA] Cambios mínimos en Ágora: `--base-href /cartelera/`, barra común, sitemap, 301
 
-**Origen:** `tech-specs.md` §7, T-13 · T-0010 (CI/CD) completada — el pipeline ya despliega de verdad
-a `staging` (`letiende-co-staging`, PR #14, 03/09/2026), así que esta tarea ya no tiene ningún
-bloqueo pendiente
+**Origen:** `tech-specs.md` §7.3, T-11 — T-13 (T-0011: ACM + CloudFront + `staging.letiende.co`)
+completada y verificada en vivo el 03/09/2026 (PR #17 + #18), así que esta tarea ya no tiene ningún
+bloqueo pendiente. **Repositorio afectado:** `~/Documents/LeTiende/letiende.co/agora/` (no este
+repositorio) — el cambio se planea, verifica y documenta aquí porque es parte del rollout coordinado
+del proxy, pero el commit/PR real sale del repositorio de Ágora, con su propio `CLAUDE.md` y su propio
+Git Flow.
 
-> **Categoría de riesgo distinta a las tareas anteriores.** Todo lo hecho hasta T-0010 era código e
-> IaC verificado con `serverless package`/`serverless deploy --stage staging` — el stack de staging ya
-> existe (`letiende-co-staging`, sin dominio propio todavía), pero producción sigue intacta y esto es
-> reversible con un `git revert`. Esta tarea **crea recursos reales de AWS con costo y persistencia
-> propios**
-> (certificados ACM, distribuciones de CloudFront, un registro en la zona de Route 53 de producción).
-> Ninguna acción de creación/modificación real contra la cuenta de AWS se ejecuta sin confirmarlo
-> explícitamente con el humano antes, aunque el paquete de cambios (IaC, PRs) sí se prepare de punta a
-> punta como en las tareas anteriores.
+**Archivos (en el repo de Ágora):**
 
-**Archivos:**
-
-- `serverless.yml` (o recursos de CloudFormation aparte — decidir cuál durante la tarea) para las
-  distribuciones de CloudFront, los certificados ACM y el registro de Route 53
-- `public/robots.txt` de staging — ya no aplica: `server.ts` (T-0008) ya sirve `robots.txt`
-  dinámico con `Disallow: /` fuera de `letiende.co`, esta tarea solo tiene que verificar que sigue
-  cumpliendo el requisito una vez que `staging.letiende.co` exista de verdad
-- `docs/MEMORY.md` con los identificadores reales de cada recurso creado
+- `angular.json` — `"baseHref": "/cartelera/"` en el target `build`
+- El componente de la barra de navegación propia de Ágora — se reemplaza por la barra común de
+  `DESIGN.md` §7 de este repositorio (mismo punto de montaje, distinto contenido — ADR-003, "se
+  reemplaza, no se oculta")
+- El handler que emite el sitemap de Ágora — las URLs pasan a `https://letiende.co/cartelera/…`
+- El handler de SSR de Ágora — redirección 301 cuando `Host` es `agora.letiende.co` (snippet exacto
+  en `tech-specs.md` §7.3)
 
 **Qué hacer:**
 
-1. Certificado ACM para `staging.letiende.co`, en **`us-east-1`** obligatoriamente (CloudFront no
-   acepta certificados de otra región) — validación por DNS en la zona `Z010633738KAGFIPOZVEW`.
-
-2. Dos distribuciones de CloudFront (staging y producción), misma estructura de cuatro behaviors
-   (`tech-specs.md` §7.2): `/cartelera/*` → HTTP API de Ágora del stage correspondiente,
-   `/libros/*` → HTTP API de Babel del stage correspondiente, `/assets/*` → bucket
-   `letiende-assets`, `*` (default) → el HTTP API de este stack (T-0007/T-0009). Producción usa una
-   distribución **nueva** — la actual (`E33QAN86FY24JZ`) no se toca hasta el cutover (ADR-006).
-
-3. Los tres detalles que ya rompieron esto en otros proyectos (`tech-specs.md` §7.2): origen de
-   `/cartelera/*` es el `execute-api` **crudo**, nunca `agora.letiende.co` (bucle de 301); no
-   reenviar el encabezado `Host` al origen (política *AllViewerExceptHostHeader*, si no 403); no
-   definir `OriginPath` (Ágora necesita la ruta completa con el prefijo).
-
-4. Registro `A` alias en Route 53 para `staging.letiende.co`.
-
-5. Verificar que `NG_ALLOWED_HOSTS` (T-0007) se amplía con el dominio real en el mismo cambio que lo
-   monta — nunca antes (mismo principio que ya aplicó Ágora, docs/MEMORY.md).
+1. `--base-href /cartelera/`: el router y los assets de Ágora tienen que resolver bajo ese prefijo.
+   Consecuencia a tener presente (`tech-specs.md` §7.3): una vez compilado así, la URL cruda de
+   `execute-api` deja de servir bien los assets — probar de ahora en adelante siempre por
+   `https://staging.letiende.co/cartelera`, nunca por la URL cruda de Ágora.
+2. Barra de navegación: **reemplazo**, no ocultamiento (ADR-003) — mismo componente compartido, mismo
+   punto de montaje donde hoy Ágora renderiza la suya.
+3. Sitemap de Ágora con URLs bajo `https://letiende.co/cartelera/…` — de lo contrario apunta a
+   direcciones que van a redirigir (301).
+4. Redirección 301 en el SSR cuando `Host === 'agora.letiende.co'`, hacia
+   `https://letiende.co/cartelera${originalUrl}` — snippet ya verificado en `tech-specs.md` §7.3. No
+   toca infraestructura: el subdominio viejo sigue mapeado al mismo API Gateway.
+5. **Diff mínimo, autorizado explícitamente por el humano** (`tech-specs.md` §7.3): estos cuatro
+   cambios y nada más. Si aparece la tentación de tocar algo adicional de Ágora, detenerse y
+   consultarlo antes.
 
 **Definition of done:**
 
-- [ ] Certificado ACM emitido y validado (`ISSUED`, no `PENDING_VALIDATION`), verificado con
-      `aws acm describe-certificate`
-- [ ] `curl https://staging.letiende.co/` responde 200 con HTML real, no un error de CloudFront
-- [ ] `curl https://staging.letiende.co/robots.txt` responde `Disallow: /`
-- [ ] Los tres detalles del punto 3 verificados en vivo, no solo declarados en la plantilla
-- [ ] `docs/MEMORY.md` actualizado con los IDs reales (certificado, distribución, registro DNS) en
-      la tabla de "Por crear" de §5, que pasan a "Configuraciones vigentes"
+- [ ] `curl https://staging.letiende.co/cartelera/` responde con el HTML real de Ágora (no el 404 de
+      este contenedor, no un `Cannot GET` de Express crudo — verificado ya hoy que el proxy llega al
+      origen correcto, pero Ágora todavía no tiene rutas bajo ese prefijo)
+- [ ] La barra visible en `/cartelera` es la común de `DESIGN.md` §7, idéntica a la de `letiende.co`
+      (navegar de `/` a `/cartelera` sin salto visual — mismo criterio de verificación de ADR-003)
+- [ ] `curl https://staging.letiende.co/cartelera/sitemap.xml` (o donde Ágora lo sirva) tiene URLs
+      `https://letiende.co/cartelera/…`, no `https://agora.letiende.co/…`
+- [ ] Redirección 301 real desde `agora.letiende.co` verificada con `curl -I`, no solo leída en el
+      código
+- [ ] Ningún cambio fuera de los cuatro autorizados
+- [ ] `docs/MEMORY.md` de este repositorio actualizado con el resultado
 
-> **Nota sobre el motor JIT: solo 1 tarea activa, no 2.** Al completar T-0012 (04/09/2026), la cola
-> priorizada (`Cola priorizada` al final de este documento) queda con un único candidato listo:
-> T-11/T-12 y T-14→T-15 dependen explícitamente de que **T-0011 termine**, no solo de que esté activa
-> — todavía no terminó. La carta del café bar (F-8) y la actualización de la interfaz heredada (F-9)
-> son de etapa 2 (`PRD.md` §6), y la etapa 2 no empieza antes de que el objetivo de etapa 1
-> "Reemplazo del sitio actual sin ventana de caída" (OBJ-5, prioridad Alta) esté resuelto — que es
-> exactamente lo que hace T-0011/T-14/T-15. Forzar una segunda tarea activa hoy significaría escoger
-> algo bloqueado o fuera de etapa; se deja T-0011 como única tarea activa hasta que termine y destrabe
-> la siguiente de la cola.
+---
+
+## Tarea T-0014 — [INFRA] Cambios mínimos en Babel: `--base-href /libros/`, barra común, sitemap, 301
+
+**Origen:** `tech-specs.md` §7.3, T-12 — mismo desbloqueo que T-0013 (T-13/T-0011 completada), mismo
+patrón exacto de cuatro cambios, aplicado al repositorio de Babel
+(`~/Documents/LeTiende/letiende.co/babel/`) en vez de Ágora. Se ejecuta en paralelo o justo después de
+T-0013, sin dependencia entre ambas.
+
+**Archivos (en el repo de Babel):**
+
+- `angular.json` — `"baseHref": "/libros/"` en el target `build`
+- El componente de la barra de navegación propia de Babel — reemplazo por la barra común (ADR-003)
+- El handler que emite el sitemap de Babel — hoy **no existe sitemap propio** (verificado en T-0008,
+  `docs/MEMORY.md` ADR-018): esta tarea es la que lo crea, con URLs `https://letiende.co/libros/…`
+- El handler de SSR de Babel — redirección 301 cuando `Host` es `babel.letiende.co`
+
+**Qué hacer:** los mismos cinco puntos de T-0013, adaptados a `/libros/` y a Babel. La diferencia real
+frente a Ágora: Babel no tiene sitemap propio todavía, así que este cambio no es "corregir URLs" sino
+"crear el sitemap por primera vez" — no inventar su estructura, seguir el mismo patrón que ya usa este
+repositorio en `server.ts` (rutas dinámicas de Express, no `public/`).
+
+**Definition of done:**
+
+- [ ] `curl https://staging.letiende.co/libros/` responde con el HTML real de Babel
+- [ ] Barra común visible en `/libros`, sin salto visual respecto a `letiende.co`
+- [ ] Babel expone un sitemap real con URLs `https://letiende.co/libros/…` (verificar que existe,
+      hoy no hay ninguno)
+- [ ] Redirección 301 real desde `babel.letiende.co` verificada con `curl -I`
+- [ ] Ningún cambio fuera de los cuatro autorizados
+- [ ] `docs/MEMORY.md` de este repositorio actualizado con el resultado
 
 ---
 
 ## Historial
+
+- **T-0011** — [INFRA] Certificado ACM, distribuciones de CloudFront y `staging.letiende.co`.
+  Completada 03/09/2026, PR #17 (certificado + distribuciones + DNS) y PR #18 (fix del prefijo
+  `/assets`), ambos fusionados. Certificado ACM de `staging.letiende.co` en `us-east-1`
+  (`arn:...certificate/24668c16-…`), validación DNS automática vía CloudFormation contra la zona
+  `Z010633738KAGFIPOZVEW` — `ISSUED`, verificado con `aws acm describe-certificate`, no solo con el
+  estado del stack. Una distribución de CloudFront por stage con los cuatro behaviors de
+  `tech-specs.md` §7.2: staging (`EQW683KP4VXIV`) con alias `staging.letiende.co` real; producción
+  (`ER22S2WADMM83`) creada en el mismo cambio pero **sin alias** — CloudFront no permite que
+  `letiende.co`/`www.letiende.co` estén en dos distribuciones a la vez, y la actual (`E33QAN86FY24JZ`)
+  sigue teniéndolos; el alias se mueve en el cutover real (T-14/T-15, ADR-006), no aquí. Orígenes de
+  Ágora/Babel verificados contra la cuenta real (`apigatewayv2 GetApis`), no contra lo documentado —
+  coincidieron exactamente con `tech-specs.md`. Políticas administradas (`CachingDisabled`,
+  `CachingOptimized`, `AllViewerExceptHostHeader`) verificadas contra distribuciones reales ya en uso
+  en la cuenta, no de memoria. Plantilla validada dos veces: `serverless package` local y
+  `cloudformation ValidateTemplate` real contra la API de AWS antes de desplegar.
+
+  **Hallazgo real, no anticipado en la planeación** (mismo patrón que ADR-005/012/013/018): el bucket
+  `letiende-assets` no tiene prefijo `assets/` en sus keys, así que `/assets/*` devolvía 403 (S3
+  responde 403, no 404, cuando el solicitante no puede listar el bucket). Corregido con una
+  `AWS::CloudFront::Function` (`FuncionQuitarPrefijoAssets`, evento `viewer-request`) que quita el
+  prefijo antes de reenviar a S3 — PR #18. `tech-specs.md` §7.2 corregido con un cuarto detalle, no
+  solo el código.
+
+  **Acción real fuera de este stack, autorizada explícitamente por el humano:** la política del
+  bucket `letiende-assets` (privado, con Origin Access Control) solo permitía leer a la distribución
+  actual de `assets.letiende.co` (`E3RUGH3MUSR7PS`) — se amplió para incluir también las dos
+  distribuciones nuevas, sin quitarle el acceso a la existente (verificado que `assets.letiende.co`
+  sigue respondiendo 200 después del cambio). El bucket solo tiene contenido viejo de la rama `2025`
+  abandonada (`data/`, `flags/`, `logos/`, 97 objetos, confirmado con `s3 ListObjectsV2`); el humano
+  confirmó que se puede limpiar y reutilizar, la limpieza en sí queda pendiente como tarea aparte.
+
+  Verificado en vivo de punta a punta, no solo con el resultado del pipeline: `curl` real a
+  `https://staging.letiende.co/` (200, HTML real), `/robots.txt` (`Disallow: /`), `/cartelera/` y
+  `/libros/` (llegan de verdad a los orígenes reales de Ágora/Babel staging — 404/302 desde esos
+  backends, no desde CloudFront, esperado porque T-0013/T-0014 todavía no existen), `/assets/*` (200
+  tras el fix, con contenido SVG real). El humano confirmó además, desde su propio navegador, que
+  `https://staging.letiende.co/` se visualiza bien. `docs/MEMORY.md` §5 actualizado con los 5
+  identificadores reales.
 
 - **T-0012** — [FEATURE] Página de Preguntas frecuentes (F-7). Completada 04/09/2026.
   `PreguntasFrecuentesComponent`, mismo patrón que `NosotrosComponent`: horarios y dirección
@@ -314,15 +369,14 @@ bloqueo pendiente
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
 
-En orden, según `tech-specs.md` §11 (T-6 a T-10 ya hechas; F-7 ya hecha, T-0012; T-13 es la tarea
-activa T-0011):
+En orden, según `tech-specs.md` §11 (T-6 a T-10 ya hechas; F-7 ya hecha, T-0012; T-13/T-0011 ya
+completada — T-11/T-12 son las tareas activas T-0013/T-0014):
 
-1. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de que T-13 (T-0011) **termine**, no solo
-   esté activa
-2. **T-14 → T-15** Redirecciones 301 y cutover — cierra el objetivo de etapa 1 OBJ-5 (`PRD.md` §6)
-3. Etapa 2 (no empieza antes de que OBJ-5 esté resuelto, ver nota arriba): carta del café bar (F-8,
-   depende de Comandante) y actualización de la interfaz de datos heredada (F-9, `letiende-api`,
-   ADR-007 — pendiente averiguar quién la consume)
+1. **T-14 → T-15** Redirecciones 301 y cutover — **después** de que T-0013 y T-0014 terminen. Cierra
+   el objetivo de etapa 1 OBJ-5 (`PRD.md` §6)
+2. Etapa 2 (no empieza antes de que OBJ-5 esté resuelto): carta del café bar (F-8, depende de
+   Comandante) y actualización de la interfaz de datos heredada (F-9, `letiende-api`, ADR-007 —
+   pendiente averiguar quién la consume)
 
 > El orden de T-13 frente a T-11/T-12 no es arbitrario: el `--base-href /cartelera/` de Ágora solo se
 > puede validar detrás de un CloudFront, y desde ADR-002 existe uno en staging para hacerlo.

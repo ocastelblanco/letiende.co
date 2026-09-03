@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + preguntas frecuentes + íconos/manifest + Google Maps + GA4 + capa de SEO/AEO + `serverless.yml` (SSR + contacto) + CI/CD desplegado de verdad a staging y a producción |
-| **Fase** | T-0001 a T-0010 y T-0012 completadas y en `main` (T-0010 fusionado, PR #14); T-0011 activa (única tarea activa — ver nota en `docs/TODO.md`) |
+| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + preguntas frecuentes + íconos/manifest + Google Maps + GA4 + capa de SEO/AEO + `serverless.yml` (SSR + contacto) + CI/CD + ACM/CloudFront/DNS de staging desplegados de verdad |
+| **Fase** | T-0001 a T-0012 completadas y en `main`; T-0011 (ACM + CloudFront + staging.letiende.co) completada y verificada en vivo — ver historial de `docs/TODO.md`. Próximas: T-0013/T-0014 (cambios en Ágora y Babel) |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `feature/preguntas-frecuentes` (desde `main`) |
-| **Producción** | `https://letiende.co` (CloudFront `E33QAN86FY24JZ`) — todavía sirve el **sitio estático anterior**. `letiende-co-production` (el stack nuevo) existe y despliega de verdad desde T-0010, pero nada de DNS/CloudFront apunta a él todavía — eso es el cutover de T-0011/T-14/T-15 |
-| **Staging** | `letiende-co-staging` existe y despliega de verdad (T-0010), sin dominio propio todavía — lo agrega T-0011 |
-| **Última sesión** | 04/09/2026 — T-0012: página de Preguntas frecuentes (F-7) |
+| **Rama** | `fix/assets-prefijo-cloudfront` (desde `main`), PR #18 |
+| **Producción** | `https://letiende.co` (CloudFront `E33QAN86FY24JZ`) — todavía sirve el **sitio estático anterior**. `letiende-co-production` despliega de verdad (T-0010) y ya tiene su propia distribución de CloudFront (`ER22S2WADMM83`, T-0011), pero sin alias — nada de DNS apunta a él todavía, eso es el cutover de T-14/T-15 |
+| **Staging** | `letiende-co-staging` despliega de verdad, con dominio propio real: `https://staging.letiende.co` (ACM `ISSUED`, CloudFront `EQW683KP4VXIV`, T-0011) — verificado en vivo por el humano y por `curl` |
+| **Última sesión** | 03/09/2026 — T-0011: certificado ACM + CloudFront + DNS de staging, verificado en vivo (PR #17 fusionado, PR #18 con el fix del prefijo `/assets` en curso) |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -47,12 +47,12 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
       `Source` siempre `SES_REMITENTE`, `ContactoComponent.enviar()` hace el `POST` real
 - [x] CI/CD con GitHub Actions (T-0010): despliegue real verificado a `staging` y a `producción`
 - [x] Preguntas frecuentes (T-0012): `esquemaFaqPage()`, contenido confirmado por el humano
+- [x] Certificado ACM, distribuciones de CloudFront (staging y producción) y DNS de `staging.letiende.co`
+      (T-0011): verificado en vivo, incluido el fix del prefijo `/assets` no anticipado en la planeación
 
 ### Pendientes
-- [ ] Certificados ACM (`staging.letiende.co` y `letiende.co`) en `us-east-1`
-- [ ] Distribuciones de CloudFront de staging y de producción
-- [ ] Cambios en Ágora y en Babel (base href, barra común, mapas del sitio, 301)
-- [ ] Cutover de `letiende.co`
+- [ ] Cambios en Ágora y en Babel (base href, barra común, mapas del sitio, 301) — T-0013/T-0014
+- [ ] Cutover de `letiende.co` (T-14/T-15: mover el alias de la distribución vieja a la nueva)
 - [ ] *Etapa 2:* carta del café bar
 - [ ] *Etapa 2:* actualización de `letiende-api`
 
@@ -669,6 +669,10 @@ Todo lo de esta tabla fue **verificado por API el 01/09/2026**, no recordado.
 | `letiende-api` (heredada) | REST API `uklz2j4u38` · dominio `api.letiende.co` · Lambda `nodejs22.x`, 128 MB, rol `generica-role-o1869of8` |
 | `letiende-co-staging` (T-0010) | Stack real desplegado el 03/09/2026 vía CI (PR #14) — HTTP API `dhffew1x85` → `https://dhffew1x85.execute-api.us-east-1.amazonaws.com`. Sin dominio propio todavía (eso es T-0011/T-13) |
 | `letiende-co-production` (T-0010) | Stack real desplegado el 03/09/2026 al fusionar el PR #14 a `main` (`desplegar-produccion`, disparado solo por `push` a `main`, confirmado con `gh run view --json jobs`: `build-y-test`/`desplegar-staging` quedaron `skipped` en ese run) — HTTP API `uvnookbox7` → `https://uvnookbox7.execute-api.us-east-1.amazonaws.com`. El sitio real de producción sigue siendo el CloudFront actual (`E33QAN86FY24JZ`, ADR-006); este stack existe pero **nada apunta a él todavía** — eso es el cutover de T-0011/T-14/T-15. `robots.txt` responde `Disallow: /` al pegarle directo a la URL cruda de `execute-api` (el guard de host la trata como no-canónica, mismo patrón que Analytics — no es un bug, es la razón exacta por la que hay que probar por `staging.letiende.co` una vez exista, no por la URL cruda) |
+| Certificado ACM `staging.letiende.co` (T-0011) | `arn:aws:acm:us-east-1:696912647258:certificate/24668c16-bc5b-420b-ab17-9a7f6b5ac8ce` — `ISSUED`, emitido el 03/09/2026, validación DNS automática por CloudFormation contra la zona `Z010633738KAGFIPOZVEW`. Verificado con `aws acm describe-certificate`, no solo con el estado del stack |
+| CloudFront de staging (T-0011) | `EQW683KP4VXIV` → `d2hrzsuw04322v.cloudfront.net`, alias `staging.letiende.co` (registro `A` alias en Route 53, mismo cambio). Verificado con `curl` real: `/` → 200 HTML, `/robots.txt` → `Disallow: /`, `/cartelera/` y `/libros/` llegan de verdad a los orígenes reales de Ágora/Babel staging (404/302 desde esos backends, no desde CloudFront — esperado, T-11/T-12 todavía no existen), `/assets/*` → 200 tras el fix del prefijo (ver más abajo) |
+| CloudFront de producción — nueva (T-0011) | `ER22S2WADMM83` → `d1o48r8wylv3sh.cloudfront.net`. **Sin alias todavía** (`letiende.co`/`www.letiende.co` siguen en la distribución actual `E33QAN86FY24JZ` — CloudFront no permite el mismo alias en dos distribuciones a la vez; el alias se mueve en el cutover real de T-14/T-15, ADR-006). Usa el certificado ya existente de `letiende.co` (`ca9cd231-…`) cuando se le asigne el alias — no se creó uno nuevo, el que ya había estaba `ISSUED` y no exclusivo de una distribución |
+| Bucket `letiende-assets` — política (T-0011) | Ampliada el 03/09/2026 (autorizado explícitamente por el humano) para permitir `s3:GetObject` vía Origin Access Control a las tres distribuciones: la actual de `assets.letiende.co` (`E3RUGH3MUSR7PS`) y las dos nuevas de este stack (`EQW683KP4VXIV`, `ER22S2WADMM83`). El bucket solo tiene contenido viejo de la rama `2025` abandonada (carpetas `data/`, `flags/`, `logos/`, 97 objetos, confirmado con `s3 ListObjectsV2`) — el humano confirmó que se puede limpiar y reutilizar sin problema; la limpieza en sí queda pendiente, no se hizo en esta tarea |
 | Google Analytics 4 | Measurement ID dado por el humano el 02/09/2026, reemplaza la integración legacy (Universal Analytics). **No versionado** (ADR-017): vive como secreto `GOOGLE_ANALYTICS_ID` en GitHub Actions del repositorio. Solo dispara en el host `letiende.co` (ADR-015) |
 | Google Maps Embed API | Llave dada por el humano el 02/09/2026, pública por diseño y restringida por dominio del lado de Google Cloud. **No versionada** (ADR-017): vive como secreto `GOOGLE_MAPS_API_KEY` en GitHub Actions del repositorio. **Pendiente de verificar por el humano:** que la restricción de referrer HTTP en Google Cloud Console cubra `letiende.co`, `staging.letiende.co` y `localhost` — no se puede confirmar desde este entorno |
 | reCAPTCHA v3 (`/api/contacto`) | Par de llaves dado por el humano el 02/09/2026 (registrado en `google.com/recaptcha/admin`, dominios `letiende.co`/`staging.letiende.co`/`localhost`). Site key: secreto `RECAPTCHA_SITE_KEY` en GitHub Actions (pública por diseño, mismo mecanismo de marcador que Maps/GA4 — ADR-017). Secret key: secreto `RECAPTCHA_SECRET_KEY`, **nunca en el bundle**, solo en el entorno de la Lambda `contacto`. Verificado en vivo contra la API real de Google (`siteverify`) con un token deliberadamente inválido: rechazó con 400 antes de llegar a SES — confirma que la integración real funciona sin arriesgar un envío de correo de prueba |
@@ -716,15 +720,20 @@ distinto), y la URL canónica del sitio es la constante `DOMINIO` de `src/app/co
 (`'https://letiende.co'`), no una variable de entorno. Corregido en `tech-specs.md` — no se agregaron
 al workflow para no cablear secretos que ningún código lee.
 
-**Por crear** (no existen todavía; se anotan aquí sus identificadores en cuanto existan):
+**Por crear — T-0011 completada, todo lo de esta lista ya existe** (ver la tabla de arriba). Lo único
+que sigue pendiente, y no es parte de T-0011, es el alias de producción (`letiende.co`/
+`www.letiende.co` → distribución nueva `ER22S2WADMM83`) y la limpieza del contenido viejo del bucket
+`letiende-assets` — ambos quedan para el cutover real (T-14/T-15) y para una tarea de limpieza aparte.
 
-| Recurso | Estado |
-|---|---|
-| Certificado ACM `staging.letiende.co` (us-east-1) | por crear |
-| Certificado ACM `letiende.co` (us-east-1) | por crear |
-| Distribución CloudFront de staging | por crear |
-| Distribución CloudFront de producción | por crear |
-| Registro `A` alias `staging.letiende.co` | por crear |
+**Hallazgo real de T-0011, no anticipado en `tech-specs.md` §7.2:** el bucket `letiende-assets` no
+tiene prefijo `assets/` en sus keys (son `logos/…`, `data/…`, `flags/…`), pero el proxy expone ese
+contenido bajo `/assets/*`. Sin quitar el prefijo antes de reenviar a S3, la petición
+`/assets/logos/x.svg` buscaba la key `assets/logos/x.svg` (no existe) y S3 respondía **403** (no 404:
+comportamiento esperado de S3 cuando el solicitante no tiene `s3:ListBucket`, para no revelar la
+estructura del bucket — se confirmó que no era un problema de permisos antes de escribir el fix).
+Corregido con una `AWS::CloudFront::Function` (`FuncionQuitarPrefijoAssets`, evento `viewer-request`)
+asociada al behavior `/assets/*`, que quita el prefijo antes de reenviar al origen. Mismo patrón de
+"la planeación asumía algo nunca verificado contra el comportamiento real" que ADR-005/012/013/018.
 
 **Registro de esfuerzo.** `metrics/pricing.json` tiene `as_of: 2026-06-24` para Anthropic — 69 días
 al 01/09/2026. **Vence el 22/09/2026**: pasado ese punto hay que reverificar las tarifas contra

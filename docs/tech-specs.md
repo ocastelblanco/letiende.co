@@ -359,7 +359,7 @@ intacta hasta el cutover, para que revertir sea cambiar un registro de Route 53 
 
 Todos los sufijos son `.us-east-1.amazonaws.com`, omitidos en la tabla por ancho.
 
-**Tres detalles que rompen esto si se hacen mal:**
+**Cuatro detalles que rompen esto si se hacen mal:**
 
 1. El origen de `/cartelera/*` debe ser el endpoint `execute-api` **crudo**, nunca `agora.letiende.co`.
    Ese dominio va a redirigir con 301 hacia `letiende.co/cartelera`, así que usarlo como origen crea un
@@ -369,6 +369,13 @@ Todos los sufijos son `.us-east-1.amazonaws.com`, omitidos en la tabla por ancho
    *AllViewerExceptHostHeader*.
 3. **No se define `OriginPath`.** Ágora tiene que recibir la ruta completa (`/cartelera/evento/x`) porque
    su aplicación se compila con `--base-href /cartelera/` y espera ese prefijo.
+4. **`/assets/*` sí necesita quitar su propio prefijo antes del origen** — a diferencia de
+   `/cartelera/*`/`/libros/*`. El bucket `letiende-assets` no tiene `assets/` en sus keys (son
+   `logos/…`, `data/…`, `flags/…`); sin una `AWS::CloudFront::Function` (`viewer-request`) que quite
+   `/assets` de la URI antes de reenviarla a S3, la petición busca una key que no existe y S3
+   responde **403**, no 404 (comportamiento del propio S3 cuando el solicitante no tiene
+   `s3:ListBucket`, para no revelar la estructura del bucket) — hallazgo real de T-0011, verificado con
+   `curl` contra `staging.letiende.co/assets/...` después del primer despliegue, no anticipado aquí.
 
 ### 7.3 Qué cambia en Ágora y en Babel
 
