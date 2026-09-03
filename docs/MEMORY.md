@@ -667,6 +667,7 @@ Todo lo de esta tabla fue **verificado por API el 01/09/2026**, no recordado.
 | Babel producción | HTTP API `aav553hwx4` · dominio `babel.letiende.co` → `d-4npztcyk1j.execute-api.us-east-1.amazonaws.com` |
 | Babel staging | HTTP API `oyzau0c910` — origen del behavior `/libros/*` en staging |
 | `letiende-api` (heredada) | REST API `uklz2j4u38` · dominio `api.letiende.co` · Lambda `nodejs22.x`, 128 MB, rol `generica-role-o1869of8` |
+| `letiende-co-staging` (T-0010) | Stack real desplegado el 03/09/2026 vía CI (PR #14) — HTTP API `dhffew1x85` → `https://dhffew1x85.execute-api.us-east-1.amazonaws.com`. Sin dominio propio todavía (eso es T-0011/T-13) |
 | Google Analytics 4 | Measurement ID dado por el humano el 02/09/2026, reemplaza la integración legacy (Universal Analytics). **No versionado** (ADR-017): vive como secreto `GOOGLE_ANALYTICS_ID` en GitHub Actions del repositorio. Solo dispara en el host `letiende.co` (ADR-015) |
 | Google Maps Embed API | Llave dada por el humano el 02/09/2026, pública por diseño y restringida por dominio del lado de Google Cloud. **No versionada** (ADR-017): vive como secreto `GOOGLE_MAPS_API_KEY` en GitHub Actions del repositorio. **Pendiente de verificar por el humano:** que la restricción de referrer HTTP en Google Cloud Console cubra `letiende.co`, `staging.letiende.co` y `localhost` — no se puede confirmar desde este entorno |
 | reCAPTCHA v3 (`/api/contacto`) | Par de llaves dado por el humano el 02/09/2026 (registrado en `google.com/recaptcha/admin`, dominios `letiende.co`/`staging.letiende.co`/`localhost`). Site key: secreto `RECAPTCHA_SITE_KEY` en GitHub Actions (pública por diseño, mismo mecanismo de marcador que Maps/GA4 — ADR-017). Secret key: secreto `RECAPTCHA_SECRET_KEY`, **nunca en el bundle**, solo en el entorno de la Lambda `contacto`. Verificado en vivo contra la API real de Google (`siteverify`) con un token deliberadamente inválido: rechazó con 400 antes de llegar a SES — confirma que la integración real funciona sin arriesgar un envío de correo de prueba |
@@ -676,7 +677,7 @@ Todo lo de esta tabla fue **verificado por API el 01/09/2026**, no recordado.
 stack como `${service}-${stage}`. Todavía no desplegado, solo empaquetado.
 
 **Secrets de GitHub Actions (T-0010, `.github/workflows/deploy.yml`), verificado con
-`gh secret list` el 02/09/2026:**
+`gh secret list` el 03/09/2026 — los 8 ya están configurados:**
 
 | Secret | Estado | Uso |
 |---|---|---|
@@ -684,15 +685,28 @@ stack como `${service}-${stage}`. Todavía no desplegado, solo empaquetado.
 | `GOOGLE_MAPS_API_KEY` | ✅ configurado (T-0006) | `postbuild`, ambos stages |
 | `RECAPTCHA_SITE_KEY` | ✅ configurado (T-0009) | `postbuild`, ambos stages |
 | `RECAPTCHA_SECRET_KEY` | ✅ configurado (T-0009) | entorno de la Lambda `contacto`, ambos stages |
-| `AWS_ACCESS_KEY_ID` | ❌ **pendiente** — lo crea el humano | `serverless package`/`deploy`, todos los jobs |
-| `AWS_SECRET_ACCESS_KEY` | ❌ **pendiente** — lo crea el humano | `serverless package`/`deploy`, todos los jobs |
-| `SERVERLESS_LICENSE_KEY` | ❌ **pendiente** — lo crea el humano (tech-specs.md §2 lo da por requisito) | `serverless package`/`deploy`, todos los jobs |
-| `SES_REMITENTE` | ❌ **pendiente** — lo crea el humano | entorno de la Lambda `contacto`, ambos stages |
+| `SERVERLESS_LICENSE_KEY` | ✅ configurado por el humano el 03/09/2026 | `serverless package`/`deploy`, todos los jobs |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | ✅ configurados el 03/09/2026 — access key del usuario IAM personal `@ocastelblanco` (mismo patrón que Ágora/Babel, ADR-021) | `serverless package`/`deploy`, todos los jobs |
+| `SES_REMITENTE` | ✅ configurado el 03/09/2026 — `info@letiende.co`, identidad de correo ya verificada en SES (`aws sesv2 list-email-identities`) | entorno de la Lambda `contacto`, ambos stages |
 
-Sin los cuatro secrets pendientes, el job `build-y-test` falla en el paso "Verificar sintaxis de
-infraestructura" (verificado con un PR real, ver ADR-021 y el propio T-0010 en `docs/TODO.md`) — y por
-diseño (`needs: build-y-test`), eso basta para que ningún job de despliegue se dispare. Es el
-comportamiento correcto mientras el humano no configure los secrets, no un bug del workflow.
+**Nota de seguridad sobre `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`:** el usuario `@ocastelblanco`
+pertenece al grupo IAM `Administrador` — es decir, estos dos secrets son credenciales de **admin
+completo** sobre la cuenta compartida (Ágora, Babel, Comandante), no credenciales acotadas al
+despliegue de este stack. Decisión explícita del humano tras conocer ese detalle (mismo riesgo que ya
+existe hoy en Ágora y Babel, que usan el mismo patrón) — ver ADR-021. Si algún día se decide acotar
+esto, tendría que ser un usuario IAM dedicado con una política de solo lo que `serverless deploy`
+necesita, migrado en los tres repositorios a la vez.
+
+Antes de tener los 8 secrets, se verificó con un PR real (T-0010, `docs/TODO.md`) que su ausencia hace
+fallar `build-y-test` en "Verificar sintaxis de infraestructura" y que, por `needs: build-y-test`,
+ningún job de despliegue se dispara (comportamiento correcto). **Con los 8 secrets ya configurados, se
+volvió a correr el mismo workflow (PR #14) y esta vez el despliegue real a staging se completó**: los
+tres jobs (`build-y-test`, `desplegar-staging`) en verde, `serverless deploy --stage staging` creó el
+stack `letiende-co-staging` de verdad. Verificado además con `curl` real, no solo con el resultado del
+job: `GET /` → 200 HTML, `GET /robots.txt` → `Disallow: /`, `GET /ruta-inventada` → 404 real. Y el
+gotcha de `${env:X, ''}` (tech-specs.md §9) se descartó por CLI, no por fe:
+`aws lambda get-function-configuration --function-name letiende-co-staging-contacto` confirma
+`SES_REMITENTE`/`RECAPTCHA_SECRET_KEY` con su valor real, no cadena vacía.
 
 **Corrección a `tech-specs.md` §9:** la tabla de esa sección listaba también `SES_DESTINATARIO` y
 `URL_BASE_APP` como secrets necesarios. Ninguno de los dos se usa en el código real: `contacto.ts`

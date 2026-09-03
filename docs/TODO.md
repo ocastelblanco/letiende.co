@@ -65,12 +65,15 @@ hay razón para esperar a Ágora/Babel/CloudFront (T-0011) para hacerla.
 
 ## Tarea T-0011 — [INFRA] Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
 
-**Origen:** `tech-specs.md` §7, T-13 · depende de T-0010 (CI/CD, activa) — más útil desplegar por
-pipeline que a mano, aunque no es un bloqueo estricto
+**Origen:** `tech-specs.md` §7, T-13 · T-0010 (CI/CD) completada — el pipeline ya despliega de verdad
+a `staging` (`letiende-co-staging`, PR #14, 03/09/2026), así que esta tarea ya no tiene ningún
+bloqueo pendiente
 
-> **Categoría de riesgo distinta a las tareas anteriores.** Todo lo hecho hasta T-0010 fue código e
-> IaC verificado con `serverless package` (empaquetar, nunca desplegar) — reversible con un
-> `git revert`. Esta tarea **crea recursos reales de AWS con costo y persistencia propios**
+> **Categoría de riesgo distinta a las tareas anteriores.** Todo lo hecho hasta T-0010 era código e
+> IaC verificado con `serverless package`/`serverless deploy --stage staging` — el stack de staging ya
+> existe (`letiende-co-staging`, sin dominio propio todavía), pero producción sigue intacta y esto es
+> reversible con un `git revert`. Esta tarea **crea recursos reales de AWS con costo y persistencia
+> propios**
 > (certificados ACM, distribuciones de CloudFront, un registro en la zona de Route 53 de producción).
 > Ninguna acción de creación/modificación real contra la cuenta de AWS se ejecuta sin confirmarlo
 > explícitamente con el humano antes, aunque el paquete de cambios (IaC, PRs) sí se prepare de punta a
@@ -149,7 +152,21 @@ pipeline que a mano, aunque no es un bloqueo estricto
   `core/seo/dominio.ts`, no una variable de entorno) — corregido en la documentación, no se cablearon
   al workflow. Los ocho comandos del pipeline (`build`, `build:api`, `bundle:api`, `test`, `test:api`,
   `lint`, `tsc --build --noEmit`, `serverless package`) se corrieron y verificaron en este entorno
-  antes de abrir el PR. Detalle completo en `MEMORY.md` ADR-021 y §5.
+  antes de abrir el PR.
+
+  **Ampliada el mismo día, mismo PR (#14):** el humano configuró los 4 secrets pendientes
+  (`SERVERLESS_LICENSE_KEY` él mismo; `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` reutilizando su
+  access key personal de `@ocastelblanco` — confirmado que pertenece al grupo IAM `Administrador`,
+  mismo riesgo ya aceptado en Ágora/Babel, no una decisión nueva de este proyecto; `SES_REMITENTE` con
+  `info@letiende.co`, identidad ya verificada en SES). Con los 8 secrets configurados se volvió a
+  correr el mismo workflow del PR #14 (`gh run rerun`): esta vez **el despliegue real a staging se
+  completó**, `letiende-co-staging` existe de verdad. Verificado con `curl` real contra
+  `https://dhffew1x85.execute-api.us-east-1.amazonaws.com` (200 HTML en `/`, `Disallow: /` en
+  `/robots.txt`, 404 real en una ruta inventada) y con
+  `aws lambda get-function-configuration --function-name letiende-co-staging-contacto`: `SES_REMITENTE`
+  y `RECAPTCHA_SECRET_KEY` con su valor real, no la cadena vacía del gotcha de `${env:X, ''}`
+  (tech-specs.md §9). Esto además destraba T-0011: ya no depende de nada. Detalle completo en
+  `MEMORY.md` ADR-021 y §5.
 
 - **T-0001** — [FEATURE] Andamiaje de la aplicación Angular 22 con SSR y Tailwind 4. Completada
   01/09/2026. `npx @angular/cli@22 new` generado en directorio temporal y fusionado a mano; ajustes
