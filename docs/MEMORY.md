@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + íconos/manifest + Google Maps + GA4 + capa de SEO/AEO + `serverless.yml` (SSR + contacto) |
-| **Fase** | T-0001 a T-0007 fusionados a `main`; T-0009 y T-0010 activas (T-0009, PR sin abrir todavía) |
+| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + preguntas frecuentes + íconos/manifest + Google Maps + GA4 + capa de SEO/AEO + `serverless.yml` (SSR + contacto) + CI/CD desplegado de verdad a staging y a producción |
+| **Fase** | T-0001 a T-0010 y T-0012 completadas y en `main` (T-0010 fusionado, PR #14); T-0011 activa (única tarea activa — ver nota en `docs/TODO.md`) |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `feature/lambda-contacto-ses` (desde `main`) |
-| **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: nada de esto se ha desplegado, solo empaquetado (`serverless package`) |
-| **Staging** | No existe aún |
-| **Última sesión** | 02/09/2026 — T-0009: Lambda `contacto` con SES, honeypot y límite de tasa |
+| **Rama** | `feature/preguntas-frecuentes` (desde `main`) |
+| **Producción** | `https://letiende.co` (CloudFront `E33QAN86FY24JZ`) — todavía sirve el **sitio estático anterior**. `letiende-co-production` (el stack nuevo) existe y despliega de verdad desde T-0010, pero nada de DNS/CloudFront apunta a él todavía — eso es el cutover de T-0011/T-14/T-15 |
+| **Staging** | `letiende-co-staging` existe y despliega de verdad (T-0010), sin dominio propio todavía — lo agrega T-0011 |
+| **Última sesión** | 04/09/2026 — T-0012: página de Preguntas frecuentes (F-7) |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -45,10 +45,10 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
       errores, verificado invocando el handler con eventos de API Gateway simulados
 - [x] Lambda de contacto con SES y antiabuso (T-0009): honeypot, límite de tasa en memoria,
       `Source` siempre `SES_REMITENTE`, `ContactoComponent.enviar()` hace el `POST` real
+- [x] CI/CD con GitHub Actions (T-0010): despliegue real verificado a `staging` y a `producción`
+- [x] Preguntas frecuentes (T-0012): `esquemaFaqPage()`, contenido confirmado por el humano
 
 ### Pendientes
-- [ ] Preguntas frecuentes
-- [ ] CI/CD con GitHub Actions (T-0010, activa)
 - [ ] Certificados ACM (`staging.letiende.co` y `letiende.co`) en `us-east-1`
 - [ ] Distribuciones de CloudFront de staging y de producción
 - [ ] Cambios en Ágora y en Babel (base href, barra común, mapas del sitio, 301)

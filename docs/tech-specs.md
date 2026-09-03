@@ -253,7 +253,7 @@ Requisito de primer orden (PRD §8), no un acabado.
 | Canónica | Por ruta | Siempre `https://letiende.co/...`, incluso en las rutas por proxy |
 | Open Graph y Twitter Card | Por ruta | Imagen propia por sección |
 | `robots.txt` | `GET /robots.txt` en `server.ts` (dinámico, no `public/`) | `Disallow: /` fuera de `letiende.co` (staging incluido) — el mismo artefacto sirve a los dos stages, así que el host de la petición es lo único que los distingue en tiempo de ejecución (ADR-015, ADR-018) |
-| Mapa del sitio | `GET /sitemap.xml` en `server.ts` | **Hoy solo las rutas propias** (`/`, `/nosotros`, `/contacto`), no el índice de los tres — ver ADR-018 |
+| Mapa del sitio | `GET /sitemap.xml` en `server.ts` | **Hoy solo las rutas propias** (`/`, `/nosotros`, `/contacto`, `/preguntas-frecuentes`), no el índice de los tres — ver ADR-018 |
 | Redirecciones 301 | `agora.letiende.co`, `babel.letiende.co` | Hacia la ruta equivalente. Evita competir contra sí mismo |
 | Datos estructurados | JSON-LD, `core/seo/` | Ver abajo |
 
@@ -266,7 +266,7 @@ Requisito de primer orden (PRD §8), no un acabado.
 | `/` | `ItemList` de los próximos eventos, cada uno como `Event`, solo si hay eventos que mostrar |
 | `/nosotros` | `AboutPage` + `BreadcrumbList` |
 | `/contacto` | `ContactPage` + repetición de `LocalBusiness` + `BreadcrumbList` |
-| `/preguntas-frecuentes` | `FAQPage` — pendiente, la ruta todavía no existe |
+| `/preguntas-frecuentes` | `FAQPage` + `BreadcrumbList` (T-0012) |
 
 Ágora ya emite `Event` en sus fichas y Babel debe emitir `Book`; el contenedor **no los duplica**. El
 `ItemList` de la portada no es un duplicado: describe el resumen de eventos que aparece en la propia
