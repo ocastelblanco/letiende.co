@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ContactoComponent } from './contacto';
+import { RecaptchaService } from '@core/recaptcha/recaptcha.service';
 
 function establecerTexto(elemento: HTMLInputElement | HTMLTextAreaElement, valor: string): void {
   elemento.value = valor;
@@ -22,6 +23,17 @@ function enviarFormulario(fixture: {
   fixture.detectChanges();
 }
 
+/** `enviar()` es async (espera el token de reCAPTCHA) — deja correr los microtasks pendientes. */
+async function enviarFormularioYEsperar(fixture: {
+  nativeElement: HTMLElement;
+  detectChanges: () => void;
+}): Promise<void> {
+  enviarFormulario(fixture);
+  await Promise.resolve();
+  await Promise.resolve();
+  fixture.detectChanges();
+}
+
 function bannerVisible(fixture: { nativeElement: HTMLElement }): boolean {
   return fixture.nativeElement.querySelector('[role="status"], [role="alert"]') !== null;
 }
@@ -35,11 +47,17 @@ function llenarFormularioValido(el: HTMLElement): void {
 
 describe('ContactoComponent', () => {
   let httpMock: HttpTestingController;
+  let obtenerTokenMock: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
+    obtenerTokenMock = vi.fn().mockResolvedValue('token-de-prueba');
     await TestBed.configureTestingModule({
       imports: [ContactoComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: RecaptchaService, useValue: { obtenerToken: obtenerTokenMock } },
+      ],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
   });
@@ -68,7 +86,7 @@ describe('ContactoComponent', () => {
     expect(campo.closest('[aria-hidden="true"]')).toBeTruthy();
   });
 
-  it('bloquea el envío si el nombre está vacío', () => {
+  it('bloquea el envío si el nombre está vacío, sin pedir token de reCAPTCHA', () => {
     const fixture = TestBed.createComponent(ContactoComponent);
     fixture.detectChanges();
     const el = fixture.nativeElement;
@@ -81,6 +99,7 @@ describe('ContactoComponent', () => {
 
     expect(bannerVisible(fixture)).toBe(false);
     expect(el.textContent).toContain('El nombre es obligatorio.');
+    expect(obtenerTokenMock).not.toHaveBeenCalled();
     httpMock.expectNone('/api/contacto');
   });
 
@@ -117,12 +136,14 @@ describe('ContactoComponent', () => {
     httpMock.expectNone('/api/contacto');
   });
 
-  it('con el formulario válido, hace POST /api/contacto de verdad y muestra el aviso de éxito', () => {
+  it('con el formulario válido, pide un token de reCAPTCHA y lo incluye en el POST', async () => {
     const fixture = TestBed.createComponent(ContactoComponent);
     fixture.detectChanges();
     llenarFormularioValido(fixture.nativeElement);
 
-    enviarFormulario(fixture);
+    await enviarFormularioYEsperar(fixture);
+
+    expect(obtenerTokenMock).toHaveBeenCalledWith('contacto');
 
     const peticion = httpMock.expectOne('/api/contacto');
     expect(peticion.request.method).toBe('POST');
@@ -132,6 +153,7 @@ describe('ContactoComponent', () => {
       mensaje: 'Hola, quiero saber más.',
       consentimientoDatos: true,
       sitioWeb: '',
+      recaptchaToken: 'token-de-prueba',
     });
 
     peticion.flush({ enviado: true });
@@ -141,12 +163,12 @@ describe('ContactoComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Mensaje enviado');
   });
 
-  it('si el backend falla, muestra un aviso de error genérico, sin inventar una causa', () => {
+  it('si el backend falla, muestra un aviso de error genérico, sin inventar una causa', async () => {
     const fixture = TestBed.createComponent(ContactoComponent);
     fixture.detectChanges();
     llenarFormularioValido(fixture.nativeElement);
 
-    enviarFormulario(fixture);
+    await enviarFormularioYEsperar(fixture);
 
     const peticion = httpMock.expectOne('/api/contacto');
     peticion.flush({ error: 'boom' }, { status: 500, statusText: 'Internal Server Error' });
@@ -154,5 +176,18 @@ describe('ContactoComponent', () => {
 
     expect(bannerVisible(fixture)).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('No se pudo enviar el mensaje');
+  });
+
+  it('si no se puede obtener el token de reCAPTCHA, muestra error y no llama al backend', async () => {
+    obtenerTokenMock.mockRejectedValue(new Error('reCAPTCHA no disponible'));
+    const fixture = TestBed.createComponent(ContactoComponent);
+    fixture.detectChanges();
+    llenarFormularioValido(fixture.nativeElement);
+
+    await enviarFormularioYEsperar(fixture);
+
+    expect(bannerVisible(fixture)).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('No se pudo enviar el mensaje');
+    httpMock.expectNone('/api/contacto');
   });
 });

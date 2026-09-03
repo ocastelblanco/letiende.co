@@ -7,6 +7,7 @@ import { environment } from '@environments/environment';
 import { MetaService } from '@core/seo/meta.service';
 import { JsonLdService } from '@core/seo/json-ld.service';
 import { esquemaContactPage, esquemaLocalBusiness, esquemaMigasDePan } from '@core/seo/esquemas';
+import { RecaptchaService } from '@core/recaptcha/recaptcha.service';
 
 interface FormularioContacto {
   nombre: FormControl<string>;
@@ -30,6 +31,7 @@ export class ContactoComponent {
   private readonly meta = inject(MetaService);
   private readonly jsonLd = inject(JsonLdService);
   private readonly http = inject(HttpClient);
+  private readonly recaptcha = inject(RecaptchaService);
 
   protected readonly datosNegocio = DATOS_NEGOCIO;
 
@@ -80,7 +82,7 @@ export class ContactoComponent {
     ]);
   }
 
-  protected enviar(): void {
+  protected async enviar(): Promise<void> {
     if (this.formulario.invalid) {
       this.formulario.markAllAsTouched();
       return;
@@ -88,11 +90,30 @@ export class ContactoComponent {
 
     this.estadoEnvio.set('enviando');
 
+    // Token nuevo en cada envío — un token de reCAPTCHA v3 solo vale una
+    // vez y ~2 minutos (developers.google.com/recaptcha/docs/v3), así que
+    // no tiene sentido pedirlo antes de que el visitante esté listo para
+    // enviar.
+    let recaptchaToken: string;
+    try {
+      recaptchaToken = await this.recaptcha.obtenerToken('contacto');
+    } catch {
+      this.estadoEnvio.set('error');
+      return;
+    }
+
     const { nombre, correo, mensaje, consentimientoDatos, sitioWeb } =
       this.formulario.getRawValue();
 
     this.http
-      .post('/api/contacto', { nombre, correo, mensaje, consentimientoDatos, sitioWeb })
+      .post('/api/contacto', {
+        nombre,
+        correo,
+        mensaje,
+        consentimientoDatos,
+        sitioWeb,
+        recaptchaToken,
+      })
       .subscribe({
         next: () => {
           this.estadoEnvio.set('enviado');

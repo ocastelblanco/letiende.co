@@ -17,4 +17,7 @@ export const environment = {
   // gtag.js en letiende.co, nunca en staging.letiende.co).
   googleAnalyticsId: '__GOOGLE_ANALYTICS_ID__',
   googleMapsApiKey: '__GOOGLE_MAPS_API_KEY__',
+  // Site key de reCAPTCHA v3 — mismo mecanismo de marcador, la secret key
+  // nunca aparece aquí (vive solo en el entorno de la Lambda de contacto).
+  recaptchaSiteKey: '__RECAPTCHA_SITE_KEY__',
 };
