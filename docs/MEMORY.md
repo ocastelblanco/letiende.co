@@ -573,6 +573,31 @@ cubren. El par de llaves ya lo dio el humano el mismo día (02/09/2026) — guar
 `RECAPTCHA_SITE_KEY`/`RECAPTCHA_SECRET_KEY` de GitHub Actions (§5), verificado en vivo contra la API
 real de `siteverify` con un token deliberadamente inválido: rechazó con 400 antes de llegar a SES.
 
+### ADR-021 — Credenciales de AWS en CI: llaves de larga duración, no OIDC
+
+**Contexto.** T-0010 (`docs/TODO.md`) dejaba el mecanismo de credenciales de AWS para el despliegue
+desde GitHub Actions como decisión abierta, marcando OIDC hacia un rol de IAM como "preferible" a
+llaves de acceso de larga duración, pero exigiendo verificar contra la documentación oficial de
+`aws-actions/configure-aws-credentials` antes de implementar.
+
+**Decisión.** Llaves de larga duración (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` como secrets del
+repositorio), no OIDC. Decisión explícita del humano, consultada durante la tarea: se verificó primero
+que la cuenta de AWS compartida (`696912647258`) no tiene ningún proveedor OIDC configurado todavía
+(`aws iam list-open-id-connect-providers` → lista vacía, 02/09/2026) — adoptar OIDC aquí habría sido
+el primer uso de ese mecanismo en la cuenta, y habría exigido crear un proveedor OIDC y un rol IAM
+nuevos en una cuenta compartida con Ágora y Babel, dos proyectos que ya funcionan con el patrón de
+llaves de larga duración.
+
+**Por qué.** Consistencia operativa con Ágora y Babel (`.github/workflows/deploy.yml` de ambos,
+verificado antes de escribir el de este proyecto) pesó más que la ventaja de seguridad de OIDC para
+una cuenta que ya trae ese riesgo aceptado en dos stacks hermanos — introducir un segundo patrón de
+autenticación (y un recurso IAM nuevo con alcance sobre toda la cuenta) solo para este repositorio
+habría sido inconsistencia, no mejora, mientras Ágora y Babel sigan como están.
+
+**Consecuencia.** Si en el futuro se decide migrar a OIDC, debe ser un cambio de los tres repositorios
+a la vez (Ágora, Babel, letiende.co), no uno aislado — de lo contrario la cuenta termina con dos
+mecanismos de autenticación de CI conviviendo sin necesidad.
+
 ---
 
 ## 4. Dependencias
@@ -649,6 +674,32 @@ Todo lo de esta tabla fue **verificado por API el 01/09/2026**, no recordado.
 **Nombres de stack esperados:** `letiende-co-staging` y `letiende-co-production` — confirmado
 (T-0007): `serverless.yml` declara `service: letiende-co`, y Serverless Framework arma el nombre del
 stack como `${service}-${stage}`. Todavía no desplegado, solo empaquetado.
+
+**Secrets de GitHub Actions (T-0010, `.github/workflows/deploy.yml`), verificado con
+`gh secret list` el 02/09/2026:**
+
+| Secret | Estado | Uso |
+|---|---|---|
+| `GOOGLE_ANALYTICS_ID` | ✅ configurado (T-0006) | `postbuild`, ambos stages |
+| `GOOGLE_MAPS_API_KEY` | ✅ configurado (T-0006) | `postbuild`, ambos stages |
+| `RECAPTCHA_SITE_KEY` | ✅ configurado (T-0009) | `postbuild`, ambos stages |
+| `RECAPTCHA_SECRET_KEY` | ✅ configurado (T-0009) | entorno de la Lambda `contacto`, ambos stages |
+| `AWS_ACCESS_KEY_ID` | ❌ **pendiente** — lo crea el humano | `serverless package`/`deploy`, todos los jobs |
+| `AWS_SECRET_ACCESS_KEY` | ❌ **pendiente** — lo crea el humano | `serverless package`/`deploy`, todos los jobs |
+| `SERVERLESS_LICENSE_KEY` | ❌ **pendiente** — lo crea el humano (tech-specs.md §2 lo da por requisito) | `serverless package`/`deploy`, todos los jobs |
+| `SES_REMITENTE` | ❌ **pendiente** — lo crea el humano | entorno de la Lambda `contacto`, ambos stages |
+
+Sin los cuatro secrets pendientes, el job `build-y-test` falla en el paso "Verificar sintaxis de
+infraestructura" (verificado con un PR real, ver ADR-021 y el propio T-0010 en `docs/TODO.md`) — y por
+diseño (`needs: build-y-test`), eso basta para que ningún job de despliegue se dispare. Es el
+comportamiento correcto mientras el humano no configure los secrets, no un bug del workflow.
+
+**Corrección a `tech-specs.md` §9:** la tabla de esa sección listaba también `SES_DESTINATARIO` y
+`URL_BASE_APP` como secrets necesarios. Ninguno de los dos se usa en el código real: `contacto.ts`
+envía el correo a `remitente` mismo (`Destination: { ToAddresses: [remitente] }`, no a un buzón
+distinto), y la URL canónica del sitio es la constante `DOMINIO` de `src/app/core/seo/dominio.ts`
+(`'https://letiende.co'`), no una variable de entorno. Corregido en `tech-specs.md` — no se agregaron
+al workflow para no cablear secretos que ningún código lee.
 
 **Por crear** (no existen todavía; se anotan aquí sus identificadores en cuanto existan):
 

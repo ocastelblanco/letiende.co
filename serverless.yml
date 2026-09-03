@@ -146,3 +146,31 @@ resources:
                     - ses:SendEmail
                     - ses:SendRawEmail
                   Resource: !Sub 'arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/letiende.co'
+
+  Outputs:
+    # Fuente confiable de la URL del endpoint para el smoke test de CI
+    # (.github/workflows/deploy.yml) — evita parsear el texto de salida de
+    # `serverless deploy`, que en Serverless Framework 4 no siempre llega
+    # por stdout (T-0010, docs/MEMORY.md §7).
+    HttpApiUrl:
+      Description: URL base del endpoint de API Gateway (HTTP API)
+      # Fn::Join en vez de !Sub: el resolvedor de variables ${...} de
+      # Serverless Framework intenta resolver ${HttpApi}/${AWS::Region} ANTES
+      # de que CloudFormation vea el Fn::Sub, y produce un Value con Fn::Join
+      # y Fn::Sub mezclados en el mismo mapa — inválido para CloudFormation
+      # (gotcha ya verificado en Ágora, mismo patrón, docs/MEMORY.md §7).
+      # Fn::Join con !Ref no contiene ningún `${...}`, así que el resolvedor
+      # de Serverless no lo toca. AWS::URLSuffix explícito, no el literal
+      # '.amazonaws.com': Serverless reescribe automáticamente cualquier
+      # Fn::Join que reconoce como URL de API Gateway para usar el
+      # pseudo-parámetro dinámico, y si ya hay un '.amazonaws.com' literal en
+      # la lista, el suyo se agrega en vez de reemplazarlo.
+      Value:
+        Fn::Join:
+          - ''
+          - - 'https://'
+            - !Ref HttpApi
+            - '.execute-api.'
+            - !Ref 'AWS::Region'
+            - '.'
+            - !Ref 'AWS::URLSuffix'
