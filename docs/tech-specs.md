@@ -377,10 +377,24 @@ Todos los sufijos son `.us-east-1.amazonaws.com`, omitidos en la tabla por ancho
    `s3:ListBucket`, para no revelar la estructura del bucket) — hallazgo real de T-0011, verificado con
    `curl` contra `staging.letiende.co/assets/...` después del primer despliegue, no anticipado aquí.
 
+**Dos hallazgos más, de T-0013/T-0014, ninguno anticipado en esta sección:**
+
+5. **El header `Host` real del visitante no llega a Ágora/Babel** — consecuencia directa del punto 2:
+   *AllViewerExceptHostHeader* despoja el `Host` original, pero `EmbebidoService` de cada app necesita
+   saber cuál era para decidir si mostrar la barra común. Se agregó una `AWS::CloudFront::Function`
+   (`FuncionInyectarHostVisitante`, `viewer-request`) que copia el `Host` real a un header propio,
+   `x-le-tiende-host`, antes de reenviar al origen — cada app lo lee en vez de `Host`.
+6. **El sitemap de cada app no respondía a través del proxy** (`/cartelera/sitemap.xml`,
+   `/libros/sitemap.xml`) — CloudFront reenvía la ruta completa con el prefijo (punto 3: sin
+   `OriginPath`), pero cada API Gateway solo tenía registrada la ruta sin prefijo. Se registró también
+   la ruta con prefijo en el API Gateway de cada app.
+
 ### 7.3 Qué cambia en Ágora y en Babel
 
-El humano autorizó modificar ambos repositorios, con la instrucción de hacerlo **al mínimo**.
-Este es el diff completo, y no debería crecer. Cuatro cambios por repositorio:
+El humano autorizó modificar ambos repositorios, con la instrucción de hacerlo **al mínimo**. La
+planeación original preveía cuatro cambios por repositorio; el primer despliegue real a staging reveló
+un quinto, no anticipado, sin el cual las páginas cargaban vacías (nunca se probó, en la planeación,
+qué le pasa a una llamada de API con ruta *absoluta* bajo un `baseHref` con prefijo):
 
 | # | Cambio | Archivo | Por qué |
 |---|---|---|---|
@@ -388,6 +402,7 @@ Este es el diff completo, y no debería crecer. Cuatro cambios por repositorio:
 | 2 | La barra de navegación propia pasa a ser la barra común de `DESIGN.md` §7 | 1 componente | Un solo menú visible en todo el recorrido |
 | 3 | El mapa del sitio emite `https://letiende.co/cartelera/…` | handler del sitemap | Si no, apunta a direcciones que redirigen |
 | 4 | Redirección 301 cuando el `Host` es el subdominio antiguo | handler del SSR | Evita contenido duplicado y rescata enlaces viejos |
+| 5 | `absoluteUrlInterceptor` antepone el prefijo a `/api/*` cuando `EmbebidoService.embebido` es `true` | interceptor HTTP ya existente (ampliado) | Una ruta absoluta (`http.get('/api/…')`) la resuelve el navegador contra el origen de la página, **ignorando el `<base href>`** — a diferencia de una ruta relativa, nunca hereda su prefijo. Sin este cambio, CloudFront enruta la llamada al comportamiento por defecto (el contenedor) en vez de a la app real, y la página carga sin datos. Hallazgo real reportado en producción/staging por el humano ("nada funciona"), verificado con navegador real tras el fix: las llamadas de API salen prefijadas y responden 200 |
 
 **Sobre el cambio 2 — es reemplazo, no ocultamiento.** Esconder la barra propia y no poner nada deja
 al visitante dentro de la cartelera sin forma de volver: el HTML bajo `/cartelera` lo genera Ágora, y
