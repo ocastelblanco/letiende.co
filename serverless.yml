@@ -125,6 +125,36 @@ resources:
           - DomainName: staging.letiende.co
             HostedZoneId: Z010633738KAGFIPOZVEW
 
+    # Hallazgo real, verificado en vivo contra staging.letiende.co/cartelera
+    # tras el primer despliegue de Ágora embebida (T-0013 del repo agora):
+    # la política AllViewerExceptHostHeader (detalle 2 de tech-specs.md
+    # §7.2, obligatoria para que API Gateway no rechace con 403) reenvía
+    # TODOS los encabezados del visitante EXCEPTO Host — y no sintetiza
+    # ningún X-Forwarded-Host por su cuenta (verificado con
+    # cloudfront GetOriginRequestPolicy, no asumido). Sin esto, Ágora/Babel
+    # nunca pueden saber en el servidor (SSR) si la petición llegó embebida
+    # (letiende.co/staging.letiende.co) o directa — su SSR ve siempre el
+    # hostname crudo de execute-api. Esta función copia el Host real del
+    # visitante a un encabezado propio ANTES de que CloudFront lo despoje,
+    # y como no se llama "host", AllViewerExceptHostHeader sí lo reenvía.
+    FuncionInyectarHostVisitante:
+      Type: AWS::CloudFront::Function
+      Properties:
+        Name: !Sub 'letiende-co-inyectar-host-visitante-${sls:stage}'
+        AutoPublish: true
+        FunctionConfig:
+          Comment: Copia el Host real del visitante a x-le-tiende-host antes del origen
+          Runtime: cloudfront-js-2.0
+        FunctionCode: |
+          function handler(event) {
+            var request = event.request;
+            var host = request.headers.host;
+            if (host && host.value) {
+              request.headers['x-le-tiende-host'] = { value: host.value };
+            }
+            return request;
+          }
+
     # Los objetos del bucket letiende-assets no tienen el prefijo "assets/"
     # en su key (son logos/…, data/…, flags/…, verificado con
     # s3 ListObjectsV2 el 03/09/2026) — a diferencia de assets.letiende.co,
@@ -246,6 +276,9 @@ resources:
               AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
               CachedMethods: [GET, HEAD]
               Compress: true
+              FunctionAssociations:
+                - EventType: viewer-request
+                  FunctionARN: !GetAtt FuncionInyectarHostVisitante.FunctionARN
             - PathPattern: /libros/*
               TargetOriginId: BabelOrigin
               ViewerProtocolPolicy: redirect-to-https
@@ -254,6 +287,9 @@ resources:
               AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
               CachedMethods: [GET, HEAD]
               Compress: true
+              FunctionAssociations:
+                - EventType: viewer-request
+                  FunctionARN: !GetAtt FuncionInyectarHostVisitante.FunctionARN
             # No hace falta OriginRequestPolicy aquí (no es API Gateway, no
             # valida Host): CachingOptimized de tech-specs.md §7.2, sola.
             - PathPattern: /assets/*
