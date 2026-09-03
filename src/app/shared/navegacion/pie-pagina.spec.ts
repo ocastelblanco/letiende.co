@@ -18,4 +18,12 @@ describe('PiePagina', () => {
     expect(texto.length).toBeGreaterThan(0);
     expect(texto).toContain('Le Tiende');
   });
+
+  it('enlaza a la cuenta real de Instagram', () => {
+    const fixture = TestBed.createComponent(PiePagina);
+    fixture.detectChanges();
+    const enlace = (fixture.nativeElement as HTMLElement).querySelector('a');
+    expect(enlace?.getAttribute('href')).toContain('instagram.com/letiende_parkway');
+    expect(enlace?.textContent?.trim()).toContain('@letiende_parkway');
+  });
 });

@@ -33,4 +33,9 @@ export const DATOS_NEGOCIO = {
       cierra: '22:00',
     },
   ],
+  // Única red social confirmada por el humano (03/09/2026). No hay cuenta de Facebook.
+  instagram: {
+    usuario: '@letiende_parkway',
+    url: 'https://www.instagram.com/letiende_parkway/',
+  },
 } as const;
