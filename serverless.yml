@@ -214,6 +214,89 @@ resources:
             return request;
           }
 
+    # CLAUDE.md §5, A05: encabezados de seguridad obligatorios en todos los
+    # behaviors — nunca implementados en T-0011 pese a que la regla ya
+    # existía cuando se planeó (hallazgo real de la verificación previa a
+    # T-15, 04/09/2026, `curl -i` real contra las 3 distribuciones del
+    # dominio, ninguna los traía). Dos políticas, no una: el CSP completo
+    # SOLO en las páginas propias de este contenedor. `/cartelera/*` y
+    # `/libros/*` sirven páginas de Ágora/Babel con dependencias externas
+    # reales que este repositorio no audita — el checkout de
+    # `checkout.bold.co` que Ágora inyecta dinámicamente para cobrar boletas
+    # de verdad, además de Firebase Auth de ambas apps. Un CSP pensado solo
+    # para este contenedor podría romper ese checkout en silencio. Decisión
+    # explícita del humano: cerrar el CSP de esas dos rutas es tarea aparte,
+    # coordinada con esos repos, no una extensión automática de esta.
+    PoliticaEncabezadosSeguridadContenedor:
+      Type: AWS::CloudFront::ResponseHeadersPolicy
+      Properties:
+        ResponseHeadersPolicyConfig:
+          Name: !Sub 'letiende-co-encabezados-seguridad-${sls:stage}'
+          Comment: >-
+            CSP completo (Google Fonts, mapa, Analytics) + encabezados de
+            seguridad — solo DefaultCacheBehavior (páginas propias)
+          SecurityHeadersConfig:
+            ContentSecurityPolicy:
+              # img-src incluye el bucket de imágenes de eventos de Ágora
+              # (agora-activos-<stage>): la portada de este contenedor
+              # (features/inicio) muestra imágenes de eventos ajenas,
+              # cargadas directo desde ese bucket (tech-specs.md §5).
+              # style-src necesita 'unsafe-inline': el build inlinea el CSS
+              # crítico en un <style> propio en <head> (Beasties/Critters,
+              # verificado en el HTML real servido — sin esto, esa hoja de
+              # estilo queda bloqueada y la primera pintura sale sin estilo).
+              ContentSecurityPolicy: >-
+                default-src 'self'; script-src 'self'
+                https://www.googletagmanager.com; style-src 'self'
+                'unsafe-inline' https://fonts.googleapis.com; font-src 'self'
+                https://fonts.gstatic.com; img-src 'self' data:
+                https://agora-activos-${sls:stage}.s3.us-east-1.amazonaws.com;
+                connect-src 'self' https://www.google-analytics.com
+                https://*.google-analytics.com https://*.analytics.google.com;
+                frame-src https://www.google.com; base-uri 'self';
+                form-action 'self'; object-src 'none'; frame-ancestors 'self'
+              Override: true
+            StrictTransportSecurity:
+              AccessControlMaxAgeSec: 63072000
+              IncludeSubdomains: true
+              Preload: true
+              Override: true
+            ContentTypeOptions:
+              Override: true
+            ReferrerPolicy:
+              ReferrerPolicy: strict-origin-when-cross-origin
+              Override: true
+            FrameOptions:
+              FrameOption: SAMEORIGIN
+              Override: true
+
+    # Mismos 4 encabezados de seguridad, SIN Content-Security-Policy — ver el
+    # comentario de arriba. Estos 4 no restringen qué recursos carga la
+    # página (a diferencia del CSP), así que son seguros de aplicar también
+    # bajo /cartelera/*, /libros/* y /assets/* sin riesgo de romper nada.
+    PoliticaEncabezadosSeguridadProxy:
+      Type: AWS::CloudFront::ResponseHeadersPolicy
+      Properties:
+        ResponseHeadersPolicyConfig:
+          Name: !Sub 'letiende-co-encabezados-seguridad-proxy-${sls:stage}'
+          Comment: >-
+            Encabezados de seguridad sin CSP — /cartelera, /libros y /assets
+            sirven contenido de Ágora/Babel, CSP pendiente como tarea aparte
+          SecurityHeadersConfig:
+            StrictTransportSecurity:
+              AccessControlMaxAgeSec: 63072000
+              IncludeSubdomains: true
+              Preload: true
+              Override: true
+            ContentTypeOptions:
+              Override: true
+            ReferrerPolicy:
+              ReferrerPolicy: strict-origin-when-cross-origin
+              Override: true
+            FrameOptions:
+              FrameOption: SAMEORIGIN
+              Override: true
+
     DistribucionCloudFront:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -298,6 +381,7 @@ resources:
             ViewerProtocolPolicy: redirect-to-https
             CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
             OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+            ResponseHeadersPolicyId: !Ref PoliticaEncabezadosSeguridadContenedor
             AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
             CachedMethods: [GET, HEAD]
             Compress: true
@@ -307,6 +391,7 @@ resources:
               ViewerProtocolPolicy: redirect-to-https
               CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
               OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+              ResponseHeadersPolicyId: !Ref PoliticaEncabezadosSeguridadProxy
               AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
               CachedMethods: [GET, HEAD]
               Compress: true
@@ -318,6 +403,7 @@ resources:
               ViewerProtocolPolicy: redirect-to-https
               CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
               OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+              ResponseHeadersPolicyId: !Ref PoliticaEncabezadosSeguridadProxy
               AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
               CachedMethods: [GET, HEAD]
               Compress: true
@@ -330,6 +416,7 @@ resources:
               TargetOriginId: AssetsOrigin
               ViewerProtocolPolicy: redirect-to-https
               CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+              ResponseHeadersPolicyId: !Ref PoliticaEncabezadosSeguridadProxy
               AllowedMethods: [GET, HEAD]
               CachedMethods: [GET, HEAD]
               Compress: true

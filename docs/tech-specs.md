@@ -408,10 +408,26 @@ proxy:** ninguna de las tres distribuciones de CloudFront del dominio (`E33QAN86
 strict-origin-when-cross-origin`, `X-Frame-Options: SAMEORIGIN` — verificado con `curl -i` real contra
 las tres, ninguna los trae. `serverless.yml` de este repositorio nunca declaró un
 `ResponseHeadersPolicy` de CloudFront (grep vacío); T-0011 nunca lo incluyó, pese a que la regla ya
-existía en `CLAUDE.md` cuando se planeó. No es una regresión de T-0013/T-0014 — es un requisito
-documentado desde antes que nunca se implementó. **Recomendado resolverlo antes o como parte de T-15**:
-después del cutover, `letiende.co` sirve contenido embebido de dos aplicaciones de terceros bajo el
-mismo origen, así que la ausencia de CSP pesa más que hoy.
+existía en `CLAUDE.md` cuando se planeó.
+
+**Resuelto (04/09/2026):** dos `AWS::CloudFront::ResponseHeadersPolicy`, no una — decisión explícita
+del humano tras plantear el riesgo real. `PoliticaEncabezadosSeguridadContenedor` (con el CSP
+completo: `default-src 'self'`, Google Fonts, el mapa embebido, Google Analytics 4 — ver `CLAUDE.md`
+§5 para la lista exacta) se asocia **solo** al `DefaultCacheBehavior` (las páginas propias de este
+contenedor). `PoliticaEncabezadosSeguridadProxy` (los otros 4 encabezados, sin CSP) se asocia a
+`/cartelera/*`, `/libros/*` y `/assets/*`. **Por qué no un único CSP para las 4 rutas:** `/cartelera/*`
+y `/libros/*` sirven páginas renderizadas por Ágora y Babel, con dependencias externas reales que este
+repositorio no audita — verificado leyendo el código real de Ágora:
+`comprar.component.ts` inyecta dinámicamente `<script src="https://checkout.bold.co/library/
+boldPaymentButton.js">` para el checkout real de compra de boletas (dinero real), y ambas apps usan el
+SDK de Firebase Auth. Un CSP pensado solo para este contenedor habría bloqueado ese script en
+silencio, rompiendo el cobro real. Cerrar el CSP de esas dos rutas queda como tarea aparte, coordinada
+con `agora-letiende`/`babel-letiende` (necesita investigar a fondo qué orígenes externos usa cada uno
+antes de escribir la política). No es una regresión: hoy esas rutas tampoco tienen CSP.
+
+Plantilla validada dos veces antes de desplegar, mismo criterio que el resto de este stack:
+`serverless package --stage staging` local y `cloudformation ValidateTemplate` real contra la API de
+AWS.
 
 ### 7.3 Qué cambia en Ágora y en Babel
 
