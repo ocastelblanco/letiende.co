@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DATOS_NEGOCIO } from '@core/negocio/datos-negocio';
 import { environment } from '@environments/environment';
@@ -12,9 +13,11 @@ interface FormularioContacto {
   correo: FormControl<string>;
   mensaje: FormControl<string>;
   consentimientoDatos: FormControl<boolean>;
+  /** Honeypot — server/api/handlers/contacto.ts lo descarta en silencio si llega lleno. */
+  sitioWeb: FormControl<string>;
 }
 
-type EstadoEnvio = 'inicial' | 'backend-pendiente';
+type EstadoEnvio = 'inicial' | 'enviando' | 'enviado' | 'error';
 
 @Component({
   selector: 'app-contacto',
@@ -26,6 +29,7 @@ export class ContactoComponent {
   private readonly sanitizador = inject(DomSanitizer);
   private readonly meta = inject(MetaService);
   private readonly jsonLd = inject(JsonLdService);
+  private readonly http = inject(HttpClient);
 
   protected readonly datosNegocio = DATOS_NEGOCIO;
 
@@ -40,6 +44,9 @@ export class ContactoComponent {
       nonNullable: true,
       validators: [Validators.requiredTrue],
     }),
+    // Sin validadores: un humano real lo deja vacío. Solo lo llenan los
+    // bots que autocompletan cualquier campo del formulario.
+    sitioWeb: new FormControl('', { nonNullable: true }),
   });
 
   protected readonly estadoEnvio = signal<EstadoEnvio>('inicial');
@@ -79,9 +86,24 @@ export class ContactoComponent {
       return;
     }
 
-    // POST /api/contacto todavía no existe — es T-7 (docs/TODO.md). Este
-    // método solo valida y deja evidencia visible del estado en la propia
-    // plantilla; no hay llamada HTTP real hasta que exista el backend.
-    this.estadoEnvio.set('backend-pendiente');
+    this.estadoEnvio.set('enviando');
+
+    const { nombre, correo, mensaje, consentimientoDatos, sitioWeb } =
+      this.formulario.getRawValue();
+
+    this.http
+      .post('/api/contacto', { nombre, correo, mensaje, consentimientoDatos, sitioWeb })
+      .subscribe({
+        next: () => {
+          this.estadoEnvio.set('enviado');
+          this.formulario.reset({ consentimientoDatos: false });
+        },
+        error: () => {
+          // Nunca se sabe aquí si fue un 4xx (dato inválido que igual pasó la
+          // validación del navegador) o un 5xx (SES caído) — el mensaje se
+          // queda genérico a propósito, sin inventar una causa.
+          this.estadoEnvio.set('error');
+        },
+      });
   }
 }
