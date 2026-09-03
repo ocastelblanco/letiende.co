@@ -48,9 +48,11 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 >    `espacios`, `muebles`, `ubicaciones`) salen prefijadas y responden 200, catálogo y cartelera
 >    cargan datos reales, sin errores de consola.
 >
-> **PRs abiertos esperando revisión humana al cierre de esta ronda:** `agora-letiende`#61 (sitemap),
-> `#62` (interceptor); `babel-letiende`#111 (T-0014 completa, con los 4 hallazgos ya incorporados).
-> `letiende.co`#20 (host visitante) y `#23` (prefijo de API) ya fusionados y en producción.
+> **PRs abiertos esperando revisión humana al cierre de esta ronda:** `letiende.co`#23 (prefijo de
+> API/sitemap); `agora-letiende`#61 (sitemap), `#62` (interceptor); `babel-letiende`#111 (T-0014
+> completa, con los 4 hallazgos ya incorporados). `letiende.co`#20 (host visitante) ya fusionado y en
+> producción — todo lo demás está en `staging`, verificado, pero no se despliega a producción sin que
+> el humano revise y fusione cada PR.
 
 **Origen:** `tech-specs.md` §7.3, T-11 — T-13 (T-0011: ACM + CloudFront + `staging.letiende.co`)
 completada y verificada en vivo el 03/09/2026 (PR #17 + #18), así que esta tarea ya no tiene ningún
