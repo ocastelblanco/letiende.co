@@ -97,7 +97,167 @@ functions:
           method: post
 
 resources:
+  # T-0011: certificado ACM + distribución de CloudFront + registro DNS de
+  # staging. La distribución de producción se crea en el mismo cambio (misma
+  # estructura de behaviors, tech-specs.md §7.2) pero SIN alias todavía: no
+  # se le puede poner letiende.co/www.letiende.co como Aliases mientras la
+  # distribución actual (E33QAN86FY24JZ, docs/MEMORY.md §5) siga teniéndolos
+  # — CloudFront no permite el mismo alias en dos distribuciones a la vez.
+  # El alias se mueve en el cutover real (T-14/T-15), quitándolo de la vieja
+  # y poniéndolo en esta en la misma operación (ADR-006).
+  Conditions:
+    EsStaging: !Equals ['${sls:stage}', 'staging']
+
   Resources:
+    # us-east-1 obligatorio para CloudFront (tech-specs.md §7.1) — ya es la
+    # región de todo el stack (provider.region arriba), así que no hace
+    # falta un override. Validación por DNS, automática vía CloudFormation:
+    # al declarar HostedZoneId, CloudFormation crea el registro CNAME de
+    # validación en Route 53 y espera a que ACM emita el certificado antes
+    # de continuar con el resto del stack.
+    CertificadoStaging:
+      Type: AWS::CertificateManager::Certificate
+      Condition: EsStaging
+      Properties:
+        DomainName: staging.letiende.co
+        ValidationMethod: DNS
+        DomainValidationOptions:
+          - DomainName: staging.letiende.co
+            HostedZoneId: Z010633738KAGFIPOZVEW
+
+    DistribucionCloudFront:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          Comment: !Sub 'letiende-co ${sls:stage}'
+          HttpVersion: http2
+          IPV6Enabled: true
+          Aliases: !If [EsStaging, ['staging.letiende.co'], !Ref 'AWS::NoValue']
+          ViewerCertificate:
+            Fn::If:
+              - EsStaging
+              - AcmCertificateArn: !Ref CertificadoStaging
+                SslSupportMethod: sni-only
+                MinimumProtocolVersion: TLSv1.2_2021
+              - CloudFrontDefaultCertificate: true
+          # Los cuatro orígenes de tech-specs.md §7.2. Los endpoints de
+          # Ágora/Babel son el execute-api CRUDO de cada stage (verificado
+          # contra la cuenta real con apigatewayv2 GetApis el 03/09/2026,
+          # coincide con la tabla ya documentada) — nunca agora.letiende.co/
+          # babel.letiende.co: esos dominios van a redirigir con 301 hacia
+          # letiende.co/cartelera (T-11) y usarlos como origen crearía un
+          # bucle infinito (detalle 1 de tech-specs.md §7.2).
+          Origins:
+            - Id: AgoraOrigin
+              DomainName: !If
+                - EsStaging
+                - ttukw9i82m.execute-api.us-east-1.amazonaws.com
+                - qe36b86eb7.execute-api.us-east-1.amazonaws.com
+              CustomOriginConfig:
+                OriginProtocolPolicy: https-only
+                OriginSSLProtocols: [TLSv1.2]
+            - Id: BabelOrigin
+              DomainName: !If
+                - EsStaging
+                - oyzau0c910.execute-api.us-east-1.amazonaws.com
+                - aav553hwx4.execute-api.us-east-1.amazonaws.com
+              CustomOriginConfig:
+                OriginProtocolPolicy: https-only
+                OriginSSLProtocols: [TLSv1.2]
+            # Mismo bucket en los dos stages (docs/MEMORY.md §5). Reutiliza
+            # el Origin Access Control ya existente del bucket
+            # (letiende-assets-oac, verificado con
+            # cloudfront ListOriginAccessControls) — la política del bucket
+            # todavía solo permite a la distribución actual de
+            # assets.letiende.co (E3RUGH3MUSR7PS) leerlo; falta ampliarla
+            # con los ARNs de estas distribuciones nuevas una vez que
+            # existan (acción real pendiente de confirmar, fuera de este
+            # stack: el bucket lo gestiona otro estable).
+            - Id: AssetsOrigin
+              DomainName: letiende-assets.s3.us-east-1.amazonaws.com
+              OriginAccessControlId: E3SILMI6I2VBVT
+              S3OriginConfig:
+                OriginAccessIdentity: ''
+            # El API Gateway de este mismo stack — mismo patrón Fn::Join que
+            # el Output HttpApiUrl de abajo (evita que el resolvedor de
+            # variables de Serverless choque con Fn::Sub, docs/MEMORY.md §7).
+            - Id: ContenedorOrigin
+              DomainName:
+                Fn::Join:
+                  - ''
+                  - - !Ref HttpApi
+                    - '.execute-api.'
+                    - !Ref 'AWS::Region'
+                    - '.'
+                    - !Ref 'AWS::URLSuffix'
+              CustomOriginConfig:
+                OriginProtocolPolicy: https-only
+                OriginSSLProtocols: [TLSv1.2]
+          # CachingDisabled (4135ea2d-…) y AllViewerExceptHostHeader
+          # (b689b0a8-…) son IDs de políticas administradas por AWS, iguales
+          # en cualquier cuenta — verificados contra distribuciones reales ya
+          # en uso en esta cuenta, no de memoria. AllViewerExceptHostHeader
+          # es el detalle 2 de tech-specs.md §7.2: sin reenviar Host, porque
+          # API Gateway lo valida contra su propio dominio y responde 403 si
+          # llega el del visitante. AllowedMethods completo (no solo GET/
+          # HEAD): Ágora hace POST real en el flujo de compra de boletas, y
+          # el contenedor recibe POST en /api/contacto — limitarlo a GET
+          # rompería ambos silenciosamente.
+          DefaultCacheBehavior:
+            TargetOriginId: ContenedorOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+          CacheBehaviors:
+            - PathPattern: /cartelera/*
+              TargetOriginId: AgoraOrigin
+              ViewerProtocolPolicy: redirect-to-https
+              CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+              OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+              AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+              CachedMethods: [GET, HEAD]
+              Compress: true
+            - PathPattern: /libros/*
+              TargetOriginId: BabelOrigin
+              ViewerProtocolPolicy: redirect-to-https
+              CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+              OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+              AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+              CachedMethods: [GET, HEAD]
+              Compress: true
+            # No hace falta OriginRequestPolicy aquí (no es API Gateway, no
+            # valida Host): CachingOptimized de tech-specs.md §7.2, sola.
+            - PathPattern: /assets/*
+              TargetOriginId: AssetsOrigin
+              ViewerProtocolPolicy: redirect-to-https
+              CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+              AllowedMethods: [GET, HEAD]
+              CachedMethods: [GET, HEAD]
+              Compress: true
+
+    # Alias en la zona de producción de Route 53 (Z010633738KAGFIPOZVEW,
+    # tech-specs.md §7.1) — la distribución de producción NO gana un
+    # registro en este cambio (ver comentario de Conditions arriba): eso es
+    # el cutover, T-14/T-15.
+    RegistroDnsStaging:
+      Type: AWS::Route53::RecordSet
+      Condition: EsStaging
+      Properties:
+        HostedZoneId: Z010633738KAGFIPOZVEW
+        Name: staging.letiende.co
+        Type: A
+        AliasTarget:
+          # Zona alias fija de CloudFront, igual para cualquier distribución
+          # en cualquier cuenta (verificada contra los registros reales ya
+          # existentes de letiende.co/assets.letiende.co en esta misma zona).
+          HostedZoneId: Z2FDTNDATAQYW2
+          DNSName: !GetAtt DistribucionCloudFront.DomainName
+          EvaluateTargetHealth: false
+
     SsrLambdaRole:
       Type: AWS::IAM::Role
       Properties:
@@ -174,3 +334,13 @@ resources:
             - !Ref 'AWS::Region'
             - '.'
             - !Ref 'AWS::URLSuffix'
+
+    # Para docs/MEMORY.md §5 ("Configuraciones vigentes") y para configurar
+    # a mano CLOUDFRONT_DISTRIBUTION_ID_STAGING/PRODUCTION como secrets de
+    # GitHub Actions (tech-specs.md §9) una vez desplegado.
+    CloudFrontDistributionId:
+      Description: ID de la distribución de CloudFront de este stage
+      Value: !Ref DistribucionCloudFront
+    CloudFrontDomainName:
+      Description: Dominio *.cloudfront.net de la distribución (sin alias todavía en producción)
+      Value: !GetAtt DistribucionCloudFront.DomainName
