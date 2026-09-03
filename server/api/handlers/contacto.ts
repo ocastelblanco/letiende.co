@@ -42,6 +42,51 @@ interface CuerpoContacto {
   readonly consentimientoDatos?: unknown;
   /** Honeypot — un humano nunca lo llena (contacto.html lo oculta de verdad). */
   readonly sitioWeb?: unknown;
+  /** Token de reCAPTCHA v3, obtenido en el navegador justo antes de enviar. */
+  readonly recaptchaToken?: unknown;
+}
+
+// reCAPTCHA v3 (developers.google.com/recaptcha/docs/v3, verificado el
+// 02/09/2026): el legado de este proyecto (rama `2025`, ya abandonada) tenía
+// una función real de verificación (`validaReCAPTCHA` en
+// `external_resources/AWS_Lambda/libs/funciones.mjs`) y una nota de
+// seguridad explícita ("el endpoint de envío nunca debe ejecutarse sin un
+// token reCAPTCHA válido") — pero esa verificación nunca llegó a conectarse
+// de verdad con el envío del correo, quedó como dos endpoints separados.
+// Aquí sí queda en la misma petición que el envío, como la nota original
+// pedía.
+const RECAPTCHA_UMBRAL_PUNTAJE = 0.5; // recomendación oficial por defecto
+
+async function tokenReCaptchaValido(token: unknown, ip: string): Promise<boolean> {
+  if (typeof token !== 'string' || !token) return false;
+
+  const secreto = process.env['RECAPTCHA_SECRET_KEY'] ?? '';
+  if (!secreto) return false;
+
+  try {
+    const respuesta = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ secret: secreto, response: token, remoteip: ip }),
+    });
+    const resultado = (await respuesta.json()) as {
+      success?: boolean;
+      score?: number;
+      action?: string;
+    };
+    return (
+      resultado.success === true &&
+      resultado.action === 'contacto' &&
+      typeof resultado.score === 'number' &&
+      resultado.score >= RECAPTCHA_UMBRAL_PUNTAJE
+    );
+  } catch (error) {
+    console.error(
+      'Error verificando reCAPTCHA:',
+      error instanceof Error ? error.message : 'error desconocido',
+    );
+    return false;
+  }
 }
 
 function respuesta(statusCode: number, cuerpo: Record<string, unknown>): APIGatewayProxyResultV2 {
@@ -82,6 +127,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (
   // se hubiera enviado, sin enviar nada de verdad.
   if (limpiarTexto(cuerpo.sitioWeb, TOPE_NOMBRE_CORREO)) {
     return respuesta(200, { enviado: true });
+  }
+
+  if (!(await tokenReCaptchaValido(cuerpo.recaptchaToken, ip))) {
+    return respuesta(400, { error: 'No se pudo verificar que la solicitud viene de un humano.' });
   }
 
   if (cuerpo.consentimientoDatos !== true) {

@@ -76,6 +76,12 @@ functions:
       # ejecución (con 500, no en silencio) — gotcha ya documentado,
       # docs/MEMORY.md §7.
       SES_REMITENTE: ${env:SES_REMITENTE, ''}
+      # Secret key de reCAPTCHA v3 (developers.google.com/recaptcha/docs/v3) —
+      # nunca la site key pública, que sí va en el bundle del navegador
+      # (src/environments/, con el mismo mecanismo de marcador que Maps/GA4,
+      # ADR-017). Sin ella, tokenReCaptchaValido() siempre devuelve false y
+      # el envío se rechaza con 400 — no en silencio.
+      RECAPTCHA_SECRET_KEY: ${env:RECAPTCHA_SECRET_KEY, ''}
     package:
       # Depende de @aws-sdk/client-ses en tiempo de ejecución — se empaqueta
       # con esbuild (npm run bundle:api, server/bundle-lambdas.mjs), no se
