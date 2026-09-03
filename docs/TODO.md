@@ -14,11 +14,15 @@ cerraron el rollout del proxy — T-11/T-12/T-13/T-14 del roadmap técnico (`tec
 completos. La siguiente pieza del roadmap es **T-15: el cutover real** (verificación completa del
 proxy + cambio del registro de producción en Route 53) — una acción sobre DNS de producción,
 deliberadamente **no auto-seleccionada aquí**: requiere que el humano decida cuándo y confirme antes de
-empezar, mismo criterio ya aplicado a otras acciones irreversibles de este proyecto. Ver el análisis de
-qué falta antes de T-15 en `docs/MEMORY.md` §7 (últimas dos filas) y en el Historial de este mismo
-documento, entrada T-0013/T-0014 (hallazgos 6 y 7) — nada de eso bloquea técnicamente el cutover salvo
-el hallazgo de los encabezados de seguridad ausentes, que si se puede, conviene resolver antes o junto
-con T-15.
+empezar, mismo criterio ya aplicado a otras acciones irreversibles de este proyecto.
+
+**Único bloqueo real ya resuelto (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes
+(ver el Historial, entrada T-0013/T-0014, hallazgo 8) quedó cerrado — dos `ResponseHeadersPolicy` de
+CloudFront, verificadas en vivo contra `staging.letiende.co` (CSP completo en las páginas propias del
+contenedor, los otros 4 encabezados sin CSP en `/cartelera/*`/`/libros/*`/`/assets/*`, decisión
+explícita del humano para no arriesgar el checkout real de Ágora). Detalle completo en `tech-specs.md`
+§7.2 y `CLAUDE.md` §5. PR **#25**, abierto, esperando revisión humana. Con esto, **nada** bloquea
+técnicamente el cutover — T-15 queda listo para que el humano decida cuándo ejecutarlo.
 
 ---
 
