@@ -56,6 +56,23 @@ app.get('/sitemap.xml', (_req, res) => {
 });
 
 /**
+ * Rutas proxiadas que necesitan la barra final para que CloudFront las
+ * reconozca — sus behaviors están declarados como `/cartelera/*`/`/libros/*`
+ * (tech-specs.md §7.2), y ese patrón NO coincide con la ruta exacta sin
+ * barra final. Sin este redirect, `letiende.co/cartelera` (la forma más
+ * natural de escribirla, sin la barra) cae al comportamiento por defecto
+ * — este mismo contenedor — que no tiene esa ruta y devuelve su propio 404
+ * real, en vez de servir Ágora/Babel. Hallazgo real, verificado en vivo
+ * contra staging.letiende.co/cartelera después del primer despliegue
+ * embebido de Ágora (T-0013).
+ */
+const RUTAS_PROXIADAS = ['/cartelera', '/libros'];
+
+app.get(RUTAS_PROXIADAS, (req, res) => {
+  res.redirect(301, `${req.originalUrl}/`);
+});
+
+/**
  * Serve static files from /browser
  */
 app.use(
