@@ -9,58 +9,57 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0010 — [FEATURE] CI/CD con GitHub Actions
+## Tarea T-0012 — [FEATURE] Página de Preguntas frecuentes (F-7)
 
-**Origen:** `tech-specs.md` §11, T-9 · depende de T-0007 (hecha) · `CLAUDE.md` §6 (Git Flow)
+**Origen:** `PRD.md` §5 F-7, roadmap §6 (prioridad Media, etapa 1) — único ítem de la cola priorizada
+que no depende de T-0011 (T-11/T-12/T-14/T-15 sí dependen; ver "Cola priorizada" al final de este
+documento)
 
-**Contexto.** `serverless.yml` (T-0007) ya empaqueta sin errores, pero nunca se ha desplegado —
-`npx serverless deploy` a mano queda prohibido por `CLAUDE.md` ("los despliegues salen de GitHub
-Actions... no deja rastro y puede llevar código que no está en `main`"). Esta tarea es el pipeline
-que lo hace posible.
+**Contexto.** F-7 pide horarios, parqueadero, accesibilidad y cómo programar un evento en el espacio.
+No hay contenido de terceros: es contenido propio, igual que Nosotros y Contacto (T-0006), así que no
+hay razón para esperar a Ágora/Babel/CloudFront (T-0011) para hacerla.
 
 **Archivos:**
 
-- `.github/workflows/deploy.yml` (nuevo)
-- `docs/MEMORY.md` (secrets/variables de GitHub Actions que queden configurados)
+- `src/app/features/preguntas-frecuentes/preguntas-frecuentes.ts` + `.html` (nuevo componente de
+  página, mismo patrón que `NosotrosComponent`)
+- `src/app/app.routes.ts` (ruta `/preguntas-frecuentes`)
+- `src/app/app.routes.server.ts` (`RenderMode.Prerender`, contenido 100% estático — mismo criterio que
+  `nosotros`/`contacto`)
+- `src/app/shared/navegacion/barra-navegacion.html` (enlace nuevo, mismo patrón `routerLink` que
+  `/nosotros` y `/contacto` — versión de escritorio y versión de menú móvil)
+- `src/app/core/seo/esquemas.ts` (nuevo `esquemaFaqPage()`, schema.org `FAQPage`)
+- `server.ts` (agregar `/preguntas-frecuentes` a `/sitemap.xml`, mismo patrón que las otras dos rutas
+  propias, T-0008)
 
 **Qué hacer:**
 
-1. Job de verificación en cada push/PR: `npm ci` (nunca `npm install`, CLAUDE.md §5, A08),
-   `npm run build -- --configuration=production`, `npm run lint`, `npx tsc --noEmit`,
-   `npm test -- --watch=false`. Si falla, no continúa a empaquetar ni desplegar.
-
-2. Despliegue a `staging` al abrir o actualizar un PR contra `main` (`tech-specs.md` §7.1) —
-   `npm run build:infra && npx serverless deploy --stage staging`. Despliegue a `production` al
-   fusionar a `main` (mismo comando con `--stage production`). Nunca al revés.
-
-3. `SERVERLESS_LICENSE_KEY` como secret del repositorio (CLAUDE.md §2 lo da por requisito) — pedir al
-   humano que lo configure si no existe; este agente no puede generarlo. `GOOGLE_ANALYTICS_ID` y
-   `GOOGLE_MAPS_API_KEY` ya existen como secrets (T-0006, ADR-017) — exponerlos como `env:` del paso
-   de build para que `scripts/inyectar-llaves-publicas.mjs` (`postbuild`) los sustituya de verdad en
-   el `dist/` que se despliega.
-
-4. Credenciales de AWS: decidir el mecanismo (OIDC de GitHub hacia un rol de IAM, preferible a llaves
-   de acceso de larga duración — verificar contra la documentación oficial de `aws-actions/
-   configure-aws-credentials` antes de implementar, no asumir la sintaxis).
-
-5. `concurrency` por stage: `cancel-in-progress: true` en `staging` (un PR actualizado cancela el
-   despliegue anterior de sí mismo), `false` en `production` (nunca cancelar un despliegue a
-   producción a medias) — gotcha ya documentado en `docs/MEMORY.md` §7, heredado de Ágora/Babel.
-
-6. Prueba de humo mínima tras el despliegue: `curl` contra la URL real del stage recién desplegado
-   (`/` responde 200 con HTML, no solo que `serverless deploy` no haya lanzado error) — el endpoint
-   exacto sale del Output de CloudFormation (`aws cloudformation describe-stacks`), no de parsear la
-   salida de `serverless deploy` (gotcha ya documentado, Serverless 4 no siempre la imprime).
+1. Contenido real, no inventado: horarios y dirección salen de `DATOS_NEGOCIO`
+   (`core/negocio/datos-negocio.ts`, ya existe, T-0006) — nunca repetidos a mano. Parqueadero,
+   accesibilidad y "cómo programar un evento" necesitan que el humano confirme el texto exacto antes
+   de publicarlo (mismo criterio que ya aplicó T-0006 con horarios/dirección: no inventar cifras ni
+   políticas).
+2. `esquemaFaqPage()` en `core/seo/esquemas.ts`, tipo `FAQPage` de schema.org
+   (`mainEntity: Question[]`, cada una con `acceptedAnswer.text`) — la razón real de esta tarea para
+   el objetivo OBJ-3 de visibilidad en asistentes de IA (`PRD.md`): es el tipo de dato estructurado
+   que los motores de respuesta citan directamente. Mismo patrón de escape de JSON-LD que las demás
+   páginas (`CLAUDE.md` §5, A03) — nunca concatenar cadenas.
+3. `MetaService.actualizar()` + `JsonLdService.establecer()` en el constructor del componente, patrón
+   ya establecido (`docs/MEMORY.md` §6) — nunca en `ngOnInit` ni `afterNextRender`.
+4. Sin acordeón con JavaScript ni librería de componentes (ADR-004): si hace falta colapsar/expandir
+   preguntas, evaluar primero `<details>`/`<summary>` nativos de HTML antes de escribir cualquier
+   `signal` de estado — más simple y accesible por defecto.
 
 **Definition of done:**
 
-- [ ] Workflow válido (`actionlint` o el propio linter de GitHub al abrir un PR de prueba)
-- [ ] Verificado con un PR real: el job de verificación corre, y si se planta un error a propósito
-      (mismo patrón que T-0004 con el gancho de pre-commit), el despliegue no se dispara
-- [ ] `docs/MEMORY.md` actualizado con qué secrets/variables quedaron configurados en el repositorio
-      y cuáles siguen pendientes de que el humano los cree
-- [ ] Confirmado que un despliegue a `production` nunca puede dispararse desde una rama que no sea
-      `main`
+- [ ] Contenido de horarios/dirección verificado como idéntico al de `DATOS_NEGOCIO` (no duplicado a
+      mano en la plantilla)
+- [ ] `curl` real en SSR: `/preguntas-frecuentes` responde 200 con HTML, JSON-LD `FAQPage` extraído del
+      HTML y verificado con `JSON.parse()` real (mismo criterio de verificación que T-0008)
+- [ ] `/sitemap.xml` incluye la ruta nueva
+- [ ] Enlace visible y funcional en `BarraNavegacion`, escritorio y menú móvil, con el mismo estado
+      "activo" (`routerLinkActive`) que `/nosotros` y `/contacto`
+- [ ] Pruebas unitarias del componente y del nuevo esquema JSON-LD, `tsc --noEmit` y `lint` limpios
 
 ---
 
@@ -120,6 +119,37 @@ pipeline que a mano, aunque no es un bloqueo estricto
 ---
 
 ## Historial
+
+- **T-0010** — [FEATURE] CI/CD con GitHub Actions. Completada 03/09/2026, PR #14 (abierto, sin
+  fusionar — solo humanos fusionan, `CLAUDE.md` §6). `.github/workflows/deploy.yml` con el mismo
+  patrón de tres jobs que Ágora y Babel (`build-y-test` en cada PR, `desplegar-staging` al abrir/
+  actualizar el PR, `desplegar-produccion` solo en `push` a `main`), adaptado a los scripts propios de
+  este repositorio (`build:api`, `bundle:api`, `test:api`) en vez de los de los repos hermanos.
+  `serverless.yml` ganó `Outputs.HttpApiUrl` con el mismo patrón `Fn::Join` que Ágora ya había
+  verificado (evita el gotcha real de mezclar `Fn::Sub` dentro de un `Value` con `${...}`, que rompió
+  el primer intento de ese mismo Output en Ágora). Decisión explícita del humano en credenciales de
+  AWS: llaves de larga duración, no OIDC — se verificó primero que la cuenta compartida no tiene
+  ningún proveedor OIDC configurado (`aws iam list-open-id-connect-providers` vacío), así que OIDC
+  aquí habría sido un mecanismo nuevo y aislado frente a Ágora/Babel, no una mejora consistente
+  (ADR-021). Verificado con un PR real (no solo `actionlint` en local, que también pasó limpio): el
+  job `build-y-test` corrió sus 10 pasos, y el único que falló fue el esperado — "Verificar sintaxis
+  de infraestructura" con `SERVERLESS_LICENSE_KEY`/`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`
+  todavía sin configurar como secrets del repositorio, error explícito de Serverless Framework
+  ("You must sign in or use a license key"), no un fallo silencioso — y por el `needs: build-y-test`,
+  ambos jobs de despliegue quedaron en `skipped`, confirmado con
+  `gh run view --json jobs -q '.jobs[] | {name, conclusion}'`. `desplegar-produccion` además solo
+  puede dispararse con `github.event_name == 'push' && github.ref == 'refs/heads/main'` — estructuralmente
+  imposible desde un PR o desde otra rama. `docs/MEMORY.md` §5 documenta cuáles de los 8 secrets
+  relevantes ya existen (`GOOGLE_ANALYTICS_ID`, `GOOGLE_MAPS_API_KEY`, `RECAPTCHA_SITE_KEY`,
+  `RECAPTCHA_SECRET_KEY`, los cuatro de tareas anteriores) y cuáles siguen pendientes de que el humano
+  los cree (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `SERVERLESS_LICENSE_KEY`, `SES_REMITENTE`).
+  De regalo: se encontró que `tech-specs.md` §9 documentaba `SES_DESTINATARIO` y `URL_BASE_APP` como
+  secrets necesarios, pero ningún código real los consume (`contacto.ts` envía el correo al propio
+  `SES_REMITENTE`, no a un buzón separado; la URL canónica es la constante `DOMINIO` de
+  `core/seo/dominio.ts`, no una variable de entorno) — corregido en la documentación, no se cablearon
+  al workflow. Los ocho comandos del pipeline (`build`, `build:api`, `bundle:api`, `test`, `test:api`,
+  `lint`, `tsc --build --noEmit`, `serverless package`) se corrieron y verificaron en este entorno
+  antes de abrir el PR. Detalle completo en `MEMORY.md` ADR-021 y §5.
 
 - **T-0001** — [FEATURE] Andamiaje de la aplicación Angular 22 con SSR y Tailwind 4. Completada
   01/09/2026. `npx @angular/cli@22 new` generado en directorio temporal y fusionado a mano; ajustes
@@ -283,12 +313,13 @@ pipeline que a mano, aunque no es un bloqueo estricto
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
 
-En orden, según `tech-specs.md` §11 (T-6, T-7, T-8 y T-9 ya son tareas activas/hechas: T-0008,
-T-0009, T-0010, T-0011):
+En orden, según `tech-specs.md` §11 (T-6 a T-9 ya hechas: T-0008, T-0009, T-0010; T-13 es la tarea
+activa T-0011; F-7 es la tarea activa T-0012):
 
 1. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13 (T-0011)
 2. **T-14 → T-15** Redirecciones 301 y cutover
-3. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
+3. Carta del café bar (F-8, prioridad media, etapa 2 — depende de Comandante, todavía en etapa 2 del
+   roadmap propio de Le Tiende)
 
 > El orden de T-13 frente a T-11/T-12 no es arbitrario: el `--base-href /cartelera/` de Ágora solo se
 > puede validar detrás de un CloudFront, y desde ADR-002 existe uno en staging para hacerlo.
