@@ -125,6 +125,31 @@ resources:
           - DomainName: staging.letiende.co
             HostedZoneId: Z010633738KAGFIPOZVEW
 
+    # Los objetos del bucket letiende-assets no tienen el prefijo "assets/"
+    # en su key (son logos/…, data/…, flags/…, verificado con
+    # s3 ListObjectsV2 el 03/09/2026) — a diferencia de assets.letiende.co,
+    # que sirve la raíz del bucket sin prefijo alguno, aquí el visitante
+    # pide /assets/logos/x.svg. Sin esto, CloudFront reenvía esa ruta tal
+    # cual a S3, que no encuentra la key "assets/logos/x.svg" y responde 403
+    # (no 404: S3 devuelve 403 en vez de 404 para objetos inexistentes
+    # cuando el solicitante no tiene s3:ListBucket, para no revelar la
+    # estructura del bucket) — hallazgo real, verificado con curl contra
+    # staging después del primer despliegue, no anticipado en tech-specs.md.
+    FuncionQuitarPrefijoAssets:
+      Type: AWS::CloudFront::Function
+      Properties:
+        Name: !Sub 'letiende-co-quitar-prefijo-assets-${sls:stage}'
+        AutoPublish: true
+        FunctionConfig:
+          Comment: Quita el prefijo /assets antes de reenviar a S3
+          Runtime: cloudfront-js-2.0
+        FunctionCode: |
+          function handler(event) {
+            var request = event.request;
+            request.uri = request.uri.replace(/^\/assets/, '') || '/';
+            return request;
+          }
+
     DistribucionCloudFront:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -238,6 +263,9 @@ resources:
               AllowedMethods: [GET, HEAD]
               CachedMethods: [GET, HEAD]
               Compress: true
+              FunctionAssociations:
+                - EventType: viewer-request
+                  FunctionARN: !GetAtt FuncionQuitarPrefijoAssets.FunctionARN
 
     # Alias en la zona de producción de Route 53 (Z010633738KAGFIPOZVEW,
     # tech-specs.md §7.1) — la distribución de producción NO gana un
