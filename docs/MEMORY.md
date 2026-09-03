@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + íconos/manifest + Google Maps + GA4 |
-| **Fase** | T-0001 a T-0006 fusionados a `main` (pendiente de PR T-0006); T-0007 y T-0008 activas |
+| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + íconos/manifest + Google Maps + GA4 + capa de SEO/AEO |
+| **Fase** | T-0001 a T-0006 fusionados a `main`; T-0007 y T-0008 activas (T-0008, PR sin abrir todavía) |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `feature/paginas-institucionales-nosotros-contacto` (desde `main`) |
+| **Rama** | `feature/seo-aeo-capa` (desde `main`) |
 | **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: el andamiaje aún no se ha desplegado |
 | **Staging** | No existe aún |
-| **Última sesión** | 02/09/2026 — T-0006: Nosotros, Contacto, íconos/manifest, Google Maps Embed y GA4 |
+| **Última sesión** | 02/09/2026 — T-0008: `MetaService`, JSON-LD, `robots.txt`/`sitemap.xml` dinámicos, página 404 real |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -40,10 +40,10 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 
 - [x] Páginas institucionales: Nosotros y Contacto (T-0006), con íconos/manifest, Google Maps Embed
       y Google Analytics 4
+- [x] Capa de SEO/AEO (T-0008): `MetaService`, JSON-LD, `robots.txt`/`sitemap.xml` dinámicos, 404 real
 
 ### Pendientes
 - [ ] Preguntas frecuentes
-- [ ] Capa de SEO/AEO
 - [ ] Lambda de contacto con SES
 - [ ] `serverless.yml` y CI/CD
 - [ ] Certificados ACM (`staging.letiende.co` y `letiende.co`) en `us-east-1`
@@ -422,6 +422,42 @@ gtag.js (por el marcador sin sustituir, además del chequeo de host de ADR-015) 
 esperado, no un bug. Quien necesite probar el mapa real en local puede exportar `GOOGLE_MAPS_API_KEY`
 antes de `npm run build` y servir el `dist/` resultante con `npm run serve:ssr`.
 
+### ADR-018 — SEO/AEO: sin `SearchAction`, sin `geo`, sitemap reducido a las rutas propias
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0008
+
+**Contexto.** `tech-specs.md` §4.5, escrito en la sesión de planeación original, daba por hechas tres
+cosas nunca verificadas contra el estado real del proyecto — el mismo patrón de error que T-0005 ya
+encontró con los nombres de campo de Ágora (ADR de esa tarea): (1) `WebSite` con `potentialAction`
+(`SearchAction`), pero el sitio no tiene ninguna función de búsqueda real; (2) `LocalBusiness` con
+`geo`, pero nunca se dieron coordenadas verificadas, solo una dirección de calle; (3) `/sitemap.xml`
+como "índice que agrega los tres: contenedor, Ágora y Babel", verificado ahora con `curl` real contra
+`agora.letiende.co/sitemap.xml` (200, `<urlset>` vacío) — Ágora sí tiene sitemap, pero **todavía bajo
+su propio subdominio**, no bajo `/cartelera` (eso es T-11); Babel **no tiene sitemap propio** en
+absoluto (T-12, `find` en el repo no encontró nada).
+
+**Decisión.**
+1. `esquemaSitioWeb()` no declara `potentialAction`. Se agrega el día que exista una búsqueda real.
+2. `esquemaLocalBusiness()` no declara `geo`. `geo` es opcional en schema.org — omitirlo es correcto;
+   inventar coordenadas no lo sería (CLAUDE.md, "no inventar hechos").
+3. `/sitemap.xml` (servido dinámicamente desde `server.ts`, no `public/`) lista **solo** las tres
+   rutas propias del contenedor (`/`, `/nosotros`, `/contacto`). Se convierte en el índice de los tres
+   cuando T-11 (Ágora bajo `/cartelera`) y T-12 (sitemap de Babel) existan — antes de eso, agregar los
+   otros dos enviaría a los buscadores una entrada rota y una con el dominio equivocado.
+4. `/robots.txt` también se sirve dinámicamente desde `server.ts` (no `public/robots.txt`, que es
+   estático y no puede variar por stage): comprueba `req.hostname` y responde `Disallow: /` en
+   cualquier host que no sea exactamente `letiende.co` — mismo problema y mismo patrón de solución que
+   `AnalyticsService` (ADR-015): un solo artefacto sirve a los dos stages.
+
+**Razón.** Declarar datos estructurados que no corresponden a una funcionalidad real (búsqueda,
+coordenadas, un sitemap agregado que en la práctica está roto) no ayuda al SEO/AEO — lo perjudica: un
+validador de datos estructurados o un asistente de IA que confíe en el JSON-LD terminaría con
+información falsa o enlaces rotos. Mejor un JSON-LD más chico y cierto que uno completo y falso.
+
+**Consecuencia.** `tech-specs.md` §4.5 corregido con las tres decisiones, no solo el código. Cuando
+T-11/T-12 avancen, `/sitemap.xml` de este repo pasa a ser un `<sitemapindex>` real — apuntado como
+trabajo pendiente, no implementado a medias hoy.
+
 ---
 
 ## 4. Dependencias
@@ -538,6 +574,21 @@ Sin eso, un `vi.mock` de un archivo se filtra a los demás y las pruebas fallan 
 **Degradación de la portada.** Si el API de Ágora no responde, la portada se renderiza sin la sección
 de eventos. Nunca se cae entera por un tercero.
 
+**SEO por página (T-0008, `core/seo/`):** todo componente de página llama `MetaService.actualizar()` y
+`JsonLdService.establecer()` en su propio constructor — nunca en `ngOnInit` ni en `afterNextRender`.
+Tienen que correr durante el SSR para que el HTML que ve un buscador ya traiga el título, la
+descripción y el JSON-LD reales; `afterNextRender` (como usa `AnalyticsService`, a propósito) solo se
+ejecuta en el navegador y llegaría tarde para esto. Si la página depende de un recurso asíncrono (la
+portada, con los eventos de Ágora), el JSON-LD se actualiza dentro de un `effect()`, no de una llamada
+única en el constructor — si no, se congela con el valor que había antes de que el recurso resolviera.
+
+```ts
+constructor() {
+  this.meta.actualizar({ titulo: '…', descripcion: '…', ruta: '/…' });
+  this.jsonLd.establecer('ld-pagina', [esquemaX(), esquemaY()]);
+}
+```
+
 ---
 
 ## 7. Gotchas conocidos
@@ -562,7 +613,7 @@ Propios de este proyecto, **a verificar durante la implementación**:
 | Encabezado `Host` reenviado a API Gateway | 403. Usar política *AllViewerExceptHostHeader* |
 | `OriginPath` definido en el behavior del proxy | Ágora recibe la ruta sin prefijo y su router falla. No definirlo |
 | Certificado ACM creado fuera de `us-east-1` | CloudFront no lo acepta, sin importar dónde viva el stack. Siempre `us-east-1` |
-| Staging indexable | `robots.txt` con `Disallow: /` en staging. Si no, compite contra producción por las mismas palabras |
+| ~~Staging indexable~~ | **Resuelto (T-0008).** `GET /robots.txt` en `server.ts` responde `Disallow: /` en cualquier host que no sea `letiende.co` — ver ADR-018 |
 | Ágora compilada con `--base-href /cartelera/` abierta por su URL cruda | Los activos se piden bajo el prefijo y la página se ve rota. A partir de T-11 se prueba por `staging.letiende.co/cartelera` |
 | Copiar un directorio de skill con `cp -RL` desde `~/.claude/skills/` | Arrastra `.omc/state/` (estado de sesión de **otra** sesión) y `__pycache__/`. Ninguno de los dos debe versionarse. Se podó a mano tras copiar y se reforzó `.gitignore` con `**/.omc/`, `**/__pycache__/`, `**/*.pyc` |
 | Mapa del sitio de Ágora emitiendo direcciones de `agora.letiende.co` | Debe emitirlas con el prefijo `/cartelera` tras el cutover |
@@ -594,6 +645,14 @@ Encontrado durante T-0006 (páginas institucionales), en revisión humana tras e
 | Situación | Solución |
 |---|---|
 | `public/favicon.ico` seguía siendo el genérico de `ng new` (T-0001) — nunca se detectó como faltante porque el archivo ya existía en `public/`, así que la tarea de íconos (T-0006) copió el resto de los archivos de Ágora pero pasó por alto reemplazar este | Reemplazado por el `favicon.ico` real de Ágora (`bef745f6b7cac5d3465f7887d37c0256` vs. el anterior `05bcfe9a02b93e1c5a5da14bfda8c41f`). **Lección:** que un archivo ya exista en el repo no significa que sea el correcto — hay que comparar contenido, no solo presencia |
+
+Encontrado durante T-0008 (capa de SEO/AEO):
+
+| Situación | Solución |
+|---|---|
+| Necesitábamos que la ruta comodín (`NoEncontradaComponent`) respondiera HTTP 404 real, no 200 | `@angular/ssr` sí lo soporta oficialmente: `ServerRoute` tiene un campo `status?: number` (verificado leyendo `node_modules/@angular/ssr/types/ssr.d.ts`, no asumido). En `app.routes.server.ts`: `{ path: '**', renderMode: RenderMode.Server, status: 404 }`. Verificado con `curl` real contra una ruta inventada tras `npm run build` + `serve:ssr` |
+| El comodín de `app.routes.server.ts` era `RenderMode.Prerender` desde T-0005 (ADR-012) y ahí caían `nosotros` y `contacto` sin querer | Con `NoEncontradaComponent` agregado a `app.routes.ts`, el comodín pasó a significar "ruta no encontrada" — tiene que ser `RenderMode.Server` (no se puede prerenderizar un `**` con caminos infinitos). `nosotros` y `contacto` ahora tienen su propia entrada explícita en `app.routes.server.ts`, en vez de caer en el comodín |
+| `tech-specs.md` §4.2 documentaba `/contacto` como `SSR` desde la planeación original | Nunca fue cierto en el código: desde T-0006, `/contacto` ya caía bajo el comodín `Prerender` (el build ya reportaba "Prerendered 2 static routes"). Nadie lo notó hasta ahora porque funcionaba igual — corregido en la documentación, no en el código |
 
 Encontrados durante T-0001 (andamiaje), **verificados en esta máquina**:
 
@@ -925,3 +984,92 @@ porque no se pidió — es una decisión de producto pendiente, no un olvido té
 JIT recalculado — T-0007 (`serverless.yml`) sigue activa, se agrega **T-0008** (capa de SEO/AEO, T-6
 del roadmap: `MetaService`, JSON-LD, `robots.txt`, mapa del sitio), que ahora sí tiene datos reales de
 `core/negocio/datos-negocio.ts` para el `LocalBusiness` de la portada y de `/contacto`.
+
+---
+
+**02/09/2026 (más tarde) — Cierre de T-0006: fuga real de secreto en el PR, historial reescrito.**
+
+El PR de T-0006 se fusionó (`#10`) y la rama remota se borró — limpieza local hecha (`git branch -d`,
+`git fetch --prune`). Antes de eso, un incidente real que vale la pena que quede escrito para quien
+retome el proyecto:
+
+- GitGuardian marcó `environment.ts`/`environment.production.ts` con una posible llave de Google API.
+  **El hallazgo era real, no un falso positivo:** el commit `feat(contacto)` incluyó por error las
+  llaves reales de Maps/GA4 (archivos que habían quedado en stage de un intento de commit anterior,
+  bloqueado por el escáner local, y que no se sacaron del índice antes de volver a commitear). El
+  commit siguiente las reemplazó por marcadores, pero el historial de git conservaba el commit viejo
+  — y el repositorio es **público**.
+- Reescrito el historial de la rama con `git filter-branch --tree-filter` (sustituyendo las llaves
+  reales por los marcadores en cada commit del rango `main..HEAD`) y `git push --force-with-lease`,
+  con autorización explícita del humano — `CLAUDE.md` prohíbe `--force` sin ella.
+- **Hallazgo importante:** incluso después de reescribir y hacer force-push, el commit viejo (SHA
+  `30a7d3e`) siguió siendo recuperable por URL directa en GitHub (`/commit/<sha>` y la API) — GitHub no
+  borra objetos colgantes de inmediato. Reescribir el historial **no** neutraliza una llave ya
+  expuesta en un repo público; solo rotarla lo hace.
+- El humano decidió **no rotar** la llave de Maps por ahora, con el riesgo explicado dos veces
+  (restringida por dominio, pero técnicamente recuperable y ya vista por GitGuardian). **Pendiente,
+  cuando el humano lo pida:** rotar `GOOGLE_MAPS_API_KEY` en Google Cloud Console y actualizar el
+  *secret* de GitHub Actions con `gh secret set`.
+- Hallazgo aparte, **no de esta sesión, ya en `main` desde antes:** una llave real de Firebase
+  sigue expuesta en commits viejos del sitio 2025 (`1d24f8b feat: Firebase Storage`, entre otros —
+  buscar `apiKey:` en esos commits para el valor exacto, deliberadamente no reproducido aquí para no
+  crear una segunda copia del secreto en un archivo que sí queda limpio), heredados de cuando se
+  "eliminó" el sitio estático anterior sin purgar el historial de git. No se tocó — reescribir `main`
+  es mucho más disruptivo que reescribir una rama sin fusionar, y no se pidió. Queda anotado para
+  cuando se decida atenderlo.
+
+---
+
+**02/09/2026 (más tarde) — T-0008: capa de SEO/AEO.**
+
+En rama `feature/seo-aeo-capa` (desde `main`, creada **después** de escribir el código por error
+directamente sobre `main` — corregido antes de commitear nada; `git status` en ese punto no mostraba
+ningún commit nuevo en `main`, solo cambios sin confirmar, así que `git checkout -b` bastó).
+
+- **`core/negocio/datos-negocio.ts` ampliado**, no solo el texto para mostrar: cada bloque de horario
+  ahora también trae `diasSchemaOrg`/`abre`/`cierra` (formato que exige `OpeningHoursSpecification`
+  de schema.org), y la dirección se partió en `calle`/`ciudad`/`paisCodigoIso` para `PostalAddress`.
+  Una sola fuente de verdad, nunca dos formas del mismo dato escritas por separado.
+- **`core/seo/`**: `MetaService` (título, descripción, canónica, Open Graph, Twitter Card — todo en un
+  solo método, `actualizar()`), `JsonLdService` (inserta/reemplaza `<script type="application/ld+json">`
+  por `id`, con el escape de `<` que exige CLAUDE.md §5 A03), y `esquemas.ts` con los constructores de
+  cada tipo. Cada página llama a los dos servicios en su propio constructor — nunca en
+  `afterNextRender`, que solo corre en el navegador y llegaría tarde para el SSR (a diferencia de
+  `AnalyticsService`, que sí necesita `afterNextRender` a propósito).
+- **Tres correcciones a la planeación original de `tech-specs.md` §4.5**, mismo patrón que las tres
+  de T-0005: `WebSite` sin `SearchAction` (el sitio no tiene búsqueda real), `LocalBusiness` sin `geo`
+  (nunca hubo coordenadas verificadas), y `/sitemap.xml` reducido a las tres rutas propias del
+  contenedor en vez del "índice de los tres" planeado — verificado con `curl` real que Ágora expone su
+  sitemap pero todavía bajo su propio subdominio (no `/cartelera`, eso es T-11) y que Babel no tiene
+  sitemap propio en absoluto (T-12). Ver ADR-018.
+- **`robots.txt` y `sitemap.xml` dejaron de ser archivos estáticos** (`public/`) y pasaron a rutas de
+  Express en `server.ts`: el mismo artefacto sirve a los dos stages, así que necesitan leer el host de
+  la petición en tiempo real para que staging responda `Disallow: /` y producción no — mismo patrón que
+  `AnalyticsService` (ADR-015).
+- **`NoEncontradaComponent` real**, con HTTP 404 de verdad: se encontró que `@angular/ssr` soporta un
+  campo `status` en `ServerRoute` (`node_modules/@angular/ssr/types/ssr.d.ts`, verificado leyendo el
+  tipo, no asumido) — `{ path: '**', renderMode: RenderMode.Server, status: 404 }`. Esto también
+  obligó a mover `nosotros` y `contacto` a entradas explícitas en `app.routes.server.ts`: el comodín
+  ya no podía seguir siendo `Prerender` para todo lo no listado, porque ahora significa "ruta no
+  encontrada" y un `**` con `Prerender` no tiene sentido (caminos infinitos). De paso se encontró que
+  `tech-specs.md` documentaba `/contacto` como `SSR` desde la planeación original, pero en el código
+  ya era `Prerender` desde T-0006 — nadie lo había notado. Corregido en la documentación.
+- Se quitó la propiedad `title` de las rutas en `app.routes.ts`: `MetaService` es ahora el único punto
+  que fija el título, junto con todo lo demás, en vez de repartirlo entre el router y los componentes.
+
+Verificado en vivo, no solo con pruebas unitarias: build de producción, servidor SSR real con `curl` —
+`/`, `/nosotros`, `/contacto` en 200, una ruta inventada en **404** real, `robots.txt` con
+`Disallow: /` en `localhost` (correcto: solo `letiende.co` lo permite), `sitemap.xml` con las tres
+rutas propias, y el JSON-LD de las tres páginas extraído del HTML servido y verificado con
+`JSON.parse()` real (no solo mirado). En el navegador (Chrome, `ng serve`): la página 404 se ve bien
+con la barra de navegación intacta, cero errores de consola, cero componentes de hidratación
+saltados. Un clic simulado por coordenadas de la herramienta de automatización pareció no navegar al
+principio — se verificó con `location.pathname`/`document.title` reales (no la apariencia de la
+captura de pantalla) y resultó ser el clic del emulador fallando el objetivo exacto, no un bug de la
+aplicación: un `.click()` real sobre el elemento navegó y actualizó el título correctamente. 39/39
+pruebas, `tsc --noEmit` (app y spec) y `lint`, todos limpios.
+
+**Próxima tarea sugerida:** abrir el PR de `feature/seo-aeo-capa`; motor JIT recalculado — T-0007
+(`serverless.yml`) sigue activa, se agrega **T-0009** (Lambda de contacto con SES y antiabuso, T-7 del
+roadmap — el formulario de `/contacto` ya existe y valida, pero `POST /api/contacto` sigue sin
+backend real).
