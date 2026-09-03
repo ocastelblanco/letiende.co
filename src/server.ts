@@ -19,9 +19,9 @@ const DOMINIO = 'https://letiende.co';
 const HOST_PRODUCCION = 'letiende.co';
 
 // Rutas propias del contenedor, en sincronía manual con app.routes.ts
-// (tech-specs.md §4.2) — son solo tres, no vale la pena un descubrimiento
+// (tech-specs.md §4.2) — son solo cuatro, no vale la pena un descubrimiento
 // automático todavía.
-const RUTAS_PROPIAS = ['/', '/nosotros', '/contacto'];
+const RUTAS_PROPIAS = ['/', '/nosotros', '/contacto', '/preguntas-frecuentes'];
 
 /**
  * ADR-002 (docs/MEMORY.md): staging necesita `Disallow: /`, para no competir

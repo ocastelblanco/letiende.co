@@ -1,6 +1,7 @@
 import {
   esquemaAboutPage,
   esquemaContactPage,
+  esquemaFaqPage,
   esquemaListaEventos,
   esquemaLocalBusiness,
   esquemaMigasDePan,
@@ -55,6 +56,32 @@ describe('esquemas JSON-LD', () => {
   it('esquemaAboutPage y esquemaContactPage traen su url canónica', () => {
     expect(esquemaAboutPage().url).toBe('https://letiende.co/nosotros');
     expect(esquemaContactPage().url).toBe('https://letiende.co/contacto');
+  });
+
+  it('esquemaFaqPage arma preguntas y respuestas como Question/acceptedAnswer', () => {
+    const esquema = esquemaFaqPage([
+      {
+        pregunta: '¿Hay parqueadero?',
+        respuesta: 'No, Le Tiende no cuenta con parqueadero propio.',
+      },
+      { pregunta: '¿Dónde queda Le Tiende?', respuesta: 'Le Tiende queda en Bogotá.' },
+    ]);
+    expect(esquema['@type']).toBe('FAQPage');
+    expect(esquema.mainEntity).toEqual([
+      {
+        '@type': 'Question',
+        name: '¿Hay parqueadero?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'No, Le Tiende no cuenta con parqueadero propio.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Dónde queda Le Tiende?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Le Tiende queda en Bogotá.' },
+      },
+    ]);
   });
 
   it('esquemaMigasDePan arma la lista posicionada', () => {

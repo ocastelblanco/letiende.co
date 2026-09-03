@@ -121,6 +121,22 @@ export function esquemaContactPage() {
   };
 }
 
+/** `/preguntas-frecuentes` — tech-specs.md §4.5. */
+export function esquemaFaqPage(preguntas: readonly { pregunta: string; respuesta: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: preguntas.map((p) => ({
+      '@type': 'Question',
+      name: p.pregunta,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: p.respuesta,
+      },
+    })),
+  };
+}
+
 /** Cualquier ruta con jerarquía real bajo `/` — tech-specs.md §4.5. */
 export function esquemaMigasDePan(migas: readonly MigaDePan[]) {
   return {
