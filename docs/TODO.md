@@ -9,53 +9,6 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0007 — [FEATURE] `serverless.yml` del contenedor (solo SSR)
-
-**Origen:** `tech-specs.md` §11, T-8 · depende solo de T-1 (hecha)
-
-**Alcance de esta tarea:** únicamente la función `ssr`. La función `contacto` es T-7 (todavía sin
-handler real) — no crear un handler vacío aquí solo para llenar el archivo; T-7 agrega su propio
-bloque cuando exista código real que desplegar.
-
-**Archivos:**
-
-- `serverless.yml` (nuevo, raíz del repo)
-- `package.json` (script `build:infra`, hoy documentado en `CLAUDE.md` §3 pero inexistente)
-
-**Qué hacer:**
-
-1. Usar el `serverless.yml` de Ágora (`~/Documents/LeTiende/letiende.co/agora/serverless.yml`) como
-   referencia de estructura — no copiarlo entero, este proyecto no tiene DynamoDB ni Firebase.
-   Obligatorio de `tech-specs.md` §7.4 / `CLAUDE.md` §5: `logRetentionInDays: 14`, `stackTags` y
-   `tags` con `Proyecto: letiende-co`, `deploymentBucket.maxPreviousDeploymentArtifacts: 5`.
-
-2. Una sola función `ssr`, runtime `nodejs24.x`, con `@codegenie/serverless-express` envolviendo el
-   `server.ts` ya generado por T-0001 — verificar si hace falta un adaptador Lambda nuevo o si el
-   `server.mjs` que ya produce `ng build` sirve tal cual (Ágora usa un `server/ssr/handler.mjs`
-   propio; revisar si Angular 22 lo simplificó).
-
-3. HTTP API con ruta comodín `/{proxy+}` `ANY` hacia la función `ssr` — **sin** las rutas de
-   `/cartelera/*` ni `/libros/*`: esas viven en CloudFront (T-13), no en este `serverless.yml`
-   (`tech-specs.md` §7.2 — no confundir el proxy de CloudFront con las rutas de este API).
-
-4. **No** definir todavía `staging.letiende.co` ni `letiende.co` como dominios propios de este API —
-   eso es T-13. Este `serverless.yml` debe poder desplegarse con `npx serverless package --stage
-   staging` sin fallar, aunque no tenga dominio ni CloudFront delante todavía.
-
-5. `npm run build:infra` como script nuevo: `npm run build && npm run build:api` — no hay
-   `server/api/` con lógica propia todavía (eso llega con T-7), así que por ahora es solo el build
-   de Angular. Ajustar cuando T-7 agregue código de backend real.
-
-**Definition of done:**
-
-- [ ] `npx serverless package --stage staging` sin errores (no hace falta desplegar de verdad)
-- [ ] `logRetentionInDays`, `stackTags`, `tags` y el tope de `deploymentBucket` presentes y
-      verificables por lectura del YAML, no solo declarados
-- [ ] `docs/MEMORY.md` actualizado con el nombre real del stack y cualquier decisión tomada sobre el
-      adaptador Lambda del SSR
-
----
-
 ## Tarea T-0009 — [FEATURE] Lambda de contacto con SES y antiabuso
 
 **Origen:** PRD §5 F-6, `tech-specs.md` §5 y §1 (diagrama de arquitectura), T-7 · `CLAUDE.md` §5,
@@ -134,6 +87,61 @@ viceversa.
 
 ---
 
+## Tarea T-0010 — [FEATURE] CI/CD con GitHub Actions
+
+**Origen:** `tech-specs.md` §11, T-9 · depende de T-0007 (hecha) · `CLAUDE.md` §6 (Git Flow)
+
+**Contexto.** `serverless.yml` (T-0007) ya empaqueta sin errores, pero nunca se ha desplegado —
+`npx serverless deploy` a mano queda prohibido por `CLAUDE.md` ("los despliegues salen de GitHub
+Actions... no deja rastro y puede llevar código que no está en `main`"). Esta tarea es el pipeline
+que lo hace posible.
+
+**Archivos:**
+
+- `.github/workflows/deploy.yml` (nuevo)
+- `docs/MEMORY.md` (secrets/variables de GitHub Actions que queden configurados)
+
+**Qué hacer:**
+
+1. Job de verificación en cada push/PR: `npm ci` (nunca `npm install`, CLAUDE.md §5, A08),
+   `npm run build -- --configuration=production`, `npm run lint`, `npx tsc --noEmit`,
+   `npm test -- --watch=false`. Si falla, no continúa a empaquetar ni desplegar.
+
+2. Despliegue a `staging` al abrir o actualizar un PR contra `main` (`tech-specs.md` §7.1) —
+   `npm run build:infra && npx serverless deploy --stage staging`. Despliegue a `production` al
+   fusionar a `main` (mismo comando con `--stage production`). Nunca al revés.
+
+3. `SERVERLESS_LICENSE_KEY` como secret del repositorio (CLAUDE.md §2 lo da por requisito) — pedir al
+   humano que lo configure si no existe; este agente no puede generarlo. `GOOGLE_ANALYTICS_ID` y
+   `GOOGLE_MAPS_API_KEY` ya existen como secrets (T-0006, ADR-017) — exponerlos como `env:` del paso
+   de build para que `scripts/inyectar-llaves-publicas.mjs` (`postbuild`) los sustituya de verdad en
+   el `dist/` que se despliega.
+
+4. Credenciales de AWS: decidir el mecanismo (OIDC de GitHub hacia un rol de IAM, preferible a llaves
+   de acceso de larga duración — verificar contra la documentación oficial de `aws-actions/
+   configure-aws-credentials` antes de implementar, no asumir la sintaxis).
+
+5. `concurrency` por stage: `cancel-in-progress: true` en `staging` (un PR actualizado cancela el
+   despliegue anterior de sí mismo), `false` en `production` (nunca cancelar un despliegue a
+   producción a medias) — gotcha ya documentado en `docs/MEMORY.md` §7, heredado de Ágora/Babel.
+
+6. Prueba de humo mínima tras el despliegue: `curl` contra la URL real del stage recién desplegado
+   (`/` responde 200 con HTML, no solo que `serverless deploy` no haya lanzado error) — el endpoint
+   exacto sale del Output de CloudFormation (`aws cloudformation describe-stacks`), no de parsear la
+   salida de `serverless deploy` (gotcha ya documentado, Serverless 4 no siempre la imprime).
+
+**Definition of done:**
+
+- [ ] Workflow válido (`actionlint` o el propio linter de GitHub al abrir un PR de prueba)
+- [ ] Verificado con un PR real: el job de verificación corre, y si se planta un error a propósito
+      (mismo patrón que T-0004 con el gancho de pre-commit), el despliegue no se dispara
+- [ ] `docs/MEMORY.md` actualizado con qué secrets/variables quedaron configurados en el repositorio
+      y cuáles siguen pendientes de que el humano los cree
+- [ ] Confirmado que un despliegue a `production` nunca puede dispararse desde una rama que no sea
+      `main`
+
+---
+
 ## Historial
 
 - **T-0001** — [FEATURE] Andamiaje de la aplicación Angular 22 con SSR y Tailwind 4. Completada
@@ -209,6 +217,27 @@ viceversa.
   force-push — reescribir no basta, solo rotar la llave neutraliza el riesgo de verdad. El humano
   decidió no rotarla por ahora, riesgo explicado y aceptado. Detalle completo en `MEMORY.md` §9.
 
+- **T-0007** — [FEATURE] `serverless.yml` del contenedor, solo la función `ssr`. Completada
+  02/09/2026. `src/server.ts` ahora exporta `app`; `server/ssr/handler.mjs` (JavaScript plano, no
+  TypeScript, a propósito) lo envuelve con `@codegenie/serverless-express`, mismo patrón exacto que
+  `agora/server/ssr/handler.mjs`. Se corrigió el borrador original de T-0009 antes de escribir
+  código: `tech-specs.md` §1 muestra `contacto` como una Lambda **separada**, no una ruta de Express
+  — el orden de las dos tareas se invirtió (T-0007 primero, porque T-0009 necesita que
+  `serverless.yml` ya exista). Hallazgo real: `NG_ALLOWED_HOSTS` (variable de entorno que
+  `@angular/ssr` sí soporta, verificado leyendo el código fuente del paquete) resuelve el gotcha que
+  esta memoria traía pendiente desde T-0001 sobre `security.allowedHosts` — verificado invocando el
+  handler con eventos de API Gateway simulados: 400 sin la variable, 200 con ella. `serverless.yml`
+  sin DynamoDB ni ningún otro recurso de estado, rol IAM de solo `AWSLambdaBasicExecutionRole`.
+  Hallazgo aparte, de la máquina: el `PATH` con el que este agente ejecuta comandos no pasaba por
+  `~/.zshrc` (solo lo leen las shells interactivas), así que `node`/`npm` seguían resolviendo a v22
+  pese al fix de T-0001 — corregido agregando la misma línea a `~/.zshenv`. Verificado en vivo: el
+  paquete de `serverless package` inspeccionado a mano (trae `dist/letiende-co/**`,
+  `server/ssr/handler.mjs`, `node_modules/@codegenie/serverless-express/**`, nada más), el handler
+  invocado directamente con eventos simulados responde 200 en `/`/`/nosotros`/`/robots.txt`/
+  `/sitemap.xml` y **404** en una ruta inventada (la página 404 de T-0008 funciona igual a través del
+  wrapper de Lambda). 39/39 pruebas, `tsc --noEmit` y `lint` limpios. Detalle completo en
+  `MEMORY.md` §9.
+
 - **T-0008** — [FEATURE] Capa de SEO/AEO. Completada 02/09/2026. `MetaService` (título, descripción,
   canónica, Open Graph, Twitter Card) y `JsonLdService` (JSON-LD con el escape de `<` de CLAUDE.md §5
   A03) en `core/seo/`, llamados desde el constructor de cada página — nunca desde `afterNextRender`,
@@ -248,13 +277,13 @@ viceversa.
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
 
-En orden, según `tech-specs.md` §11 (T-6 y T-7 ya son tareas activas, T-0008 y T-0009):
+En orden, según `tech-specs.md` §11 (T-6, T-7 y T-8 ya son tareas activas/hechas: T-0008, T-0009,
+T-0010):
 
-1. **T-9** CI/CD con GitHub Actions
-2. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
-3. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
-4. **T-14 → T-15** Redirecciones 301 y cutover
-5. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
+1. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
+2. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
+3. **T-14 → T-15** Redirecciones 301 y cutover
+4. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
 
 > El orden de T-13 frente a T-11/T-12 no es arbitrario: el `--base-href /cartelera/` de Ágora solo se
 > puede validar detrás de un CloudFront, y desde ADR-002 existe uno en staging para hacerlo.

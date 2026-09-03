@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + íconos/manifest + Google Maps + GA4 + capa de SEO/AEO |
-| **Fase** | T-0001 a T-0006 fusionados a `main`; T-0007 y T-0008 activas (T-0008, PR sin abrir todavía) |
+| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + íconos/manifest + Google Maps + GA4 + capa de SEO/AEO + `serverless.yml` (solo SSR) |
+| **Fase** | T-0001 a T-0008 fusionados a `main`; T-0007 y T-0009 activas (T-0007, PR sin abrir todavía) |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `feature/seo-aeo-capa` (desde `main`) |
-| **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: el andamiaje aún no se ha desplegado |
+| **Rama** | `feature/serverless-ssr` (desde `main`) |
+| **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: nada de esto se ha desplegado, solo empaquetado (`serverless package`) |
 | **Staging** | No existe aún |
-| **Última sesión** | 02/09/2026 — T-0008: `MetaService`, JSON-LD, `robots.txt`/`sitemap.xml` dinámicos, página 404 real |
+| **Última sesión** | 02/09/2026 — T-0007: `serverless.yml` (función `ssr`), resuelto `NG_ALLOWED_HOSTS` |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -41,11 +41,13 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 - [x] Páginas institucionales: Nosotros y Contacto (T-0006), con íconos/manifest, Google Maps Embed
       y Google Analytics 4
 - [x] Capa de SEO/AEO (T-0008): `MetaService`, JSON-LD, `robots.txt`/`sitemap.xml` dinámicos, 404 real
+- [x] `serverless.yml` del contenedor, solo la función `ssr` (T-0007) — `npx serverless package` sin
+      errores, verificado invocando el handler con eventos de API Gateway simulados
 
 ### Pendientes
 - [ ] Preguntas frecuentes
-- [ ] Lambda de contacto con SES
-- [ ] `serverless.yml` y CI/CD
+- [ ] Lambda de contacto con SES y antiabuso (T-0009, activa)
+- [ ] CI/CD con GitHub Actions
 - [ ] Certificados ACM (`staging.letiende.co` y `letiende.co`) en `us-east-1`
 - [ ] Distribuciones de CloudFront de staging y de producción
 - [ ] Cambios en Ágora y en Babel (base href, barra común, mapas del sitio, 301)
@@ -494,6 +496,13 @@ mismo día, dentro de ese rango:
 No se fijó ninguna versión a mano: todas llegaron dentro del rango `^` que dejó
 `npx @angular/cli@22 new`, que ya apunta a "última estable" por sí solo.
 
+**Agregadas en T-0007** (02/09/2026), `serverless.yml` (solo `ssr`):
+
+| Paquete | Rango en `package.json` | Resuelta el 02/09/2026 |
+|---|---|---|
+| `@codegenie/serverless-express` | `^5.0.0` | 5.0.0 — mismo mayor que Ágora, que sigue en 4.x. `engines.node: ">=24"` de la 5.x expuso que el `PATH` de este `Bash` no interactivo resolvía a Node 22, no 24 (ver el gotcha "Hallazgo T-0007" en §7) — la primera instalación, sin fijar versión, trajo silenciosamente la 4.17.1 |
+| `serverless` (Serverless Framework) | `^4.41.1` | 4.41.1 — Ágora y Babel siguen en 4.39.0; CLAUDE.md §2 ya apuntaba a 4.41.x como objetivo |
+
 ---
 
 ## 5. Configuraciones vigentes
@@ -515,7 +524,9 @@ Todo lo de esta tabla fue **verificado por API el 01/09/2026**, no recordado.
 | Google Analytics 4 | Measurement ID dado por el humano el 02/09/2026, reemplaza la integración legacy (Universal Analytics). **No versionado** (ADR-017): vive como secreto `GOOGLE_ANALYTICS_ID` en GitHub Actions del repositorio. Solo dispara en el host `letiende.co` (ADR-015) |
 | Google Maps Embed API | Llave dada por el humano el 02/09/2026, pública por diseño y restringida por dominio del lado de Google Cloud. **No versionada** (ADR-017): vive como secreto `GOOGLE_MAPS_API_KEY` en GitHub Actions del repositorio. **Pendiente de verificar por el humano:** que la restricción de referrer HTTP en Google Cloud Console cubra `letiende.co`, `staging.letiende.co` y `localhost` — no se puede confirmar desde este entorno |
 
-**Nombres de stack esperados:** `letiende-co-staging` y `letiende-co-production`.
+**Nombres de stack esperados:** `letiende-co-staging` y `letiende-co-production` — confirmado
+(T-0007): `serverless.yml` declara `service: letiende-co`, y Serverless Framework arma el nombre del
+stack como `${service}-${stage}`. Todavía no desplegado, solo empaquetado.
 
 **Por crear** (no existen todavía; se anotan aquí sus identificadores en cuanto existan):
 
@@ -659,6 +670,7 @@ Encontrados durante T-0001 (andamiaje), **verificados en esta máquina**:
 | Situación | Solución |
 |---|---|
 | ~~`node` global resolvía a v22.23.2 (`~/.hermes/node/bin/node`, antepuesto en `PATH` por Hermes, otra herramienta de IA instalada en la máquina)~~ | **Resuelto (02/09/2026).** Se agregó `export PATH="/opt/homebrew/opt/node@24/bin:$PATH"` al final de `~/.zshrc` — gana sobre `~/.local/bin` (Hermes) y sobre el `node` sin versionar de Homebrew (v26.8.1) por ser el último `PATH=` que se ejecuta al abrir la shell. No se tocaron los symlinks de Hermes: es un cambio de orden en `PATH`, reversible quitando esa línea. `node --version` en una shell nueva ya da 24.20.0 |
+| **Hallazgo T-0007:** la línea de `~/.zshrc` de arriba no cubre **todas** las formas de invocar un comando en esta máquina — `zsh` solo lee `~/.zshrc` en shells interactivas. Un `Bash` no interactivo (como el que usa este mismo agente para ejecutar comandos) seguía resolviendo `node --version` a v22.23.2, y eso hizo que `npm install @codegenie/serverless-express` sin versión fijada instalara silenciosamente la v4.x en vez de la v5.x (`engines.node: ">=24"` de la v5 no se cumplía) — sin error, sin aviso, solo una versión distinta a la que después se usó en el resto del proyecto | Se agregó la misma línea de `PATH` a `~/.zshenv` (no existía), que sí se lee en **toda** invocación de `zsh`, interactiva o no. Verificado con `zsh -c 'node --version'` antes y después. Curiosidad sin resolver: una shell de **login** (`zsh -lc`) resuelve a v26.8.1 (otro `node` de Homebrew, sin versión fijada) — algo en `~/.zprofile` gana sobre `~/.zshenv` en ese caso específico; no se tocó porque no bloqueaba esta tarea, pero puede volver a morder si algún flujo futuro invoca una shell de login. Mientras tanto, cualquier instalación de un paquete con requisito de versión de Node se hizo con `PATH="/opt/homebrew/opt/node@24/bin:$PATH" npm install …` explícito, no confiando en el `PATH` del entorno |
 | Dos instalaciones globales de Angular CLI en la máquina, con distinto *prefix* de npm (`~/.local` y `/opt/homebrew`), una de ellas (`/opt/homebrew`) desactualizada a 20.3.5 | **Actualizada (02/09/2026)** a 22.1.6, junto con `@angular-devkit/architect`, `@angular-devkit/core`, `@angular-devkit/schematics` y `@schematics/angular` — estaban instalados como paquetes globales sueltos, no solo como dependencia interna de `@angular/cli`. La de `~/.local` (la que gana en `PATH`) ya estaba en 22.1.6. No se eliminó ninguna de las dos instalaciones, solo se actualizaron ambas; consolidarlas en una sola es una decisión de la máquina, no de este proyecto |
 
 Encontrado durante T-0002 (README y `LICENSE`), en el repositorio de **Ágora**, no en este:
@@ -667,7 +679,7 @@ Encontrado durante T-0002 (README y `LICENSE`), en el repositorio de **Ágora**,
 |---|---|
 | El badge y el README de Ágora dicen `license-MIT`, pero su archivo `LICENSE` real es Apache License 2.0 (201 líneas, encabezado `Apache License Version 2.0` — verificado leyendo el archivo, no el badge) | No se copió el `LICENSE` de Ágora como decía la tarea original. Se usó el de Babel, que sí es MIT de verdad (21 líneas, coincide con su propio badge). La inconsistencia de Ágora **no se corrigió** — es un repositorio distinto, fuera del alcance de esta tarea — pero queda anotada aquí por si alguien la resuelve más adelante |
 | TypeScript 6.x deprecó `baseUrl` (error TS5101) | Los `paths` de `tsconfig.json` van **sin** `baseUrl`, con rutas relativas explícitas (`"./src/app/core/*"`, no `"src/app/core/*"`) — si no, TS5090 |
-| `security.allowedHosts` de `angular.json` se hornea en el bundle del **servidor** SSR, no solo en el dev-server | `AngularNodeAppEngine` responde "Header host... is not allowed" incluso en `node dist/.../server.mjs`. Con `[]` (default del CLI) rechaza todo. Se fijó `["localhost"]` para desarrollo local. **Pendiente antes de T-13/T-15:** el mismo artefacto de build se despliega a `staging.letiende.co` y a `letiende.co` (ADR-002) — falta decidir cómo esta lista static-en-build-time cubre ambos hosts sin rebuildear por stage |
+| ~~`security.allowedHosts` de `angular.json` se hornea en el bundle del servidor SSR — pendiente antes de T-13/T-15~~ | **Resuelto (T-0007).** `@angular/ssr` sí soporta una variable de entorno para esto en tiempo de ejecución: `NG_ALLOWED_HOSTS` (verificado leyendo `node_modules/@angular/ssr/fesm2022/node.mjs`, función `getAllowedHostsFromEnv()`, que gana sobre el `allowedHosts` horneado de `angular.json`). `serverless.yml` la fija por función, con el host `execute-api` de cada stage — verificado invocando `server/ssr/handler.mjs` con un evento de API Gateway simulado: sin la variable, 400 "Header host... is not allowed"; con ella, 200. El dominio propio (`letiende.co`/`staging.letiende.co`) se agrega recién en T-13, en el mismo cambio que lo monte |
 | Angular CLI 22 genera el script `serve:ssr:<nombre-del-proyecto>` | Se renombró a `serve:ssr` a secas en `package.json`, para que coincida con `CLAUDE.md` §3 y con la convención de Ágora |
 | `--ai-config` del `ng new` de Angular 22 no acepta el valor `agents` que documenta la skill `angular-new-app` | Los valores reales son `claude-code\|cursor\|gemini-cli\|none\|open-ai-codex\|vscode`. Se usó `none`: ya existe un `CLAUDE.md`/`AGENTS.md` curado a mano, y un generador genérico lo habría pisado o entrado en conflicto |
 | `ng new --directory .` sobre un repositorio no vacío | Falla con "merge conflicted" en cualquier archivo que ya exista (`.gitignore` en este caso). Se generó en un directorio temporal y se fusionó a mano — exactamente lo que T-0001 ya anticipaba |
@@ -1073,3 +1085,60 @@ pruebas, `tsc --noEmit` (app y spec) y `lint`, todos limpios.
 (`serverless.yml`) sigue activa, se agrega **T-0009** (Lambda de contacto con SES y antiabuso, T-7 del
 roadmap — el formulario de `/contacto` ya existe y valida, pero `POST /api/contacto` sigue sin
 backend real).
+
+---
+
+**02/09/2026 (más tarde) — T-0007: `serverless.yml`, solo la función `ssr`.**
+
+PR de T-0008 fusionado (#11) y rama remota borrada — limpieza local hecha. Antes de escribir código
+para T-0009 (el borrador original, escrito en una sesión anterior), un hallazgo real al releer
+`tech-specs.md` §1: el diagrama de arquitectura muestra `contacto` como una **Lambda separada**,
+hermana de `ssr`, con su propia flecha a SES — no una ruta de Express dentro de `src/server.ts` como
+decía el borrador de T-0009. Mismo patrón que Ágora (`server/api/handlers/*.ts`, cada handler su
+propia Lambda con `APIGatewayProxyHandlerV2`, nunca montada en el Express del SSR). Corregido en
+`TODO.md` **antes** de escribir código, no después — y como T-0009 necesita que `serverless.yml`
+exista para agregarle la función `contacto`, se invirtió el orden: T-0007 primero.
+
+En rama `feature/serverless-ssr` (desde `main`):
+
+- `src/server.ts` ahora exporta `app` (antes era una `const` local) — lo necesita
+  `server/ssr/handler.mjs`, el wrapper de Lambda que envuelve esa misma instancia de Express con
+  `@codegenie/serverless-express`, mismo patrón exacto que `agora/server/ssr/handler.mjs` (JavaScript
+  plano, no TypeScript, a propósito: compilarlo con `tsc` introduciría una dependencia circular con
+  el artefacto de build que él mismo importa).
+- **`NG_ALLOWED_HOSTS` resuelve un gotcha que esta memoria traía pendiente desde T-0001** ("falta
+  decidir cómo esta lista static-en-build-time cubre ambos hosts sin rebuildear por stage"): resultó
+  que `@angular/ssr` sí soporta una variable de entorno para esto (`node_modules/@angular/ssr/
+  fesm2022/node.mjs`, `getAllowedHostsFromEnv()`), verificada en vivo invocando
+  `server/ssr/handler.mjs` con un evento de API Gateway simulado — 400 sin la variable, 200 con ella.
+  `serverless.yml` la fija por función con el host `execute-api` de cada stage; el dominio propio se
+  agrega recién en T-13, en el mismo cambio que lo monte (mismo principio que ya aplicó Ágora: nunca
+  "permitir" un host que todavía no resuelve a esta Lambda).
+- **Hallazgo aparte, de infraestructura de la máquina, no del proyecto:** instalar
+  `@codegenie/serverless-express` sin fijar versión trajo silenciosamente la 4.x en vez de la 5.x
+  (que exige Node ≥24) — el `PATH` con el que este agente ejecuta comandos (`Bash` no interactivo)
+  no pasaba por `~/.zshrc`, así que seguía resolviendo Node 22 pese al fix de T-0001. Se agregó la
+  misma línea de `PATH` a `~/.zshenv` (no existía) — sí se lee en toda invocación de `zsh`. Detalle y
+  el caso sin resolver de las shells de login en la tabla de gotchas, §7.
+- `serverless.yml`: una sola función `ssr`, `nodejs24.x`, sin DynamoDB ni ningún otro recurso de
+  estado — el rol IAM solo tiene `AWSLambdaBasicExecutionRole` (el SSR no toca ningún recurso de AWS
+  propio, la lectura de Ágora es una petición HTTP saliente que no requiere permiso IAM). Comodín
+  `/{proxy+}` `ANY` hacia `ssr` — sin las rutas de `/cartelera/*` ni `/libros/*`, que viven en
+  CloudFront (T-13). `logRetentionInDays: 14`, `stackTags`/`tags` con `Proyecto: letiende-co`,
+  `deploymentBucket.maxPreviousDeploymentArtifacts: 5` — verificados por lectura del YAML y, los dos
+  primeros, también en el CloudFormation generado por `serverless package`.
+- `package.json`: `build:infra` nuevo (`npm run build` a secas por ahora — no hay `server/api/` con
+  lógica propia todavía, eso llega con T-0009).
+
+Verificado en vivo, no solo con `serverless package`: el handler de Lambda invocado directamente con
+eventos de API Gateway v2 simulados (sin pasar por API Gateway real, que no existe todavía) —
+`/`, `/nosotros`, `/robots.txt`, `/sitemap.xml` en 200, `/ruta-inventada` en **404** (la ruta comodín
+de T-0008 funciona igual a través del wrapper de Lambda que a través de Express directo). El paquete
+generado (`.serverless/ssr.zip`) inspeccionado a mano: trae `dist/letiende-co/**`,
+`server/ssr/handler.mjs` y `node_modules/@codegenie/serverless-express/**` — nada de `node_modules`
+completo, nada de DynamoDB en el CloudFormation resultante (solo API Gateway, IAM, Lambda, LogGroup).
+39/39 pruebas, `tsc --noEmit` (app y spec) y `lint`, todos limpios.
+
+**Próxima tarea sugerida:** abrir el PR de `feature/serverless-ssr`; motor JIT recalculado — T-0009
+(Lambda de contacto con SES y antiabuso, ahora con su dependencia de T-0007 correctamente resuelta)
+sigue activa, se agrega la siguiente de la cola priorizada como segunda tarea.
