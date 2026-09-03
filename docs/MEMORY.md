@@ -526,6 +526,54 @@ efectos secundarios reales (SES, cualquier API externa):** usar las direcciones 
 el código real contra un servicio externo en un entorno con credenciales de producción sin
 confirmarlo antes.
 
+### ADR-020 — reCAPTCHA v3 en `/api/contacto`, agregado tras revisar el legado abandonado
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0009 (ampliación pedida por el
+humano tras cerrar la tarea, mismo PR)
+
+**Contexto.** El humano preguntó si el honeypot + límite de tasa (ADR-019) bastaban, o si hacía falta
+reCAPTCHA. Antes de responder solo con criterio propio, se revisó el historial completo de git
+(`git log --all -S"recaptcha" -i`) — el humano recordaba que una versión anterior ya lo tenía.
+Hallazgo real, no en la versión de 2023 (la que sigue en producción hoy: cero menciones de
+reCAPTCHA en esos commits), sino **dentro de la propia rama `2025`, ya abandonada**:
+`external_resources/AWS_Lambda/libs/funciones.mjs` tenía una función real `validaReCAPTCHA` que
+llamaba a `siteverify`, y un commit de seguridad (`a6937cf`, "fix: push de seguridad", 01/09/2026 —
+el día antes de que este proyecto arrancara desde cero) decía explícitamente: *"el endpoint
+`POST /mensaje` nunca debe ejecutarse sin un token reCAPTCHA válido previamente verificado"*.
+
+**Pero ese hallazgo tenía un matiz importante**, verificado leyendo el código real, no solo el
+commit de la nota: la verificación **nunca llegó a conectarse** con el envío del correo — eran dos
+endpoints separados (`/recaptcha` y `/mensaje`), y `/mensaje` nunca llamaba a `validaReCAPTCHA`. La
+nota de seguridad describía un arreglo pendiente, no algo que ya funcionara.
+
+**Decisión.** Agregar reCAPTCHA v3 (invisible, sin fricción — developers.google.com/recaptcha/docs/v3,
+verificado el 02/09/2026) a `/api/contacto`, esta vez sí en la misma petición que el envío, como la
+nota de 2025 pedía y nunca llegó a implementar:
+- `RecaptchaService` (`core/recaptcha/`) carga `api.js` con la site key y pide un token nuevo justo
+  antes de cada envío (un token vale ~2 minutos y es de un solo uso).
+- El handler verifica el token contra `POST https://www.google.com/recaptcha/api/siteverify` con la
+  secret key del servidor, y rechaza si `success` es falso, si el puntaje es menor a 0.5 (el umbral
+  recomendado por la documentación oficial) o si `action` no es `'contacto'` (evita reciclar un token
+  de otro formulario). Se verifica **después** del honeypot (para no gastar la cuota de Google en un
+  bot que ya se detectó gratis) y **antes** del consentimiento.
+- Igual que Maps/GA4/SES: la site key (pública) va con marcador en `environments/` y se sustituye
+  post-build (ADR-017); la secret key (privada, real) vive solo como `RECAPTCHA_SECRET_KEY` en el
+  entorno de la Lambda — nunca en el bundle del navegador ni en ningún archivo versionado.
+
+**Razón.** El honeypot solo atrapa bots que llenan cualquier campo del formulario visible; no hace
+nada contra un script que ataque `/api/contacto` directamente. El límite de tasa en memoria (ADR-019)
+es débil frente a IPs distribuidas. reCAPTCHA v3 sí pone una señal real de Google contra tráfico
+automatizado, sin pedirle nada al visitante — y ya había precedente de que alguien, en este mismo
+proyecto, había llegado a la misma conclusión y la había dejado como requisito de seguridad sin
+terminar de implementar.
+
+**Consecuencia.** Las tres capas de antiabuso (honeypot, límite de tasa, reCAPTCHA) ahora son
+complementarias, no redundantes: cada una atrapa un tipo de abuso distinto que las otras dos no
+cubren. `docs/MEMORY.md` §2 "Pendientes de terceros" gana la nota de que falta que el humano cree el
+par de llaves en `google.com/recaptcha/admin` (v3, dominios `letiende.co`, `staging.letiende.co`,
+`localhost`) — mientras tanto, el marcador sin sustituir hace que el envío responda 400 con un
+mensaje claro, no que falle en silencio.
+
 ---
 
 ## 4. Dependencias
@@ -611,6 +659,10 @@ stack como `${service}-${stage}`. Todavía no desplegado, solo empaquetado.
 | Distribución CloudFront de staging | por crear |
 | Distribución CloudFront de producción | por crear |
 | Registro `A` alias `staging.letiende.co` | por crear |
+| Par de llaves reCAPTCHA v3 (`google.com/recaptcha/admin`, dominios `letiende.co`,
+  `staging.letiende.co`, `localhost`) | **por crear — pendiente del humano.** El código (T-0009,
+  ADR-020) ya está listo con marcadores; sin las llaves reales, `/api/contacto` responde 400 a
+  cualquier envío (comportamiento esperado, no un bug) |
 
 **Registro de esfuerzo.** `metrics/pricing.json` tiene `as_of: 2026-06-24` para Anthropic — 69 días
 al 01/09/2026. **Vence el 22/09/2026**: pasado ese punto hay que reverificar las tarifas contra
@@ -1267,3 +1319,26 @@ solo en un mock. 41/41 pruebas de Angular (2 nuevas: honeypot oculto, envío rea
 **Próxima tarea sugerida:** abrir el PR de `feature/lambda-contacto-ses`; motor JIT recalculado —
 T-0010 (CI/CD con GitHub Actions) sigue activa, se agrega la siguiente de la cola priorizada como
 segunda tarea (T-13, certificados ACM y CloudFront).
+
+---
+
+**02/09/2026 (más tarde) — Ampliación de T-0009: reCAPTCHA v3, mismo PR (#13).**
+
+El PR de T-0009 seguía abierto cuando el humano preguntó si el honeypot + límite de tasa bastaban.
+Se investigó el historial completo de git antes de opinar solo con criterio propio — hallazgo real
+en la rama `2025` (abandonada): reCAPTCHA ya se había considerado necesario para este mismo endpoint,
+con una nota de seguridad explícita que nunca se conectó de verdad con el envío del correo. Detalle
+completo, y qué se implementó distinto esta vez (verificación en la misma petición que el envío,
+puntaje mínimo 0.5, chequeo de `action`), en ADR-020.
+
+`RecaptchaService` (`core/recaptcha/`), el handler ampliado con `tokenReCaptchaValido()` (llama a
+`fetch` nativo de Node 24 contra `siteverify`, sin dependencia nueva), `RECAPTCHA_SECRET_KEY` en
+`serverless.yml` y `recaptchaSiteKey` con marcador en `environments/` (mismo mecanismo de ADR-017).
+15/15 pruebas del handler (7 nuevas de reCAPTCHA) y 44/44 de Angular (3 nuevas), `tsc --noEmit`,
+`lint` y `serverless package` limpios. Verificado en navegador real que, con el marcador sin
+sustituir (sin llaves reales todavía), el fallo se maneja con gracia — aviso de error genérico, cero
+errores de consola.
+
+**Pendiente del humano:** crear el par de llaves en `google.com/recaptcha/admin` (v3, los tres
+dominios) y pasarlas — mientras tanto `/api/contacto` sigue respondiendo 400 a cualquier envío real,
+a propósito.

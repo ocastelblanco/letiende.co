@@ -210,7 +210,16 @@ pipeline que a mano, aunque no es un bloqueo estricto
   ADR-019 para no repetirlo. Verificado: `build:infra` + `serverless package` sin errores, `.zip` de
   `contacto` con un solo archivo, rol IAM de SES acotado a `identity/letiende.co` (confirmado con
   `aws sesv2 list-email-identities` contra la cuenta real). 41/41 pruebas de Angular, 8/8 del
-  handler, `tsc --noEmit` y `lint`, todos limpios. Detalle completo en `MEMORY.md` §9.
+  handler, `tsc --noEmit` y `lint`, todos limpios.
+
+  **Ampliada el mismo día, mismo PR (#13):** el humano preguntó si el antiabuso bastaba sin
+  reCAPTCHA. Se investigó el historial de git antes de responder — la rama `2025` (abandonada) ya
+  había considerado reCAPTCHA necesario para este mismo endpoint (nota de seguridad explícita nunca
+  implementada de verdad). Se agregó reCAPTCHA v3 (`RecaptchaService`, verificación en la misma
+  petición que el envío — a diferencia del legado de 2025), con la site key pública sin versionar
+  (mismo mecanismo de marcador que Maps/GA4) y `RECAPTCHA_SECRET_KEY` como variable de entorno de la
+  Lambda. Ver ADR-020. 15/15 pruebas del handler y 44/44 de Angular. **Pendiente del humano:** crear
+  el par de llaves en `google.com/recaptcha/admin`. Detalle completo en `MEMORY.md` §9.
 
 - **T-0007** — [FEATURE] `serverless.yml` del contenedor, solo la función `ssr`. Completada
   02/09/2026. `src/server.ts` ahora exporta `app`; `server/ssr/handler.mjs` (JavaScript plano, no
