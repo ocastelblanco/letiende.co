@@ -222,12 +222,17 @@ export interface EventoEnCartelera {
   readonly imagenUrl?: string;  // ausente si el evento no tiene imagenKey — usar un placeholder
 }
 
-// core/api/contacto.service.ts — lo que viaja al backend propio.
+// Lo que ContactoComponent.enviar() manda a POST /api/contacto — no vive en
+// un contacto.service.ts separado (la planeación original lo daba por
+// hecho; en el código real, T-0009, la llamada queda directo en el
+// componente, sin una capa de servicio que no aportaba nada nuevo).
 export interface MensajeDeContacto {
   readonly nombre: string;
   readonly correo: string;
   readonly mensaje: string;
   readonly consentimientoDatos: boolean;   // obligatorio, Ley 1581
+  readonly sitioWeb: string;               // honeypot — un humano lo deja vacío (T-0009)
+  readonly recaptchaToken: string;         // reCAPTCHA v3, token de un solo uso (T-0009, ADR-020)
 }
 ```
 
@@ -283,7 +288,7 @@ Superficie mínima a propósito. Todo lo demás llega por proxy o desde el API p
 
 | Método | Ruta | Quién la llama | Descripción | Cuerpo |
 |---|---|---|---|---|
-| `POST` | `/api/contacto` | Formulario de `/contacto` | Envía el mensaje al correo del equipo vía SES | `{ nombre, correo, mensaje, consentimientoDatos }` |
+| `POST` | `/api/contacto` | Formulario de `/contacto` | Envía el mensaje al correo del equipo vía SES, tras verificar honeypot y reCAPTCHA v3 (T-0009, ADR-019/ADR-020) | `MensajeDeContacto` (§4.3) |
 | `GET` | `/api/salud` | CI, tras cada despliegue | Prueba de humo | — |
 | `GET` | `/sitemap.xml` | Buscadores | Índice de mapas del sitio | — |
 | `*` | `/**` | Visitantes | SSR de la aplicación Angular | — |
@@ -311,6 +316,7 @@ Si Ágora no responde, la portada se renderiza igual, sin la sección de eventos
 | **`letiende-api`** (`uklz2j4u38`) | Heredado, fuera de IaC | **No se usa en la etapa 1.** Ver §11 |
 | **Google Maps Embed API** | Activo (T-0006) | Mapa incrustado en `/contacto`, vía `iframe`. La llave (pública, restringida por dominio del lado de Google Cloud) **no está en el código**: `environment.googleMapsApiKey` es un marcador que `scripts/inyectar-llaves-publicas.mjs` sustituye sobre `dist/` a partir de `GOOGLE_MAPS_API_KEY` (docs/MEMORY.md, ADR-017) |
 | **Google Analytics 4** | Activo (T-0006) | Reemplaza la integración legacy (Universal Analytics). Carga solo en el host `letiende.co` (`AnalyticsService` comprueba el hostname en tiempo de ejecución, para no contaminar las métricas con tráfico de staging, que despliega el mismo artefacto). El Measurement ID tampoco está en el código — mismo mecanismo de marcador que Maps, variable `GOOGLE_ANALYTICS_ID` |
+| **reCAPTCHA v3** | Activo (T-0009, ADR-020) | Antiabuso de `POST /api/contacto`, junto con honeypot y límite de tasa (ADR-019) — verifica el token en la misma petición que el envío, corrigiendo un gap real que el legado abandonado (rama `2025`) nunca cerró. Site key pública con marcador en `environments/` (mismo mecanismo que Maps/GA4); secret key solo como `RECAPTCHA_SECRET_KEY` en el entorno de la Lambda `contacto`, nunca en el bundle |
 
 ---
 

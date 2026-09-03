@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Sustituye, sobre el `dist/` ya compilado, los marcadores de las llaves
-// públicas de Google (googleAnalyticsId, googleMapsApiKey — ver
-// src/environments/*.ts) por su valor real, leído de las variables de
-// entorno GOOGLE_ANALYTICS_ID y GOOGLE_MAPS_API_KEY. Se ejecuta como
+// públicas de Google (googleAnalyticsId, googleMapsApiKey, recaptchaSiteKey
+// — ver src/environments/*.ts) por su valor real, leído de las variables de
+// entorno GOOGLE_ANALYTICS_ID, GOOGLE_MAPS_API_KEY y RECAPTCHA_SITE_KEY. Se
+// ejecuta como
 // `postbuild` (npm lo corre solo, después de `npm run build`, con cualquier
 // `--configuration`), nunca antes: `ng build` ya prerenderiza /contacto con
 // el marcador dentro del HTML estático, así que hace falta reemplazarlo
@@ -22,11 +23,12 @@ const EXTENSIONES = ['.js', '.mjs', '.html'];
 const SUSTITUCIONES = [
   { marcador: '__GOOGLE_ANALYTICS_ID__', valor: process.env.GOOGLE_ANALYTICS_ID },
   { marcador: '__GOOGLE_MAPS_API_KEY__', valor: process.env.GOOGLE_MAPS_API_KEY },
+  { marcador: '__RECAPTCHA_SITE_KEY__', valor: process.env.RECAPTCHA_SITE_KEY },
 ].filter((s) => Boolean(s.valor));
 
 if (SUSTITUCIONES.length === 0) {
   console.log(
-    'inyectar-llaves-publicas: sin GOOGLE_ANALYTICS_ID/GOOGLE_MAPS_API_KEY en el entorno, no hay nada que sustituir.',
+    'inyectar-llaves-publicas: sin GOOGLE_ANALYTICS_ID/GOOGLE_MAPS_API_KEY/RECAPTCHA_SITE_KEY en el entorno, no hay nada que sustituir.',
   );
   process.exit(0);
 }

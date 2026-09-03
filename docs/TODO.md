@@ -9,84 +9,6 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0009 — [FEATURE] Lambda de contacto con SES y antiabuso
-
-**Origen:** PRD §5 F-6, `tech-specs.md` §5 y §1 (diagrama de arquitectura), T-7 · `CLAUDE.md` §5,
-A03/A07 · **depende de T-0007** (necesita que `serverless.yml` ya exista, para agregarle la función
-`contacto`)
-
-**Contexto.** `ContactoComponent` (T-0006) ya tiene el formulario completo, validado en el navegador,
-con la casilla de consentimiento (Ley 1581). `enviar()` hoy solo pone `estadoEnvio` en
-`'backend-pendiente'` — no hace ninguna llamada HTTP real. Esta tarea es ese backend.
-
-**Corrección frente al primer borrador de esta tarea:** `contacto` **no** es una ruta de Express
-dentro de `src/server.ts`. El diagrama de `tech-specs.md` §1 la muestra como una **Lambda separada**,
-hermana de `ssr`, con su propia flecha a SES — mismo patrón que Ágora
-(`agora/server/api/handlers/*.ts`, cada uno una Lambda propia con `APIGatewayProxyHandlerV2`, nunca
-montadas en su Express del SSR). Separarla importa: permisos de IAM para enviar por SES escopados
-solo a esta función, no a `ssr`, y un bug en el formulario de contacto no puede tumbar el SSR ni
-viceversa.
-
-**Archivos:**
-
-- `server/api/handlers/contacto.ts` (nuevo — handler `APIGatewayProxyHandlerV2`, no una ruta Express)
-- `server/api/handlers/contacto.spec.ts`
-- `server/tsconfig.json` (nuevo, mismo patrón que el de Ágora: `include: ["api/**/*.ts"]`, runtime
-  `nodejs24.x`, tipos `node` + `aws-lambda`)
-- `serverless.yml` (agrega la función `contacto` y su ruta `POST /api/contacto` en el HTTP API que
-  T-0007 ya declaró — **no** bajo el comodín `/{proxy+}` de `ssr`)
-- `src/app/features/contacto/contacto.ts` (`enviar()` pasa a hacer la petición HTTP real; agrega el
-  campo honeypot al `FormGroup`)
-- `src/app/features/contacto/contacto.html` (campo honeypot, oculto de verdad — no solo
-  `display:none`, ver punto 3)
-- `package.json` (`@aws-sdk/client-ses` y `@types/aws-lambda` como dependencias nuevas)
-
-**Qué hacer:**
-
-1. Handler que reciba `{ nombre, correo, mensaje, consentimientoDatos, <campo honeypot> }`, limpie
-   cada campo de texto con algo equivalente a `v.replace(/[\r\n]/g, ' ').trim().slice(0, 200)`
-   (CLAUDE.md §5, A03 — inyección de encabezados de correo; `mensaje` con un tope propio, más
-   generoso) y **rechace la petición si `consentimientoDatos` no es `true`**, incluso si el navegador
-   ya validó lo mismo: la validación del cliente no basta.
-
-2. Envía por AWS SES con `@aws-sdk/client-ses`. `Source` es **siempre**
-   `process.env.SES_REMITENTE` — nunca un valor del cuerpo de la petición. El correo de quien escribe
-   va en `ReplyToAddresses`, nunca en `Source` (CLAUDE.md, prohibición absoluta).
-
-3. Antiabuso, los tres a la vez, no por separado — es parte de la definición de terminado, no una
-   mejora posterior (CLAUDE.md §5, A07):
-   - Campo trampa oculto (*honeypot*): si llega con contenido, responder 200 sin enviar nada (no
-     delatar al bot con un 4xx). En el HTML tiene que estar realmente oculto a un humano (fuera de
-     pantalla + `aria-hidden`/`tabindex="-1"`, no `display:none` a secas — algunos rastreadores de
-     accesibilidad sí leen `display:none` y podría confundir a un lector de pantalla real).
-   - Límite por dirección IP en una ventana de tiempo — evaluar en memoria de la Lambda (gratis, pero
-     no se comparte entre invocaciones concurrentes ni sobrevive un cold start: mitigación parcial,
-     no una garantía) frente al costo de un almacén nuevo (DynamoDB con TTL, que choca con PRD §9/D-1
-     "sin base de datos propia"; o una regla de tasa de AWS WAF, que es infraestructura de CloudFront
-     y no existe hasta T-13). Decidir y documentar el trade-off en `MEMORY.md`, no dejarlo implícito.
-   - Tope de longitud por campo (punto 1).
-
-4. **Nunca** escribir nombre, correo ni contenido del mensaje en los logs de CloudWatch (Ley 1581,
-   CLAUDE.md). Los mensajes no se almacenan: se envían y se acaban ahí.
-
-5. `ContactoComponent.enviar()` pasa a hacer `HttpClient.post('/api/contacto', …)` de verdad. El
-   `signal` de estado gana un caso más para el error del backend (además de `'backend-pendiente'`),
-   sin inventar mensajes de éxito que no correspondan a una respuesta real.
-
-**Definition of done:**
-
-- [ ] `npm run build -- --configuration=production` sin errores
-- [ ] `npm run lint` y `npx tsc --noEmit` sin errores (incluido `server/tsconfig.json`)
-- [ ] `npm test -- --watch=false` pasa, con pruebas del handler: consentimiento ausente rechaza,
-      inyección de `\r\n` en `nombre`/`correo` no llega a los encabezados de SES, honeypot lleno
-      responde 200 sin enviar
-- [ ] `Source` de SES verificado como `process.env.SES_REMITENTE` por lectura del código, nunca del
-      cuerpo de la petición
-- [ ] Verificado que nombre/correo/mensaje no aparecen en ningún `console.log` ni log de CloudWatch
-- [ ] `npx serverless package --stage staging` sin errores con la función `contacto` incluida
-
----
-
 ## Tarea T-0010 — [FEATURE] CI/CD con GitHub Actions
 
 **Origen:** `tech-specs.md` §11, T-9 · depende de T-0007 (hecha) · `CLAUDE.md` §6 (Git Flow)
@@ -139,6 +61,61 @@ que lo hace posible.
       y cuáles siguen pendientes de que el humano los cree
 - [ ] Confirmado que un despliegue a `production` nunca puede dispararse desde una rama que no sea
       `main`
+
+---
+
+## Tarea T-0011 — [INFRA] Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
+
+**Origen:** `tech-specs.md` §7, T-13 · depende de T-0010 (CI/CD, activa) — más útil desplegar por
+pipeline que a mano, aunque no es un bloqueo estricto
+
+> **Categoría de riesgo distinta a las tareas anteriores.** Todo lo hecho hasta T-0010 fue código e
+> IaC verificado con `serverless package` (empaquetar, nunca desplegar) — reversible con un
+> `git revert`. Esta tarea **crea recursos reales de AWS con costo y persistencia propios**
+> (certificados ACM, distribuciones de CloudFront, un registro en la zona de Route 53 de producción).
+> Ninguna acción de creación/modificación real contra la cuenta de AWS se ejecuta sin confirmarlo
+> explícitamente con el humano antes, aunque el paquete de cambios (IaC, PRs) sí se prepare de punta a
+> punta como en las tareas anteriores.
+
+**Archivos:**
+
+- `serverless.yml` (o recursos de CloudFormation aparte — decidir cuál durante la tarea) para las
+  distribuciones de CloudFront, los certificados ACM y el registro de Route 53
+- `public/robots.txt` de staging — ya no aplica: `server.ts` (T-0008) ya sirve `robots.txt`
+  dinámico con `Disallow: /` fuera de `letiende.co`, esta tarea solo tiene que verificar que sigue
+  cumpliendo el requisito una vez que `staging.letiende.co` exista de verdad
+- `docs/MEMORY.md` con los identificadores reales de cada recurso creado
+
+**Qué hacer:**
+
+1. Certificado ACM para `staging.letiende.co`, en **`us-east-1`** obligatoriamente (CloudFront no
+   acepta certificados de otra región) — validación por DNS en la zona `Z010633738KAGFIPOZVEW`.
+
+2. Dos distribuciones de CloudFront (staging y producción), misma estructura de cuatro behaviors
+   (`tech-specs.md` §7.2): `/cartelera/*` → HTTP API de Ágora del stage correspondiente,
+   `/libros/*` → HTTP API de Babel del stage correspondiente, `/assets/*` → bucket
+   `letiende-assets`, `*` (default) → el HTTP API de este stack (T-0007/T-0009). Producción usa una
+   distribución **nueva** — la actual (`E33QAN86FY24JZ`) no se toca hasta el cutover (ADR-006).
+
+3. Los tres detalles que ya rompieron esto en otros proyectos (`tech-specs.md` §7.2): origen de
+   `/cartelera/*` es el `execute-api` **crudo**, nunca `agora.letiende.co` (bucle de 301); no
+   reenviar el encabezado `Host` al origen (política *AllViewerExceptHostHeader*, si no 403); no
+   definir `OriginPath` (Ágora necesita la ruta completa con el prefijo).
+
+4. Registro `A` alias en Route 53 para `staging.letiende.co`.
+
+5. Verificar que `NG_ALLOWED_HOSTS` (T-0007) se amplía con el dominio real en el mismo cambio que lo
+   monta — nunca antes (mismo principio que ya aplicó Ágora, docs/MEMORY.md).
+
+**Definition of done:**
+
+- [ ] Certificado ACM emitido y validado (`ISSUED`, no `PENDING_VALIDATION`), verificado con
+      `aws acm describe-certificate`
+- [ ] `curl https://staging.letiende.co/` responde 200 con HTML real, no un error de CloudFront
+- [ ] `curl https://staging.letiende.co/robots.txt` responde `Disallow: /`
+- [ ] Los tres detalles del punto 3 verificados en vivo, no solo declarados en la plantilla
+- [ ] `docs/MEMORY.md` actualizado con los IDs reales (certificado, distribución, registro DNS) en
+      la tabla de "Por crear" de §5, que pasan a "Configuraciones vigentes"
 
 ---
 
@@ -217,6 +194,35 @@ que lo hace posible.
   force-push — reescribir no basta, solo rotar la llave neutraliza el riesgo de verdad. El humano
   decidió no rotarla por ahora, riesgo explicado y aceptado. Detalle completo en `MEMORY.md` §9.
 
+- **T-0009** — [FEATURE] Lambda de contacto con SES y antiabuso. Completada 02/09/2026.
+  `server/api/handlers/contacto.ts`, Lambda separada de `ssr` (corrección de arquitectura hecha en
+  T-0007, antes de escribir código). Limpia `\r\n` de cada campo (CLAUDE.md §5, A03), rechaza sin
+  consentimiento aunque el navegador ya validó, `Source` de SES siempre `SES_REMITENTE`. Antiabuso
+  completo: honeypot oculto de verdad (fuera de pantalla, `aria-hidden`, `tabindex="-1"`), límite de
+  5 peticiones por IP cada 10 minutos en memoria de la Lambda (ver ADR-019 para el trade-off frente a
+  DynamoDB/WAF), tope de longitud por campo. `server/bundle-lambdas.mjs` empaqueta con esbuild — sin
+  eso, la función habría fallado en el arranque igual que ya le pasó a Ágora dos veces (mismo patrón,
+  mismo motivo). `vitest.config.ts` nuevo con su propio `test:api`, separado de `ng test`.
+  `ContactoComponent.enviar()` hace el `POST` real; `angular.json` amplió `lintFilePatterns` para
+  cubrir `server/`. **Incidente durante la verificación:** invocar el bundle real confirmó que este
+  entorno tiene credenciales reales de AWS de producción — un envío de prueba por SES se completó de
+  verdad contra una dirección inventada para la prueba. Cerrado con el humano, lección documentada en
+  ADR-019 para no repetirlo. Verificado: `build:infra` + `serverless package` sin errores, `.zip` de
+  `contacto` con un solo archivo, rol IAM de SES acotado a `identity/letiende.co` (confirmado con
+  `aws sesv2 list-email-identities` contra la cuenta real). 41/41 pruebas de Angular, 8/8 del
+  handler, `tsc --noEmit` y `lint`, todos limpios.
+
+  **Ampliada el mismo día, mismo PR (#13):** el humano preguntó si el antiabuso bastaba sin
+  reCAPTCHA. Se investigó el historial de git antes de responder — la rama `2025` (abandonada) ya
+  había considerado reCAPTCHA necesario para este mismo endpoint (nota de seguridad explícita nunca
+  implementada de verdad). Se agregó reCAPTCHA v3 (`RecaptchaService`, verificación en la misma
+  petición que el envío — a diferencia del legado de 2025), con la site key pública sin versionar
+  (mismo mecanismo de marcador que Maps/GA4) y `RECAPTCHA_SECRET_KEY` como variable de entorno de la
+  Lambda. Ver ADR-020. 15/15 pruebas del handler y 44/44 de Angular. El humano ya creó y dio el par
+  de llaves el mismo día — guardadas como secrets de GitHub Actions, verificadas en vivo contra la
+  API real de Google con un token inválido a propósito (rechazó antes de llegar a SES). Detalle
+  completo en `MEMORY.md` §9.
+
 - **T-0007** — [FEATURE] `serverless.yml` del contenedor, solo la función `ssr`. Completada
   02/09/2026. `src/server.ts` ahora exporta `app`; `server/ssr/handler.mjs` (JavaScript plano, no
   TypeScript, a propósito) lo envuelve con `@codegenie/serverless-express`, mismo patrón exacto que
@@ -277,13 +283,12 @@ que lo hace posible.
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
 
-En orden, según `tech-specs.md` §11 (T-6, T-7 y T-8 ya son tareas activas/hechas: T-0008, T-0009,
-T-0010):
+En orden, según `tech-specs.md` §11 (T-6, T-7, T-8 y T-9 ya son tareas activas/hechas: T-0008,
+T-0009, T-0010, T-0011):
 
-1. **T-13** Certificados ACM, distribuciones de CloudFront y `staging.letiende.co`
-2. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13
-3. **T-14 → T-15** Redirecciones 301 y cutover
-4. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
+1. **T-11 / T-12** Cambios en Ágora y en Babel — **después** de T-13 (T-0011)
+2. **T-14 → T-15** Redirecciones 301 y cutover
+3. Preguntas frecuentes (PRD F-7, prioridad media — sin tarea de roadmap técnico dedicada todavía)
 
 > El orden de T-13 frente a T-11/T-12 no es arbitrario: el `--base-href /cartelera/` de Ágora solo se
 > puede validar detrás de un CloudFront, y desde ADR-002 existe uno en staging para hacerlo.

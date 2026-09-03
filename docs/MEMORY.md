@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + íconos/manifest + Google Maps + GA4 + capa de SEO/AEO + `serverless.yml` (solo SSR) |
-| **Fase** | T-0001 a T-0008 fusionados a `main`; T-0007 y T-0009 activas (T-0007, PR sin abrir todavía) |
+| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + íconos/manifest + Google Maps + GA4 + capa de SEO/AEO + `serverless.yml` (SSR + contacto) |
+| **Fase** | T-0001 a T-0007 fusionados a `main`; T-0009 y T-0010 activas (T-0009, PR sin abrir todavía) |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `feature/serverless-ssr` (desde `main`) |
+| **Rama** | `feature/lambda-contacto-ses` (desde `main`) |
 | **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: nada de esto se ha desplegado, solo empaquetado (`serverless package`) |
 | **Staging** | No existe aún |
-| **Última sesión** | 02/09/2026 — T-0007: `serverless.yml` (función `ssr`), resuelto `NG_ALLOWED_HOSTS` |
+| **Última sesión** | 02/09/2026 — T-0009: Lambda `contacto` con SES, honeypot y límite de tasa |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -43,11 +43,12 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 - [x] Capa de SEO/AEO (T-0008): `MetaService`, JSON-LD, `robots.txt`/`sitemap.xml` dinámicos, 404 real
 - [x] `serverless.yml` del contenedor, solo la función `ssr` (T-0007) — `npx serverless package` sin
       errores, verificado invocando el handler con eventos de API Gateway simulados
+- [x] Lambda de contacto con SES y antiabuso (T-0009): honeypot, límite de tasa en memoria,
+      `Source` siempre `SES_REMITENTE`, `ContactoComponent.enviar()` hace el `POST` real
 
 ### Pendientes
 - [ ] Preguntas frecuentes
-- [ ] Lambda de contacto con SES y antiabuso (T-0009, activa)
-- [ ] CI/CD con GitHub Actions
+- [ ] CI/CD con GitHub Actions (T-0010, activa)
 - [ ] Certificados ACM (`staging.letiende.co` y `letiende.co`) en `us-east-1`
 - [ ] Distribuciones de CloudFront de staging y de producción
 - [ ] Cambios en Ágora y en Babel (base href, barra común, mapas del sitio, 301)
@@ -460,6 +461,118 @@ información falsa o enlaces rotos. Mejor un JSON-LD más chico y cierto que uno
 T-11/T-12 avancen, `/sitemap.xml` de este repo pasa a ser un `<sitemapindex>` real — apuntado como
 trabajo pendiente, no implementado a medias hoy.
 
+### ADR-019 — Límite de tasa de `/api/contacto` en memoria de la Lambda, no DynamoDB ni WAF
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0009
+
+**Contexto.** `CLAUDE.md` §5, A07 exige un límite por IP en el endpoint de contacto antes de
+desplegarlo. Dos alternativas reales, ninguna gratis: una tabla nueva de DynamoDB con TTL (choca de
+frente con PRD §9/D-1, "sin base de datos propia" — una decisión fundacional del proyecto), o una
+regla de tasa de AWS WAF (vive en CloudFront, T-13, que no existe todavía — no se puede adelantar sin
+inventar infraestructura que no está montada).
+
+**Decisión.** Un `Map<string, number[]>` a nivel de módulo dentro de `contacto.ts`, con una ventana de
+10 minutos y un tope de 5 peticiones por IP.
+
+**Razón.** Es la única opción de las tres que no exige infraestructura nueva ni contradice una
+decisión ya tomada. El costo es honesto, no oculto: el contador vive en la memoria del contenedor de
+la Lambda — no se comparte entre invocaciones concurrentes (dos peticiones simultáneas en contenedores
+distintos no se ven una a la otra) ni sobrevive un cold start (un contenedor reciclado empieza en
+cero). Es una mitigación parcial contra un script simple de fuerza bruta, no una garantía contra un
+ataque distribuido — eso sí necesitaría WAF.
+
+**Consecuencia.** Cuando T-13 monte CloudFront, evaluar si una regla de tasa de WAF reemplaza o
+complementa este límite en memoria (probablemente lo segundo: WAF protege contra volumen agregado,
+la memoria de la Lambda sigue sirviendo de segunda capa barata). No se documenta como "pendiente de
+arreglar" — es la decisión correcta para el tamaño de este proyecto hoy, revisable cuando la
+infraestructura cambie, no un parche temporal.
+
+### Hallazgo T-0009 — Lambdas con dependencias reales de `node_modules` necesitan esbuild, no `tsc` a secas
+
+**Fecha:** 02/09/2026 · **Estado:** registrado (no es una decisión, es la aplicación de un hallazgo ya
+verificado en Ágora)
+
+**Contexto.** `contacto.ts` importa `@aws-sdk/client-ses`. Ágora ya documentó, verificado dos veces en
+staging (`agora/server/bundle-lambdas.mjs`), que empaquetar una Lambda con `tsc` a secas y copiar un
+subconjunto de `node_modules/**` a mano en `serverless.yml` dejaba algo fuera del paquete — la función
+fallaba en el arranque con un 500 genérico de API Gateway, antes de que corriera el handler.
+
+**Decisión.** Mismo patrón que Ágora: `server/bundle-lambdas.mjs` empaqueta `contacto.ts` con esbuild
+en un único archivo autocontenido (`dist-server-bundle/contacto.js`, ~1.1 MB), sin depender de que
+`node_modules/` viaje en el paquete. `package.json` gana `build:api` (`tsc -p server/tsconfig.json`),
+`bundle:api` (`node server/bundle-lambdas.mjs`) y `test:api` (`vitest run`, contra un
+`vitest.config.ts` nuevo en la raíz que solo mira `server/**/*.spec.ts` — separado de `ng test`, que
+solo mira `src/**/*.spec.ts`, mismo patrón que `agora/vitest.config.ts`). `build:infra` ahora
+encadena `build && build:api && bundle:api`.
+
+**Consecuencia.** `npm run lint` amplió su alcance: `angular.json` restringía `lintFilePatterns` a
+`src/**/*.ts` y `src/**/*.html` (de T-0004, cuando `server/` todavía no existía) — se agregó
+`server/**/*.ts`, para que el backend también pase por ESLint. Verificado: `npm run build:infra` +
+`npx serverless package --stage staging` sin errores, con `contacto.zip` conteniendo un solo archivo
+(el bundle), y el CloudFormation generado con el rol IAM de SES acotado (`ses:SendEmail`/
+`SendRawEmail`, `Resource: arn:...:identity/letiende.co`, verificado con `aws sesv2
+list-email-identities` que `letiende.co` es en efecto un dominio verificado en la cuenta real).
+
+**Incidente durante la verificación, ya cerrado con el humano:** para confirmar que el bundle
+funcionaba de verdad, se invocó `dist-server-bundle/contacto.js` directamente con `node -e`, y este
+entorno tenía credenciales reales de AWS configuradas (cuenta `696912647258`, la misma de
+producción) — el envío de SES se completó de verdad, probablemente entregando un correo de prueba
+obvio ("Visitante de prueba") a `contacto@letiende.co` (una dirección inventada para la prueba, no
+configurada en el proyecto; `letiende.co` es dominio verificado en SES, así que cualquier alias bajo
+él es válido para enviar/recibir del lado de SES). El humano decidió no investigar más allá de
+confirmar que el dominio está verificado. **Lección para la próxima verificación de un handler con
+efectos secundarios reales (SES, cualquier API externa):** usar las direcciones simulador de AWS
+(`success@simulator.amazonses.com`) o quedarse con las pruebas mockeadas (`vitest`) — nunca invocar
+el código real contra un servicio externo en un entorno con credenciales de producción sin
+confirmarlo antes.
+
+### ADR-020 — reCAPTCHA v3 en `/api/contacto`, agregado tras revisar el legado abandonado
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0009 (ampliación pedida por el
+humano tras cerrar la tarea, mismo PR)
+
+**Contexto.** El humano preguntó si el honeypot + límite de tasa (ADR-019) bastaban, o si hacía falta
+reCAPTCHA. Antes de responder solo con criterio propio, se revisó el historial completo de git
+(`git log --all -S"recaptcha" -i`) — el humano recordaba que una versión anterior ya lo tenía.
+Hallazgo real, no en la versión de 2023 (la que sigue en producción hoy: cero menciones de
+reCAPTCHA en esos commits), sino **dentro de la propia rama `2025`, ya abandonada**:
+`external_resources/AWS_Lambda/libs/funciones.mjs` tenía una función real `validaReCAPTCHA` que
+llamaba a `siteverify`, y un commit de seguridad (`a6937cf`, "fix: push de seguridad", 01/09/2026 —
+el día antes de que este proyecto arrancara desde cero) decía explícitamente: *"el endpoint
+`POST /mensaje` nunca debe ejecutarse sin un token reCAPTCHA válido previamente verificado"*.
+
+**Pero ese hallazgo tenía un matiz importante**, verificado leyendo el código real, no solo el
+commit de la nota: la verificación **nunca llegó a conectarse** con el envío del correo — eran dos
+endpoints separados (`/recaptcha` y `/mensaje`), y `/mensaje` nunca llamaba a `validaReCAPTCHA`. La
+nota de seguridad describía un arreglo pendiente, no algo que ya funcionara.
+
+**Decisión.** Agregar reCAPTCHA v3 (invisible, sin fricción — developers.google.com/recaptcha/docs/v3,
+verificado el 02/09/2026) a `/api/contacto`, esta vez sí en la misma petición que el envío, como la
+nota de 2025 pedía y nunca llegó a implementar:
+- `RecaptchaService` (`core/recaptcha/`) carga `api.js` con la site key y pide un token nuevo justo
+  antes de cada envío (un token vale ~2 minutos y es de un solo uso).
+- El handler verifica el token contra `POST https://www.google.com/recaptcha/api/siteverify` con la
+  secret key del servidor, y rechaza si `success` es falso, si el puntaje es menor a 0.5 (el umbral
+  recomendado por la documentación oficial) o si `action` no es `'contacto'` (evita reciclar un token
+  de otro formulario). Se verifica **después** del honeypot (para no gastar la cuota de Google en un
+  bot que ya se detectó gratis) y **antes** del consentimiento.
+- Igual que Maps/GA4/SES: la site key (pública) va con marcador en `environments/` y se sustituye
+  post-build (ADR-017); la secret key (privada, real) vive solo como `RECAPTCHA_SECRET_KEY` en el
+  entorno de la Lambda — nunca en el bundle del navegador ni en ningún archivo versionado.
+
+**Razón.** El honeypot solo atrapa bots que llenan cualquier campo del formulario visible; no hace
+nada contra un script que ataque `/api/contacto` directamente. El límite de tasa en memoria (ADR-019)
+es débil frente a IPs distribuidas. reCAPTCHA v3 sí pone una señal real de Google contra tráfico
+automatizado, sin pedirle nada al visitante — y ya había precedente de que alguien, en este mismo
+proyecto, había llegado a la misma conclusión y la había dejado como requisito de seguridad sin
+terminar de implementar.
+
+**Consecuencia.** Las tres capas de antiabuso (honeypot, límite de tasa, reCAPTCHA) ahora son
+complementarias, no redundantes: cada una atrapa un tipo de abuso distinto que las otras dos no
+cubren. El par de llaves ya lo dio el humano el mismo día (02/09/2026) — guardado como los secrets
+`RECAPTCHA_SITE_KEY`/`RECAPTCHA_SECRET_KEY` de GitHub Actions (§5), verificado en vivo contra la API
+real de `siteverify` con un token deliberadamente inválido: rechazó con 400 antes de llegar a SES.
+
 ---
 
 ## 4. Dependencias
@@ -503,6 +616,14 @@ No se fijó ninguna versión a mano: todas llegaron dentro del rango `^` que dej
 | `@codegenie/serverless-express` | `^5.0.0` | 5.0.0 — mismo mayor que Ágora, que sigue en 4.x. `engines.node: ">=24"` de la 5.x expuso que el `PATH` de este `Bash` no interactivo resolvía a Node 22, no 24 (ver el gotcha "Hallazgo T-0007" en §7) — la primera instalación, sin fijar versión, trajo silenciosamente la 4.17.1 |
 | `serverless` (Serverless Framework) | `^4.41.1` | 4.41.1 — Ágora y Babel siguen en 4.39.0; CLAUDE.md §2 ya apuntaba a 4.41.x como objetivo |
 
+**Agregadas en T-0009** (02/09/2026), Lambda de contacto:
+
+| Paquete | Rango en `package.json` | Resuelta el 02/09/2026 |
+|---|---|---|
+| `@aws-sdk/client-ses` | `^3.1125.0` | 3.1125.0 |
+| `@types/aws-lambda` | `^8.10.163` | 8.10.163 — mismo paquete que Ágora, versión más reciente |
+| `esbuild` | `^0.28.2` | 0.28.2 — mismo mayor que Ágora (`^0.28.1`), ya estaba presente de forma transitiva (Angular/Serverless lo traen), se agregó explícito porque `server/bundle-lambdas.mjs` lo importa directamente |
+
 ---
 
 ## 5. Configuraciones vigentes
@@ -523,6 +644,7 @@ Todo lo de esta tabla fue **verificado por API el 01/09/2026**, no recordado.
 | `letiende-api` (heredada) | REST API `uklz2j4u38` · dominio `api.letiende.co` · Lambda `nodejs22.x`, 128 MB, rol `generica-role-o1869of8` |
 | Google Analytics 4 | Measurement ID dado por el humano el 02/09/2026, reemplaza la integración legacy (Universal Analytics). **No versionado** (ADR-017): vive como secreto `GOOGLE_ANALYTICS_ID` en GitHub Actions del repositorio. Solo dispara en el host `letiende.co` (ADR-015) |
 | Google Maps Embed API | Llave dada por el humano el 02/09/2026, pública por diseño y restringida por dominio del lado de Google Cloud. **No versionada** (ADR-017): vive como secreto `GOOGLE_MAPS_API_KEY` en GitHub Actions del repositorio. **Pendiente de verificar por el humano:** que la restricción de referrer HTTP en Google Cloud Console cubra `letiende.co`, `staging.letiende.co` y `localhost` — no se puede confirmar desde este entorno |
+| reCAPTCHA v3 (`/api/contacto`) | Par de llaves dado por el humano el 02/09/2026 (registrado en `google.com/recaptcha/admin`, dominios `letiende.co`/`staging.letiende.co`/`localhost`). Site key: secreto `RECAPTCHA_SITE_KEY` en GitHub Actions (pública por diseño, mismo mecanismo de marcador que Maps/GA4 — ADR-017). Secret key: secreto `RECAPTCHA_SECRET_KEY`, **nunca en el bundle**, solo en el entorno de la Lambda `contacto`. Verificado en vivo contra la API real de Google (`siteverify`) con un token deliberadamente inválido: rechazó con 400 antes de llegar a SES — confirma que la integración real funciona sin arriesgar un envío de correo de prueba |
 
 **Nombres de stack esperados:** `letiende-co-staging` y `letiende-co-production` — confirmado
 (T-0007): `serverless.yml` declara `service: letiende-co`, y Serverless Framework arma el nombre del
@@ -1142,3 +1264,79 @@ completo, nada de DynamoDB en el CloudFormation resultante (solo API Gateway, IA
 **Próxima tarea sugerida:** abrir el PR de `feature/serverless-ssr`; motor JIT recalculado — T-0009
 (Lambda de contacto con SES y antiabuso, ahora con su dependencia de T-0007 correctamente resuelta)
 sigue activa, se agrega la siguiente de la cola priorizada como segunda tarea.
+
+---
+
+**02/09/2026 (más tarde) — T-0009: Lambda de contacto con SES y antiabuso.**
+
+PR de T-0007 fusionado (#12), rama remota borrada, limpieza local hecha. En rama
+`feature/lambda-contacto-ses` (desde `main`):
+
+- `server/api/handlers/contacto.ts`: handler `APIGatewayProxyHandlerV2` separado de `ssr` (la
+  corrección de arquitectura ya documentada en T-0007). Limpia `\r\n` de cada campo de texto antes de
+  armar el correo (CLAUDE.md §5, A03), rechaza si `consentimientoDatos !== true` aunque el navegador
+  ya haya validado lo mismo, valida el formato del correo con una expresión regular simple. `Source`
+  de SES es siempre `process.env.SES_REMITENTE`; el correo de quien escribe va en
+  `ReplyToAddresses`, nunca en `Source`. Nunca escribe `nombre`/`correo`/`mensaje` en los logs — solo
+  el mensaje de error de SES si el envío falla.
+- Antiabuso, los tres a la vez (ver ADR-019 para el trade-off completo del límite de tasa):
+  honeypot (`sitioWeb`, un campo que un bot autocompleta y un humano nunca ve — oculto de verdad en
+  `contacto.html`: fuera de pantalla, `aria-hidden`, `tabindex="-1"`, no `display:none` a secas),
+  límite de 5 peticiones por IP cada 10 minutos en memoria de la Lambda, tope de longitud por campo.
+- `server/tsconfig.json` y `vitest.config.ts` (raíz, `include: ['server/**/*.spec.ts']`) — mismo
+  patrón exacto que Ágora, con su propio script `test:api` separado de `ng test`.
+  `server/bundle-lambdas.mjs` empaqueta `contacto.ts` con esbuild (ver el hallazgo de esta sesión en
+  §3): sin eso, la función habría fallado en el arranque igual que ya le pasó a Ágora dos veces.
+- `serverless.yml`: función `contacto` nueva, rol IAM propio con `ses:SendEmail`/`SendRawEmail`
+  acotado a `identity/letiende.co` (verificado con la cuenta real que ese dominio está verificado en
+  SES) — sin ninguna otra política, esta función no toca DynamoDB, S3 ni nada más.
+- `ContactoComponent.enviar()` ahora hace `HttpClient.post('/api/contacto', …)` de verdad.
+  `EstadoEnvio` ganó los estados `'enviando'`/`'enviado'`/`'error'` (ya no existe
+  `'backend-pendiente'`); el botón se deshabilita mientras envía y cambia de texto.
+- `angular.json`: `lintFilePatterns` ampliado con `server/**/*.ts` — antes solo miraba `src/`, de
+  cuando `server/` todavía no existía (T-0004).
+
+**Incidente durante la verificación, ya cerrado con el humano:** invocar el bundle real con `node -e`
+para confirmar que esbuild lo había empaquetado bien terminó enviando un correo real por SES (este
+entorno tiene credenciales reales de la cuenta de producción) a una dirección inventada para la
+prueba. Detalle completo, lección para la próxima vez, y qué se verificó después
+(`aws sesv2 list-email-identities`) en ADR-019/§3.
+
+Verificado en vivo, no solo con pruebas mockeadas: `npm run build:infra` (build + `build:api` +
+`bundle:api`) y `npx serverless package --stage staging` sin errores; el `.zip` de `contacto`
+inspeccionado a mano (un solo archivo, el bundle de ~1.1 MB); el CloudFormation generado con el rol
+de SES correcto. El bundle cargado con `require()` sin invocar el envío real. En el navegador
+(`ng serve`, sin backend local para `/api/contacto`): el formulario válido dispara el `POST`, y como
+no hay backend en local, se ve el aviso de error genérico — confirma el camino de error de verdad, no
+solo en un mock. 41/41 pruebas de Angular (2 nuevas: honeypot oculto, envío real con éxito/error) y
+8/8 del handler (`test:api`), `tsc --noEmit` (app, spec y `server/tsconfig.json`) y `lint`
+(ahora cubre `server/`), todos limpios.
+
+**Próxima tarea sugerida:** abrir el PR de `feature/lambda-contacto-ses`; motor JIT recalculado —
+T-0010 (CI/CD con GitHub Actions) sigue activa, se agrega la siguiente de la cola priorizada como
+segunda tarea (T-13, certificados ACM y CloudFront).
+
+---
+
+**02/09/2026 (más tarde) — Ampliación de T-0009: reCAPTCHA v3, mismo PR (#13).**
+
+El PR de T-0009 seguía abierto cuando el humano preguntó si el honeypot + límite de tasa bastaban.
+Se investigó el historial completo de git antes de opinar solo con criterio propio — hallazgo real
+en la rama `2025` (abandonada): reCAPTCHA ya se había considerado necesario para este mismo endpoint,
+con una nota de seguridad explícita que nunca se conectó de verdad con el envío del correo. Detalle
+completo, y qué se implementó distinto esta vez (verificación en la misma petición que el envío,
+puntaje mínimo 0.5, chequeo de `action`), en ADR-020.
+
+`RecaptchaService` (`core/recaptcha/`), el handler ampliado con `tokenReCaptchaValido()` (llama a
+`fetch` nativo de Node 24 contra `siteverify`, sin dependencia nueva), `RECAPTCHA_SECRET_KEY` en
+`serverless.yml` y `recaptchaSiteKey` con marcador en `environments/` (mismo mecanismo de ADR-017).
+15/15 pruebas del handler (7 nuevas de reCAPTCHA) y 44/44 de Angular (3 nuevas), `tsc --noEmit`,
+`lint` y `serverless package` limpios. Verificado en navegador real que, con el marcador sin
+sustituir (sin llaves reales todavía), el fallo se maneja con gracia — aviso de error genérico, cero
+errores de consola.
+
+**Cerrado el mismo día:** el humano ya creó el par de llaves y las dio; guardadas como los secrets
+`RECAPTCHA_SITE_KEY`/`RECAPTCHA_SECRET_KEY` de GitHub Actions (nunca en el repositorio). Verificado en
+vivo contra la API real de `siteverify` con un token deliberadamente inválido — rechazó con 400 antes
+de llegar a SES, sin riesgo de un envío de correo de prueba (la lección de ADR-019/§7 sobre no
+invocar servicios externos reales sin cuidado, aplicada esta vez desde el principio).

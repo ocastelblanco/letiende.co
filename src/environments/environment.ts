@@ -14,4 +14,9 @@ export const environment = {
   urlBaseApiAgora: 'https://agora.letiende.co',
   googleAnalyticsId: '__GOOGLE_ANALYTICS_ID__',
   googleMapsApiKey: '__GOOGLE_MAPS_API_KEY__',
+  // Site key de reCAPTCHA v3 (pública por diseño, pero de todas formas sin
+  // versionar — mismo mecanismo de marcador que las dos de arriba). La
+  // secret key nunca aparece aquí: vive solo como RECAPTCHA_SECRET_KEY en
+  // el entorno de la Lambda de contacto (serverless.yml).
+  recaptchaSiteKey: '__RECAPTCHA_SITE_KEY__',
 };
