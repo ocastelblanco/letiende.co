@@ -11,6 +11,18 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ## Tarea T-0013 — [INFRA] Cambios mínimos en Ágora: `--base-href /cartelera/`, barra común, sitemap, 301
 
+> **Estado (03/09/2026): implementada, PR #58 del repositorio `agora-letiende` abierto, sin fusionar
+> todavía.** Los cuatro cambios están hechos y verificados en vivo (build, tests, curl y navegador
+> real). Se encontró y se resolvió, con confirmación explícita del humano en cada decisión, un
+> hallazgo real no anticipado por esta planeación: con `baseHref` fijo en `/cartelera/`, el Router de
+> Angular del lado cliente exige que la URL real ya lleve ese prefijo — sin una redirección adicional,
+> `agora.letiende.co/login` (y el resto del panel autenticado) habría respondido 404, rompiendo el
+> acceso directo del staff. La redirección 301 quedó en dos ramas: `/`/`evento/:slug` cross-domain a
+> `letiende.co/cartelera` (SEO), el resto mismo dominio con el prefijo agregado (el staff sigue
+> entrando por `agora.letiende.co`). Detalle técnico completo en `docs/MEMORY.md` de este repositorio,
+> §5, y en `docs/MEMORY.md`/`docs/TODO.md` del propio repositorio de Ágora. Esta tarea sigue activa
+> hasta que el humano revise y fusione el PR #58 — nada de esto se despliega solo.
+
 **Origen:** `tech-specs.md` §7.3, T-11 — T-13 (T-0011: ACM + CloudFront + `staging.letiende.co`)
 completada y verificada en vivo el 03/09/2026 (PR #17 + #18), así que esta tarea ya no tiene ningún
 bloqueo pendiente. **Repositorio afectado:** `~/Documents/LeTiende/letiende.co/agora/` (no este
