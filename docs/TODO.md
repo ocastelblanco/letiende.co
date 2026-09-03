@@ -16,17 +16,57 @@ proxy + cambio del registro de producción en Route 53) — una acción sobre DN
 deliberadamente **no auto-seleccionada aquí**: requiere que el humano decida cuándo y confirme antes de
 empezar, mismo criterio ya aplicado a otras acciones irreversibles de este proyecto.
 
-**Único bloqueo real ya resuelto (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes
-(ver el Historial, entrada T-0013/T-0014, hallazgo 8) quedó cerrado — dos `ResponseHeadersPolicy` de
-CloudFront, verificadas en vivo contra `staging.letiende.co` (CSP completo en las páginas propias del
-contenedor, los otros 4 encabezados sin CSP en `/cartelera/*`/`/libros/*`/`/assets/*`, decisión
-explícita del humano para no arriesgar el checkout real de Ágora). Detalle completo en `tech-specs.md`
-§7.2 y `CLAUDE.md` §5. PR **#25**, abierto, esperando revisión humana. Con esto, **nada** bloquea
-técnicamente el cutover — T-15 queda listo para que el humano decida cuándo ejecutarlo.
+**T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
+COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
+entrada T-0013/T-0014, hallazgo 8) quedó cerrado — dos `ResponseHeadersPolicy` de CloudFront,
+verificadas en vivo contra `staging.letiende.co` (CSP completo en las páginas propias del contenedor,
+los otros 4 encabezados sin CSP en `/cartelera/*`/`/libros/*`/`/assets/*`, decisión explícita del
+humano para no arriesgar el checkout real de Ágora). Detalle completo en el Historial de abajo,
+`tech-specs.md` §7.2 y `CLAUDE.md` §5. PR **#25**, abierto, esperando revisión humana. Con esto,
+**nada** bloquea técnicamente el cutover — T-15 (roadmap) queda listo para que el humano decida cuándo
+ejecutarlo.
 
 ---
 
 ## Historial
+
+- **T-0015** — [INFRA] Encabezados de seguridad de CloudFront (CSP y 4 más). Completada 04/09/2026, PR
+  #25 abierto (sin fusionar todavía). Cierra el hallazgo 8 de la entrada T-0013/T-0014 de abajo: ninguna
+  de las tres distribuciones de CloudFront del dominio emitía `Content-Security-Policy`,
+  `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy` ni `X-Frame-Options`, pese a
+  que `CLAUDE.md` §5 (A05) los exige — nunca se implementó un `ResponseHeadersPolicy` en T-0011.
+
+  **Decisión de alcance, tomada explícitamente con el humano tras plantear un riesgo real:** en vez de
+  un único CSP para las 4 rutas de la distribución, dos políticas separadas.
+  `PoliticaEncabezadosSeguridadContenedor` lleva el CSP completo (`default-src 'self'`; Google Fonts en
+  `style-src`/`font-src`; el mapa embebido de `/contacto` en `frame-src https://www.google.com`; Google
+  Analytics 4 en `script-src`/`connect-src`, `googletagmanager.com`/`google-analytics.com` — ausente en
+  la regla original de `CLAUDE.md` §5, "Fonts y mapa, nada más", corregida en el mismo cambio; el bucket
+  de imágenes de eventos de Ágora, `agora-activos-<stage>`, en `img-src`, porque la portada de este
+  contenedor muestra imágenes ajenas cargadas directo de ese bucket) y se asocia **solo** al
+  `DefaultCacheBehavior`. `PoliticaEncabezadosSeguridadProxy` lleva los otros 4 encabezados, sin CSP, y
+  se asocia a `/cartelera/*`, `/libros/*` y `/assets/*`. **Por qué no un CSP único:** verificado leyendo
+  el código real de Ágora, `comprar.component.ts` inyecta dinámicamente
+  `<script src="https://checkout.bold.co/library/boldPaymentButton.js">` para el checkout real de
+  compra de boletas (dinero real), y ambas apps usan Firebase Auth — un CSP pensado solo para este
+  contenedor las habría roto en silencio. Cerrar el CSP de esas dos rutas queda como tarea aparte,
+  coordinada con `agora-letiende`/`babel-letiende`. No es una regresión: hoy esas rutas tampoco tienen
+  CSP.
+
+  **Un hallazgo real durante la implementación, encontrado con el primer despliegue a staging:**
+  CloudFront limita el campo `Comment` de un `ResponseHeadersPolicy` a 128 caracteres — el primer
+  intento (`CREATE_FAILED`, con el mensaje exacto de CloudFront) tenía un comentario de 129. La pila
+  completa (CloudFormation `UPDATE_ROLLBACK_COMPLETE`) revirtió sola sin afectar el servicio real
+  (verificado con `curl` contra `staging.letiende.co` durante el rollback, seguía respondiendo 200).
+  Corregido acortando ambos comentarios; segundo despliegue exitoso.
+
+  Verificado en vivo, no solo con el resultado del pipeline: `curl -i` real contra
+  `staging.letiende.co/` (los 5 encabezados, CSP incluido), `/cartelera/`, `/libros/` y
+  `/assets/logos/favicon.ico` (los 4 sin CSP) — y navegador real (`claude-in-chrome`) contra
+  `/contacto`: el mapa carga bien, sin errores de consola, confirmando que el CSP no rompió el iframe
+  ni las fuentes de Google. Plantilla validada dos veces antes de desplegar:
+  `serverless package --stage staging` local y `cloudformation ValidateTemplate` real contra la API de
+  AWS.
 
 - **T-0013/T-0014** — [INFRA] Integración de Ágora y Babel con el proxy: `--base-href`, barra común,
   sitemap, redirecciones 301. Completadas y verificadas en producción real 03-04/09/2026. Cambios
