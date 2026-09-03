@@ -137,21 +137,55 @@ resources:
     # hostname crudo de execute-api. Esta función copia el Host real del
     # visitante a un encabezado propio ANTES de que CloudFront lo despoje,
     # y como no se llama "host", AllViewerExceptHostHeader sí lo reenvía.
+    # Hallazgo real, reportado en vivo (03/09/2026) tras el primer
+    # despliegue completo de T-0013/T-0014: staging.letiende.co/cartelera
+    # y /libros cargaban la página pero "No se pudieron cargar los
+    # eventos"/"el catálogo" — Ágora y Babel llaman su propia API con rutas
+    # ABSOLUTAS sin el prefijo del proxy (`http.get('/api/eventos-publicos')`,
+    # `http.get('/api/libros')`, verificado leyendo el código real de los
+    # dos servicios, no supuesto). Sin el prefijo, esa petición sale del
+    # navegador hacia `staging.letiende.co/api/...` — que CloudFront enruta
+    # al comportamiento POR DEFECTO (este mismo contenedor, que no tiene esa
+    # ruta) en vez de a Ágora/Babel. Con el prefijo (`/cartelera/api/...`),
+    # sí llega al origen correcto, pero ese origen tampoco tiene esa ruta
+    # registrada (su API Gateway solo conoce `/api/...`, sin el prefijo) —
+    # confirmado con curl real contra ambas formas antes de escribir este
+    # fix, no asumido.
     FuncionInyectarHostVisitante:
       Type: AWS::CloudFront::Function
       Properties:
         Name: !Sub 'letiende-co-inyectar-host-visitante-${sls:stage}'
         AutoPublish: true
         FunctionConfig:
-          Comment: Copia el Host real del visitante a x-le-tiende-host antes del origen
+          Comment: Copia el Host real y quita el prefijo de /api y /sitemap.xml antes del origen
           Runtime: cloudfront-js-2.0
         FunctionCode: |
           function handler(event) {
             var request = event.request;
+
             var host = request.headers.host;
             if (host && host.value) {
               request.headers['x-le-tiende-host'] = { value: host.value };
             }
+
+            // Las páginas SÍ necesitan conservar el prefijo completo
+            // (Angular baseHref lo exige, tech-specs.md §7.2/§7.3) — solo
+            // se quita para las llamadas a la API propia de cada app y a
+            // su sitemap, que su API Gateway registra SIN el prefijo.
+            var uri = request.uri;
+            var prefijo = null;
+            if (uri.indexOf('/cartelera/') === 0) {
+              prefijo = '/cartelera';
+            } else if (uri.indexOf('/libros/') === 0) {
+              prefijo = '/libros';
+            }
+            if (prefijo) {
+              var resto = uri.slice(prefijo.length);
+              if (resto.indexOf('/api/') === 0 || resto === '/sitemap.xml') {
+                request.uri = resto;
+              }
+            }
+
             return request;
           }
 
