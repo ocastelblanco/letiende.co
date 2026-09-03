@@ -305,7 +305,8 @@ Si Ágora no responde, la portada se renderiza igual, sin la sección de eventos
 | **AWS SES** | Activo en la cuenta | Envío del formulario de contacto |
 | **Comandante** | En producción | Lista de precios del café bar. **Etapa 2** |
 | **`letiende-api`** (`uklz2j4u38`) | Heredado, fuera de IaC | **No se usa en la etapa 1.** Ver §11 |
-| Google Maps | Pendiente | Mapa incrustado en `/contacto`. Evaluar alternativa sin rastreo |
+| **Google Maps Embed API** | Activo (T-0006) | Mapa incrustado en `/contacto`, vía `iframe`. La llave (pública, restringida por dominio del lado de Google Cloud) **no está en el código**: `environment.googleMapsApiKey` es un marcador que `scripts/inyectar-llaves-publicas.mjs` sustituye sobre `dist/` a partir de `GOOGLE_MAPS_API_KEY` (docs/MEMORY.md, ADR-017) |
+| **Google Analytics 4** | Activo (T-0006) | Reemplaza la integración legacy (Universal Analytics). Carga solo en el host `letiende.co` (`AnalyticsService` comprueba el hostname en tiempo de ejecución, para no contaminar las métricas con tráfico de staging, que despliega el mismo artefacto). El Measurement ID tampoco está en el código — mismo mecanismo de marcador que Maps, variable `GOOGLE_ANALYTICS_ID` |
 
 ---
 

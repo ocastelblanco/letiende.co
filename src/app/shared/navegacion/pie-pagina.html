@@ -2,9 +2,11 @@
   <div class="mx-auto flex max-w-6xl flex-col gap-2 text-sm">
     <p class="text-base font-semibold tracking-wider uppercase">Le Tiende</p>
 
-    <!-- Contenido placeholder: la dirección, los horarios y las redes reales llegan en T-5 (docs/TODO.md). -->
-    <p>Dirección — por confirmar</p>
-    <p>Horarios — por confirmar</p>
+    <p>{{ datosNegocio.direccion }}</p>
+    @for (bloque of datosNegocio.horarios; track bloque.dias) {
+      <p>{{ bloque.dias }}: {{ bloque.horario }}</p>
+    }
+    <!-- Redes sociales: todavía por confirmar (docs/TODO.md, T-0006). -->
     <p class="text-neutral/70">Instagram · Facebook — por confirmar</p>
   </div>
 </footer>

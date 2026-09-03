@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora. Todavía sin páginas institucionales |
-| **Fase** | T-0001 a T-0005 fusionados a `main`; T-0006 y T-0007 activas |
+| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + íconos/manifest + Google Maps + GA4 |
+| **Fase** | T-0001 a T-0006 fusionados a `main` (pendiente de PR T-0006); T-0007 y T-0008 activas |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `feature/portada-proximos-eventos` (desde `main`) |
+| **Rama** | `feature/paginas-institucionales-nosotros-contacto` (desde `main`) |
 | **Producción** | `https://letiende.co` — todavía sirve el **sitio estático anterior**. Sin cambios: el andamiaje aún no se ha desplegado |
 | **Staging** | No existe aún |
-| **Última sesión** | 02/09/2026 — T-0005: portada con eventos reales de Ágora, `httpResource()`, `RenderMode.Server` |
+| **Última sesión** | 02/09/2026 — T-0006: Nosotros, Contacto, íconos/manifest, Google Maps Embed y GA4 |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -38,8 +38,11 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 - [x] Batería de pruebas y ganchos de pre-commit (T-0004)
 - [x] Portada con próximos eventos (T-0005)
 
+- [x] Páginas institucionales: Nosotros y Contacto (T-0006), con íconos/manifest, Google Maps Embed
+      y Google Analytics 4
+
 ### Pendientes
-- [ ] Páginas institucionales (nosotros, contacto, preguntas frecuentes)
+- [ ] Preguntas frecuentes
 - [ ] Capa de SEO/AEO
 - [ ] Lambda de contacto con SES
 - [ ] `serverless.yml` y CI/CD
@@ -330,6 +333,95 @@ código redundante para "arreglar" algo que no estaba roto. Si una versión futu
 proveerlo por defecto, el build fallaría de forma ruidosa (`NullInjectorError`) — no en silencio — así
 que no hace falta una prueba centinela para esto.
 
+### ADR-015 — GA4 solo carga en el host `letiende.co`, nunca en staging
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0006
+
+**Contexto.** `environment.production.ts` documenta desde T-0001/T-0005 que **el mismo artefacto** de
+build sirve a `staging.letiende.co` y a `letiende.co` (solo cambia el stage de Serverless). Si
+Google Analytics 4 se cargara sin condición, cada visita de prueba a staging —de quien revisa un PR,
+de QA, de un agente que verifica un despliegue— contaría como una sesión real en la propiedad de GA4,
+contaminando permanentemente las métricas de negocio.
+
+**Decisión.** `AnalyticsService` (`core/analytics/analytics.service.ts`) comprueba
+`window.location.hostname` en tiempo de ejecución y solo inserta el script de `gtag.js` cuando el host
+es exactamente `letiende.co`. La función pura `debeCargarAnalytics(hostname)` queda exportada y
+probada por separado, sin depender del DOM.
+
+**Razón.** Es la única forma de distinguir staging de producción sin un segundo build ni una segunda
+propiedad de GA4 — ninguna de las dos opciones existía y ambas habrían costado más que un chequeo de
+host. Coherente con el precedente de ADR-002/ADR-012: el mismo artefacto sirve a los dos stages, y las
+piezas sensibles al stage se resuelven en tiempo de ejecución, no en tiempo de build.
+
+**Consecuencia.** `AnalyticsService` también ignora el marcador `__GOOGLE_ANALYTICS_ID__` sin
+sustituir (ver ADR-017): si un despliegue se hiciera sin la variable de entorno configurada, no carga
+un ID inválido, simplemente no carga nada. Verificado con una prueba (`analytics.service.spec.ts`) que
+confirma que, en el `localhost` de las pruebas, el script de `googletagmanager` nunca se inserta en el
+DOM.
+
+### ADR-016 — Se descarta la API de Google Business Profile para esta tarea
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0006
+
+**Contexto.** El humano preguntó si convenía sincronizar horarios y dirección desde Google Business
+Profile vía API. Investigación contra la documentación oficial de Google for Developers (prerequisitos
+de la API de Business Profile): requiere un perfil verificado y activo **60+ días**, una solicitud
+formal de acceso que Google aprueba en días a semanas (cuota en 0 solicitudes/minuto hasta entonces), y
+OAuth2 con almacenamiento seguro de refresh token — es decir, una Lambda nueva y un flujo de
+autenticación que hoy no existen en este proyecto.
+
+**Decisión.** No se integra la API de Google Business Profile. El humano dio la dirección y los
+horarios directamente como texto (verificados por él, no adivinados), centralizados en
+`core/negocio/datos-negocio.ts`. Se documenta como opción futura si algún día hace falta que los
+horarios cambien con frecuencia y se reflejen sin un despliegue nuevo.
+
+**Razón.** Un centro cultural no cambia su horario todos los días; el costo de la aprobación de Google
+y de la infraestructura OAuth no se justifica frente a editar una constante cuando el horario cambie de
+verdad. La alternativa evaluada y también descartada fue la API de Places (Place Details) — más
+simple, solo con llave, sin OAuth—, pero el campo `regularOpeningHours` factura contra el SKU
+Enterprise (de pago) y de todas formas requeriría que Le Tiende tuviera ya un Place ID público
+verificado, que no se confirmó que exista.
+
+**Consecuencia.** El mapa de `/contacto` sí usa una API de Google (Maps Embed, con llave pública
+restringida por dominio, sin OAuth) — es una integración de solo lectura del lado del cliente, sin
+infraestructura nueva, y fue la que el humano eligió explícitamente frente a las alternativas
+planteadas.
+
+### ADR-017 — La llave de Maps y el ID de GA4 no se versionan, ni siquiera siendo públicas
+
+**Fecha:** 02/09/2026 · **Estado:** aceptada · **Surgida en:** T-0006
+
+**Contexto.** La primera versión de esta tarea puso la llave real de Google Maps Embed y el
+Measurement ID de GA4 directamente en `environment.ts`/`environment.production.ts`, con el
+razonamiento de que son públicas por diseño de Google (se restringen por dominio, no por secreto, y de
+todas formas terminan visibles en el HTML servido). El gancho de pre-commit
+(`scripts/verificar-secretos.mjs`, ADR-011) bloqueó el commit al detectar el patrón `AIza...`: "posible
+Clave de API de Google". Puesto en decisión, el humano no aceptó documentar una excepción a
+`CLAUDE.md` §5 (que prohíbe **cualquier** llave en `environments/`, sin matices) ni forzar el commit
+con `--no-verify` — eligió una tercera vía.
+
+**Decisión.** Ninguna de las dos llaves se versiona. `environment.ts` y `environment.production.ts`
+llevan los marcadores `__GOOGLE_ANALYTICS_ID__` y `__GOOGLE_MAPS_API_KEY__`.
+`scripts/inyectar-llaves-publicas.mjs`, cableado como script `postbuild` de npm, los sustituye sobre
+`dist/letiende-co/` (bundles de JS/SSR y HTML ya prerenderizado — `/contacto` prerenderiza con el
+marcador dentro, así que el reemplazo tiene que tocar también el HTML, no solo el JS) leyendo
+`GOOGLE_ANALYTICS_ID` y `GOOGLE_MAPS_API_KEY` del entorno. Sin esas variables, el script no falla: solo
+avisa que no hay nada que sustituir y deja el marcador tal cual.
+
+**Razón.** Evita la ambigüedad de reinterpretar una regla de seguridad escrita en términos absolutos, y
+mantiene intacto el escáner de secretos existente (el marcador no coincide con ningún patrón de la
+lista, así que no hace falta tocar `scripts/verificar-secretos.mjs` ni añadirle una lista de
+excepciones). El costo es infraestructura que todavía no existe del todo: T-9 (CI/CD, en la cola) es
+quien realmente va a exportar `GOOGLE_ANALYTICS_ID`/`GOOGLE_MAPS_API_KEY` en el paso de build. Mientras
+tanto, ambos valores ya quedaron guardados como *secrets* de GitHub Actions del repositorio (no en
+ningún archivo de este repositorio ni en ningún documento), listos para que T-9 los use.
+
+**Consecuencia.** En desarrollo local (`ng serve`, que no corre `postbuild`) el mapa de `/contacto`
+muestra el error de llave inválida de Google en vez de un mapa real, y `AnalyticsService` nunca carga
+gtag.js (por el marcador sin sustituir, además del chequeo de host de ADR-015) — comportamiento
+esperado, no un bug. Quien necesite probar el mapa real en local puede exportar `GOOGLE_MAPS_API_KEY`
+antes de `npm run build` y servir el `dist/` resultante con `npm run serve:ssr`.
+
 ---
 
 ## 4. Dependencias
@@ -384,6 +476,8 @@ Todo lo de esta tabla fue **verificado por API el 01/09/2026**, no recordado.
 | Babel producción | HTTP API `aav553hwx4` · dominio `babel.letiende.co` → `d-4npztcyk1j.execute-api.us-east-1.amazonaws.com` |
 | Babel staging | HTTP API `oyzau0c910` — origen del behavior `/libros/*` en staging |
 | `letiende-api` (heredada) | REST API `uklz2j4u38` · dominio `api.letiende.co` · Lambda `nodejs22.x`, 128 MB, rol `generica-role-o1869of8` |
+| Google Analytics 4 | Measurement ID dado por el humano el 02/09/2026, reemplaza la integración legacy (Universal Analytics). **No versionado** (ADR-017): vive como secreto `GOOGLE_ANALYTICS_ID` en GitHub Actions del repositorio. Solo dispara en el host `letiende.co` (ADR-015) |
+| Google Maps Embed API | Llave dada por el humano el 02/09/2026, pública por diseño y restringida por dominio del lado de Google Cloud. **No versionada** (ADR-017): vive como secreto `GOOGLE_MAPS_API_KEY` en GitHub Actions del repositorio. **Pendiente de verificar por el humano:** que la restricción de referrer HTTP en Google Cloud Console cubra `letiende.co`, `staging.letiende.co` y `localhost` — no se puede confirmar desde este entorno |
 
 **Nombres de stack esperados:** `letiende-co-staging` y `letiende-co-production`.
 
@@ -494,6 +588,12 @@ Encontrado durante T-0005 (portada):
 | `resource.value()` de `httpResource()` **lanza** cuando el recurso está en estado de error, en vez de devolver `undefined` | El encadenamiento opcional (`?.`, `??`) no protege nada aquí — la excepción salta antes. Usar `resource.hasValue()` como guardia primero. Ver ADR-013 |
 | `RenderMode.Prerender` en una ruta que depende de datos remotos (la portada, con eventos de Ágora) | El `ng build` hace la llamada real en tiempo de build y la congela en el HTML hasta el próximo despliegue — verificado con `curl` contra la API real. Esa ruta necesita `RenderMode.Server`. Ver ADR-012 |
 | `HttpClient` se inyecta sin `provideHttpClient()` explícito en `app.config.ts` | No es un descuido ni hace falta agregarlo: verificado con un diagnóstico desechable que la inyección funciona igual (Angular 22 parece proveerlo por defecto). Ver ADR-014 |
+
+Encontrado durante T-0006 (páginas institucionales), en revisión humana tras el PR:
+
+| Situación | Solución |
+|---|---|
+| `public/favicon.ico` seguía siendo el genérico de `ng new` (T-0001) — nunca se detectó como faltante porque el archivo ya existía en `public/`, así que la tarea de íconos (T-0006) copió el resto de los archivos de Ágora pero pasó por alto reemplazar este | Reemplazado por el `favicon.ico` real de Ágora (`bef745f6b7cac5d3465f7887d37c0256` vs. el anterior `05bcfe9a02b93e1c5a5da14bfda8c41f`). **Lección:** que un archivo ya exista en el repo no significa que sea el correcto — hay que comparar contenido, no solo presencia |
 
 Encontrados durante T-0001 (andamiaje), **verificados en esta máquina**:
 
@@ -759,3 +859,69 @@ pruebas y `tsc --noEmit` (app y spec), todos limpios tras las tres correcciones.
 recalculado — T-0006 (páginas institucionales) sigue activa, se agrega **T-0007** (`serverless.yml`
 del contenedor, solo la función `ssr` — T-7/contacto queda para después, sin handler que empaquetar
 todavía).
+
+---
+
+**02/09/2026 — T-0006: páginas institucionales + íconos/manifest + Google Maps + GA4.**
+
+En rama `feature/paginas-institucionales-nosotros-contacto` (desde `main`). El humano pidió ampliar
+T-0006 con tres cosas dentro de la misma tarea: íconos y `manifest.webmanifest`, una integración con
+información de Le Tiende de Google (Business Profile o Maps), y Google Analytics 4 en reemplazo de la
+integración legacy. Antes de escribir código se investigó contra documentación oficial y actualizada
+de Google (`developers.google.com`), y se le hicieron tres preguntas de decisión al humano — sin esas
+respuestas no se podía avanzar sin inventar datos, algo que `CLAUDE.md` prohíbe explícitamente:
+
+1. **Dirección y horarios** — el humano los dio directamente como texto verificado, en vez de esperar
+   una sincronización automática. Ver ADR-016 sobre por qué se descartó la API de Business Profile.
+2. **Mapa** — Google Maps Embed API con llave pública, la opción recomendada dado que ya había
+   dirección real.
+3. **GA4** — el humano ya tenía un Measurement ID, no hizo falta crear la propiedad.
+
+Trabajo real:
+
+- **Íconos y `manifest.webmanifest`**: copiados de `agora/public/` (`favicon-16x16.png`,
+  `favicon-32x32.png`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`,
+  `logo_negro_sin_fondo.svg`) — ya documentados como contrato en `DESIGN.md` §9 desde la planeación
+  original, solo faltaba ejecutarlos. `manifest.webmanifest` adaptado con nombre y descripción propios
+  de Le Tiende, no los de Ágora.
+- **`core/negocio/datos-negocio.ts`**: única fuente de verdad de dirección y horarios, consumida por
+  `PiePagina` (que ya no dice "por confirmar" para esos dos campos — sí sigue así para redes sociales,
+  que el humano no dio), `ContactoComponent` y el `<iframe>` del mapa.
+- **`NosotrosComponent`**: contenido derivado estrictamente de `PRD.md` §1 (la frase "tres cosas
+  buenas..."), §2 (los tres servicios bajo un techo), §3 (audiencia) y §10 (glosario) — sin inventar
+  nada que no estuviera ahí. Enlaces `<a href>` planos a `/cartelera` y `/libros` (no `routerLink`,
+  mismo patrón que la barra de navegación de T-0003).
+- **`ContactoComponent`**: formulario reactivo completo con las tres validaciones bloqueantes exigidas
+  por el DoD original, mapa incrustado (`DomSanitizer.bypassSecurityTrustResourceUrl` sobre una URL
+  construida solo con constantes propias — nunca con datos de la petición o del visitante, así que no
+  es el caso que prohíbe `CLAUDE.md` §5 A03), y un `signal<EstadoEnvio>` que muestra en pantalla,
+  después de un envío válido, que `POST /api/contacto` (T-7) todavía no existe.
+- **`AnalyticsService`** (`core/analytics/`): carga `gtag.js` con `afterNextRender` (nunca en el SSR)
+  y solo en el host `letiende.co` — ver ADR-015 sobre por qué hacía falta esa guarda.
+- **`PaginaPendiente` eliminado por completo** (`git rm`): ADR-010 ya avisaba que no debía sobrevivir
+  más allá de esta tarea, y con `/nosotros` y `/contacto` apuntando a componentes reales, ninguna ruta
+  volvía a usarlo.
+
+Verificado en vivo, no solo con pruebas unitarias: build de producción (`ng build
+--configuration=production`, prerenderiza `/nosotros` y `/contacto`), servidor SSR real
+(`node dist/letiende-co/server/server.mjs`) con `curl` 200 en `/`, `/nosotros`, `/contacto`,
+`manifest.webmanifest` y los íconos nuevos, el mapa embebido con la dirección real codificada
+correctamente en el HTML servido por el servidor, y cero rastro de `googletagmanager` en el HTML del
+SSR (correcto: `AnalyticsService` solo actúa en el navegador). Además, con el navegador real (Chrome,
+`ng serve`): el mapa renderiza el punto correcto de Bogotá, las cuatro validaciones del formulario
+bloquean el envío una por una (nombre vacío, correo vacío, correo inválido, consentimiento sin marcar),
+el envío válido muestra el aviso de "backend pendiente", y la consola queda limpia (0 errores, 0
+componentes de hidratación saltados). `npm run lint`, `tsc --noEmit` (app y spec) y 25/25 pruebas,
+todos limpios.
+
+**Pendiente para el humano, fuera del alcance de esta sesión:** verificar en Google Cloud Console que
+la llave de Maps tenga restricción de referrer HTTP cubriendo `letiende.co`, `staging.letiende.co` y
+`localhost` — no se puede confirmar ni configurar desde este entorno. También queda sin resolver, a
+propósito, si GA4 necesita un banner de consentimiento de cookies: `tech-specs.md` §6 ya traía la nota
+"evaluar alternativa sin rastreo" para Maps, y esta sesión no construyó ningún mecanismo de consentimiento
+porque no se pidió — es una decisión de producto pendiente, no un olvido técnico.
+
+**Próxima tarea sugerida:** abrir el PR de `feature/paginas-institucionales-nosotros-contacto`; motor
+JIT recalculado — T-0007 (`serverless.yml`) sigue activa, se agrega **T-0008** (capa de SEO/AEO, T-6
+del roadmap: `MetaService`, JSON-LD, `robots.txt`, mapa del sitio), que ahora sí tiene datos reales de
+`core/negocio/datos-negocio.ts` para el `LocalBusiness` de la portada y de `/contacto`.
