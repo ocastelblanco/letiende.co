@@ -813,6 +813,7 @@ Heredados de Ágora y Babel, **verificados en producción**, no teoría:
 | `<button ... />` con cierre automático | Angular 22 no lo permite (NG5002). Siempre `<button></button>` |
 | `@` literal en una plantilla | Angular lo lee como bloque de control. Usar `&#64;` |
 | Retención de logs infinita en CloudWatch | `logRetentionInDays: 14`. Viene de un incidente de costos real |
+| **PRs concurrentes que tocan `serverless.yml` (IaC), cada uno con su propio despliegue automático a staging** | Cada PR despliega **su propia rama completa**, no solo su diff — un PR B abierto desde `main` **antes** de que el PR A (que sí cambió `serverless.yml`) se fusione, al desplegar a staging, **revierte silenciosamente** lo que A ya había desplegado ahí, aunque B nunca haya tocado ese archivo. Incidente real (03/09/2026): el PR #21 (creado desde `main` antes de que el PR #20 — la `CloudFront Function` de host embebido — se fusionara) borró esa función de la distribución de staging al desplegarse; confirmado con `cloudfront GetDistributionConfig` real, no supuesto. **Regla:** si un PR toca IaC compartida y hay otro PR de IaC abierto en paralelo, crear el segundo **desde el `main` ya actualizado** con el primero (o fusionar/rebasear antes de abrir), nunca desde un `main` desactualizado — mismo principio que la concurrencia de despliegues a producción, pero aplicado a la frescura de la rama antes de abrir el PR, no solo al `concurrency` de GitHub Actions |
 
 Propios de este proyecto, **a verificar durante la implementación**:
 
