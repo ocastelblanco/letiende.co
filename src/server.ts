@@ -12,17 +12,48 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+const DOMINIO = 'https://letiende.co';
+// Igual que AnalyticsService (core/analytics/) — el mismo artefacto sirve a
+// staging y a producción (ver docs/MEMORY.md, ADR-015), así que solo el host
+// exacto de producción distingue uno de otro en tiempo de petición.
+const HOST_PRODUCCION = 'letiende.co';
+
+// Rutas propias del contenedor, en sincronía manual con app.routes.ts
+// (tech-specs.md §4.2) — son solo tres, no vale la pena un descubrimiento
+// automático todavía.
+const RUTAS_PROPIAS = ['/', '/nosotros', '/contacto'];
+
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
+ * ADR-002 (docs/MEMORY.md): staging necesita `Disallow: /`, para no competir
+ * contra producción por las mismas palabras. `req.hostname` es lo único que
+ * distingue un stage del otro, porque los dos despliegan el mismo artefacto.
  */
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  if (req.hostname !== HOST_PRODUCCION) {
+    res.send('User-agent: *\nDisallow: /\n');
+    return;
+  }
+  res.send(`User-agent: *\nAllow: /\n\nSitemap: ${DOMINIO}/sitemap.xml\n`);
+});
+
+/**
+ * Solo las rutas propias del contenedor, no el índice de los tres que
+ * tech-specs.md §4.5 describe como destino final: verificado en vivo
+ * (curl contra agora.letiende.co/sitemap.xml) que Ágora todavía emite el
+ * suyo bajo su propio subdominio, no bajo /cartelera (llega con T-11), y
+ * Babel no tiene sitemap propio todavía (T-12). Agregarlos hoy enviaría a
+ * los buscadores direcciones equivocadas o rotas — peor que no tener
+ * índice. Se convierte en el índice real cuando T-11/T-12 existan (ver
+ * docs/MEMORY.md, ADR-018).
+ */
+app.get('/sitemap.xml', (_req, res) => {
+  const urls = RUTAS_PROPIAS.map((ruta) => `  <url><loc>${DOMINIO}${ruta}</loc></url>`).join('\n');
+  res.type('application/xml');
+  res.send(
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`,
+  );
+});
 
 /**
  * Serve static files from /browser
