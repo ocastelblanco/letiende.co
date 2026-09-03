@@ -232,9 +232,7 @@ resources:
       Properties:
         ResponseHeadersPolicyConfig:
           Name: !Sub 'letiende-co-encabezados-seguridad-${sls:stage}'
-          Comment: >-
-            CSP completo (Google Fonts, mapa, Analytics) + encabezados de
-            seguridad — solo DefaultCacheBehavior (páginas propias)
+          Comment: CSP + encabezados de seguridad — solo páginas propias (CLAUDE.md §5)
           SecurityHeadersConfig:
             ContentSecurityPolicy:
               # img-src incluye el bucket de imágenes de eventos de Ágora
@@ -279,9 +277,7 @@ resources:
       Properties:
         ResponseHeadersPolicyConfig:
           Name: !Sub 'letiende-co-encabezados-seguridad-proxy-${sls:stage}'
-          Comment: >-
-            Encabezados de seguridad sin CSP — /cartelera, /libros y /assets
-            sirven contenido de Ágora/Babel, CSP pendiente como tarea aparte
+          Comment: Encabezados de seguridad sin CSP — sirve páginas de Ágora/Babel
           SecurityHeadersConfig:
             StrictTransportSecurity:
               AccessControlMaxAgeSec: 63072000
