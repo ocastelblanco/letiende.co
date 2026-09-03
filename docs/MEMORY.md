@@ -573,6 +573,31 @@ cubren. El par de llaves ya lo dio el humano el mismo día (02/09/2026) — guar
 `RECAPTCHA_SITE_KEY`/`RECAPTCHA_SECRET_KEY` de GitHub Actions (§5), verificado en vivo contra la API
 real de `siteverify` con un token deliberadamente inválido: rechazó con 400 antes de llegar a SES.
 
+### ADR-021 — Credenciales de AWS en CI: llaves de larga duración, no OIDC
+
+**Contexto.** T-0010 (`docs/TODO.md`) dejaba el mecanismo de credenciales de AWS para el despliegue
+desde GitHub Actions como decisión abierta, marcando OIDC hacia un rol de IAM como "preferible" a
+llaves de acceso de larga duración, pero exigiendo verificar contra la documentación oficial de
+`aws-actions/configure-aws-credentials` antes de implementar.
+
+**Decisión.** Llaves de larga duración (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` como secrets del
+repositorio), no OIDC. Decisión explícita del humano, consultada durante la tarea: se verificó primero
+que la cuenta de AWS compartida (`696912647258`) no tiene ningún proveedor OIDC configurado todavía
+(`aws iam list-open-id-connect-providers` → lista vacía, 02/09/2026) — adoptar OIDC aquí habría sido
+el primer uso de ese mecanismo en la cuenta, y habría exigido crear un proveedor OIDC y un rol IAM
+nuevos en una cuenta compartida con Ágora y Babel, dos proyectos que ya funcionan con el patrón de
+llaves de larga duración.
+
+**Por qué.** Consistencia operativa con Ágora y Babel (`.github/workflows/deploy.yml` de ambos,
+verificado antes de escribir el de este proyecto) pesó más que la ventaja de seguridad de OIDC para
+una cuenta que ya trae ese riesgo aceptado en dos stacks hermanos — introducir un segundo patrón de
+autenticación (y un recurso IAM nuevo con alcance sobre toda la cuenta) solo para este repositorio
+habría sido inconsistencia, no mejora, mientras Ágora y Babel sigan como están.
+
+**Consecuencia.** Si en el futuro se decide migrar a OIDC, debe ser un cambio de los tres repositorios
+a la vez (Ágora, Babel, letiende.co), no uno aislado — de lo contrario la cuenta termina con dos
+mecanismos de autenticación de CI conviviendo sin necesidad.
+
 ---
 
 ## 4. Dependencias
@@ -642,6 +667,7 @@ Todo lo de esta tabla fue **verificado por API el 01/09/2026**, no recordado.
 | Babel producción | HTTP API `aav553hwx4` · dominio `babel.letiende.co` → `d-4npztcyk1j.execute-api.us-east-1.amazonaws.com` |
 | Babel staging | HTTP API `oyzau0c910` — origen del behavior `/libros/*` en staging |
 | `letiende-api` (heredada) | REST API `uklz2j4u38` · dominio `api.letiende.co` · Lambda `nodejs22.x`, 128 MB, rol `generica-role-o1869of8` |
+| `letiende-co-staging` (T-0010) | Stack real desplegado el 03/09/2026 vía CI (PR #14) — HTTP API `dhffew1x85` → `https://dhffew1x85.execute-api.us-east-1.amazonaws.com`. Sin dominio propio todavía (eso es T-0011/T-13) |
 | Google Analytics 4 | Measurement ID dado por el humano el 02/09/2026, reemplaza la integración legacy (Universal Analytics). **No versionado** (ADR-017): vive como secreto `GOOGLE_ANALYTICS_ID` en GitHub Actions del repositorio. Solo dispara en el host `letiende.co` (ADR-015) |
 | Google Maps Embed API | Llave dada por el humano el 02/09/2026, pública por diseño y restringida por dominio del lado de Google Cloud. **No versionada** (ADR-017): vive como secreto `GOOGLE_MAPS_API_KEY` en GitHub Actions del repositorio. **Pendiente de verificar por el humano:** que la restricción de referrer HTTP en Google Cloud Console cubra `letiende.co`, `staging.letiende.co` y `localhost` — no se puede confirmar desde este entorno |
 | reCAPTCHA v3 (`/api/contacto`) | Par de llaves dado por el humano el 02/09/2026 (registrado en `google.com/recaptcha/admin`, dominios `letiende.co`/`staging.letiende.co`/`localhost`). Site key: secreto `RECAPTCHA_SITE_KEY` en GitHub Actions (pública por diseño, mismo mecanismo de marcador que Maps/GA4 — ADR-017). Secret key: secreto `RECAPTCHA_SECRET_KEY`, **nunca en el bundle**, solo en el entorno de la Lambda `contacto`. Verificado en vivo contra la API real de Google (`siteverify`) con un token deliberadamente inválido: rechazó con 400 antes de llegar a SES — confirma que la integración real funciona sin arriesgar un envío de correo de prueba |
@@ -649,6 +675,45 @@ Todo lo de esta tabla fue **verificado por API el 01/09/2026**, no recordado.
 **Nombres de stack esperados:** `letiende-co-staging` y `letiende-co-production` — confirmado
 (T-0007): `serverless.yml` declara `service: letiende-co`, y Serverless Framework arma el nombre del
 stack como `${service}-${stage}`. Todavía no desplegado, solo empaquetado.
+
+**Secrets de GitHub Actions (T-0010, `.github/workflows/deploy.yml`), verificado con
+`gh secret list` el 03/09/2026 — los 8 ya están configurados:**
+
+| Secret | Estado | Uso |
+|---|---|---|
+| `GOOGLE_ANALYTICS_ID` | ✅ configurado (T-0006) | `postbuild`, ambos stages |
+| `GOOGLE_MAPS_API_KEY` | ✅ configurado (T-0006) | `postbuild`, ambos stages |
+| `RECAPTCHA_SITE_KEY` | ✅ configurado (T-0009) | `postbuild`, ambos stages |
+| `RECAPTCHA_SECRET_KEY` | ✅ configurado (T-0009) | entorno de la Lambda `contacto`, ambos stages |
+| `SERVERLESS_LICENSE_KEY` | ✅ configurado por el humano el 03/09/2026 | `serverless package`/`deploy`, todos los jobs |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | ✅ configurados el 03/09/2026 — access key del usuario IAM personal `@ocastelblanco` (mismo patrón que Ágora/Babel, ADR-021) | `serverless package`/`deploy`, todos los jobs |
+| `SES_REMITENTE` | ✅ configurado el 03/09/2026 — `info@letiende.co`, identidad de correo ya verificada en SES (`aws sesv2 list-email-identities`) | entorno de la Lambda `contacto`, ambos stages |
+
+**Nota de seguridad sobre `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`:** el usuario `@ocastelblanco`
+pertenece al grupo IAM `Administrador` — es decir, estos dos secrets son credenciales de **admin
+completo** sobre la cuenta compartida (Ágora, Babel, Comandante), no credenciales acotadas al
+despliegue de este stack. Decisión explícita del humano tras conocer ese detalle (mismo riesgo que ya
+existe hoy en Ágora y Babel, que usan el mismo patrón) — ver ADR-021. Si algún día se decide acotar
+esto, tendría que ser un usuario IAM dedicado con una política de solo lo que `serverless deploy`
+necesita, migrado en los tres repositorios a la vez.
+
+Antes de tener los 8 secrets, se verificó con un PR real (T-0010, `docs/TODO.md`) que su ausencia hace
+fallar `build-y-test` en "Verificar sintaxis de infraestructura" y que, por `needs: build-y-test`,
+ningún job de despliegue se dispara (comportamiento correcto). **Con los 8 secrets ya configurados, se
+volvió a correr el mismo workflow (PR #14) y esta vez el despliegue real a staging se completó**: los
+tres jobs (`build-y-test`, `desplegar-staging`) en verde, `serverless deploy --stage staging` creó el
+stack `letiende-co-staging` de verdad. Verificado además con `curl` real, no solo con el resultado del
+job: `GET /` → 200 HTML, `GET /robots.txt` → `Disallow: /`, `GET /ruta-inventada` → 404 real. Y el
+gotcha de `${env:X, ''}` (tech-specs.md §9) se descartó por CLI, no por fe:
+`aws lambda get-function-configuration --function-name letiende-co-staging-contacto` confirma
+`SES_REMITENTE`/`RECAPTCHA_SECRET_KEY` con su valor real, no cadena vacía.
+
+**Corrección a `tech-specs.md` §9:** la tabla de esa sección listaba también `SES_DESTINATARIO` y
+`URL_BASE_APP` como secrets necesarios. Ninguno de los dos se usa en el código real: `contacto.ts`
+envía el correo a `remitente` mismo (`Destination: { ToAddresses: [remitente] }`, no a un buzón
+distinto), y la URL canónica del sitio es la constante `DOMINIO` de `src/app/core/seo/dominio.ts`
+(`'https://letiende.co'`), no una variable de entorno. Corregido en `tech-specs.md` — no se agregaron
+al workflow para no cablear secretos que ningún código lee.
 
 **Por crear** (no existen todavía; se anotan aquí sus identificadores en cuanto existan):
 

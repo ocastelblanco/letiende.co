@@ -1,0 +1,202 @@
+name: Build, test y despliegue
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  build-y-test:
+    name: Build + test (PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias (reproducible, package-lock.json)
+        run: npm ci
+
+      - name: Build de producción del frontend Angular (SSR)
+        run: npm run build -- --configuration=production
+
+      - name: Build de TypeScript de las Lambdas (server/)
+        run: npm run build:api
+
+      - name: Empaqueta con esbuild la Lambda "contacto"
+        run: npm run bundle:api
+
+      - name: Pruebas unitarias (frontend, Vitest vía @angular/build:unit-test)
+        run: npm test -- --watch=false
+
+      - name: Pruebas unitarias (backend, server/api)
+        run: npm run test:api
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Verificación de tipos de todo el proyecto (referencias de tsconfig.json)
+        run: npx tsc --build tsconfig.json --noEmit
+
+      - name: Verificar sintaxis de infraestructura (serverless package)
+        run: npx serverless package --stage staging
+        env:
+          # License Key de Serverless Framework v4 (sin depender del
+          # dashboard), necesaria para que la CLI opere en CI sin login
+          # interactivo (tech-specs.md §9). Pendiente de configurar como
+          # secret del repositorio — ver docs/MEMORY.md.
+          SERVERLESS_LICENSE_KEY: ${{ secrets.SERVERLESS_LICENSE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  desplegar-staging:
+    name: Deploy a staging
+    if: github.event_name == 'pull_request'
+    needs: build-y-test
+    runs-on: ubuntu-latest
+    environment: staging
+    concurrency:
+      # Un solo despliegue de staging a la vez: si hay pushes seguidos al
+      # mismo PR (o PRs distintos abiertos en paralelo), solo el más
+      # reciente termina desplegado — evita que dos runs se pisen entre sí
+      # sobre el mismo stack compartido de staging (mismo gotcha que Ágora y
+      # Babel, docs/MEMORY.md §7).
+      group: desplegar-staging
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias (reproducible, package-lock.json)
+        run: npm ci
+
+      - name: Build de producción del frontend Angular (SSR)
+        run: npm run build -- --configuration=production
+        env:
+          # Llaves públicas de Google/reCAPTCHA (ADR-017): el postbuild
+          # (scripts/inyectar-llaves-publicas.mjs) las sustituye sobre
+          # dist/ ya compilado. Sin ellas el marcador se queda tal cual —
+          # inofensivo, pero el mapa/GA4/reCAPTCHA no funcionan en el sitio
+          # desplegado.
+          GOOGLE_ANALYTICS_ID: ${{ secrets.GOOGLE_ANALYTICS_ID }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+
+      - name: Build de TypeScript de las Lambdas (server/)
+        run: npm run build:api
+
+      - name: Empaqueta con esbuild la Lambda "contacto"
+        run: npm run bundle:api
+
+      - name: Desplegar con Serverless Framework (stage staging)
+        id: deploy
+        run: |
+          npx serverless deploy --stage staging
+          # Se lee el endpoint del Output de CloudFormation
+          # (serverless.yml resources.Outputs.HttpApiUrl), no del texto de
+          # salida de `serverless deploy`: en Serverless Framework 4 ese
+          # resumen no siempre llega por stdout (mismo gotcha ya verificado
+          # en Ágora, docs/MEMORY.md §7).
+          endpoint=$(aws cloudformation describe-stacks \
+            --stack-name letiende-co-staging \
+            --region us-east-1 \
+            --query "Stacks[0].Outputs[?OutputKey=='HttpApiUrl'].OutputValue" \
+            --output text)
+          echo "endpoint=$endpoint" >> "$GITHUB_OUTPUT"
+        env:
+          SERVERLESS_LICENSE_KEY: ${{ secrets.SERVERLESS_LICENSE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # Secretos de negocio que serverless.yml inyecta como variables de
+          # entorno de la Lambda "contacto" (con valor por defecto '' si el
+          # secret aún no existe en GitHub, así que su ausencia no rompe el
+          # deploy — pero sí el envío real, CLAUDE.md §5/docs/MEMORY.md §7:
+          # verificar por CLI tras el despliegue).
+          SES_REMITENTE: ${{ secrets.SES_REMITENTE }}
+          RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+
+      - name: Smoke test contra staging recién desplegado
+        run: |
+          url="${{ steps.deploy.outputs.endpoint }}/"
+          codigo=$(curl -sS -o /tmp/index.html -w '%{http_code}' "$url")
+          echo "GET $url → HTTP $codigo"
+          test "$codigo" = "200"
+          # No solo el código: confirma que es el HTML servido por SSR, no
+          # una página de error de API Gateway/CloudFormation.
+          grep -qi '<html' /tmp/index.html
+
+      - name: Comentar la URL de staging en el PR
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" --body \
+            "🚀 Desplegado a **staging**: ${{ steps.deploy.outputs.endpoint }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  desplegar-produccion:
+    name: Deploy a producción
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      # Mismo motivo que el grupo `desplegar-staging`: si varios PRs se
+      # fusionan a `main` en sucesión rápida, cada merge dispara su propio
+      # deploy a producción — sin este grupo, dos runs pueden chocar contra
+      # el mismo stack de CloudFormation en `UPDATE_IN_PROGRESS` (gotcha
+      # heredado de Ágora/Babel, docs/MEMORY.md §7). `cancel-in-progress:
+      # false` (a diferencia de staging): el run en curso termina en vez de
+      # cancelarse a mitad de un `serverless deploy` a producción.
+      group: desplegar-produccion
+      cancel-in-progress: false
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias (reproducible, package-lock.json)
+        run: npm ci
+
+      - name: Build de producción del frontend Angular (SSR)
+        run: npm run build -- --configuration=production
+        env:
+          GOOGLE_ANALYTICS_ID: ${{ secrets.GOOGLE_ANALYTICS_ID }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+
+      - name: Build de TypeScript de las Lambdas (server/)
+        run: npm run build:api
+
+      - name: Empaqueta con esbuild la Lambda "contacto"
+        run: npm run bundle:api
+
+      - name: Desplegar con Serverless Framework (stage production)
+        run: npx serverless deploy --stage production
+        env:
+          SERVERLESS_LICENSE_KEY: ${{ secrets.SERVERLESS_LICENSE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          SES_REMITENTE: ${{ secrets.SES_REMITENTE }}
+          RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}

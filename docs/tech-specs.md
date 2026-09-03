@@ -445,11 +445,9 @@ GitHub Actions, y `serverless.yml` los resuelve con `${env:NOMBRE, ''}`.
 
 | Variable | Propósito | Contexto |
 |---|---|---|
-| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Despliegue | CI, ambos stages |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Despliegue (llaves de larga duración — ADR-021, no OIDC) | CI, ambos stages |
 | `SERVERLESS_LICENSE_KEY` | Serverless Framework 4 sin login interactivo | CI, ambos stages |
-| `SES_REMITENTE` | Dirección desde la que sale el correo de contacto | Lambda `contacto` |
-| `SES_DESTINATARIO` | Buzón del equipo que recibe los mensajes | Lambda `contacto` |
-| `URL_BASE_APP` | Dirección canónica, para canónicas y mapa del sitio | Lambda `ssr` |
+| `SES_REMITENTE` | Dirección desde la que sale el correo de contacto (también el buzón que lo recibe: `Destination` es el propio `SES_REMITENTE`, no un buzón separado) | Lambda `contacto` |
 | `CLOUDFRONT_DISTRIBUTION_ID_STAGING` | Invalidación tras desplegar staging | CI, entorno `staging` |
 | `CLOUDFRONT_DISTRIBUTION_ID_PRODUCTION` | Invalidación tras desplegar producción | CI, entorno `production` |
 | `ACM_CERTIFICATE_ARN_STAGING` | Certificado de `staging.letiende.co` (us-east-1) | CI, entorno `staging` |
