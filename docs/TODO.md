@@ -218,8 +218,10 @@ pipeline que a mano, aunque no es un bloqueo estricto
   implementada de verdad). Se agregó reCAPTCHA v3 (`RecaptchaService`, verificación en la misma
   petición que el envío — a diferencia del legado de 2025), con la site key pública sin versionar
   (mismo mecanismo de marcador que Maps/GA4) y `RECAPTCHA_SECRET_KEY` como variable de entorno de la
-  Lambda. Ver ADR-020. 15/15 pruebas del handler y 44/44 de Angular. **Pendiente del humano:** crear
-  el par de llaves en `google.com/recaptcha/admin`. Detalle completo en `MEMORY.md` §9.
+  Lambda. Ver ADR-020. 15/15 pruebas del handler y 44/44 de Angular. El humano ya creó y dio el par
+  de llaves el mismo día — guardadas como secrets de GitHub Actions, verificadas en vivo contra la
+  API real de Google con un token inválido a propósito (rechazó antes de llegar a SES). Detalle
+  completo en `MEMORY.md` §9.
 
 - **T-0007** — [FEATURE] `serverless.yml` del contenedor, solo la función `ssr`. Completada
   02/09/2026. `src/server.ts` ahora exporta `app`; `server/ssr/handler.mjs` (JavaScript plano, no

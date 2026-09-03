@@ -569,10 +569,9 @@ terminar de implementar.
 
 **Consecuencia.** Las tres capas de antiabuso (honeypot, límite de tasa, reCAPTCHA) ahora son
 complementarias, no redundantes: cada una atrapa un tipo de abuso distinto que las otras dos no
-cubren. `docs/MEMORY.md` §2 "Pendientes de terceros" gana la nota de que falta que el humano cree el
-par de llaves en `google.com/recaptcha/admin` (v3, dominios `letiende.co`, `staging.letiende.co`,
-`localhost`) — mientras tanto, el marcador sin sustituir hace que el envío responda 400 con un
-mensaje claro, no que falle en silencio.
+cubren. El par de llaves ya lo dio el humano el mismo día (02/09/2026) — guardado como los secrets
+`RECAPTCHA_SITE_KEY`/`RECAPTCHA_SECRET_KEY` de GitHub Actions (§5), verificado en vivo contra la API
+real de `siteverify` con un token deliberadamente inválido: rechazó con 400 antes de llegar a SES.
 
 ---
 
@@ -645,6 +644,7 @@ Todo lo de esta tabla fue **verificado por API el 01/09/2026**, no recordado.
 | `letiende-api` (heredada) | REST API `uklz2j4u38` · dominio `api.letiende.co` · Lambda `nodejs22.x`, 128 MB, rol `generica-role-o1869of8` |
 | Google Analytics 4 | Measurement ID dado por el humano el 02/09/2026, reemplaza la integración legacy (Universal Analytics). **No versionado** (ADR-017): vive como secreto `GOOGLE_ANALYTICS_ID` en GitHub Actions del repositorio. Solo dispara en el host `letiende.co` (ADR-015) |
 | Google Maps Embed API | Llave dada por el humano el 02/09/2026, pública por diseño y restringida por dominio del lado de Google Cloud. **No versionada** (ADR-017): vive como secreto `GOOGLE_MAPS_API_KEY` en GitHub Actions del repositorio. **Pendiente de verificar por el humano:** que la restricción de referrer HTTP en Google Cloud Console cubra `letiende.co`, `staging.letiende.co` y `localhost` — no se puede confirmar desde este entorno |
+| reCAPTCHA v3 (`/api/contacto`) | Par de llaves dado por el humano el 02/09/2026 (registrado en `google.com/recaptcha/admin`, dominios `letiende.co`/`staging.letiende.co`/`localhost`). Site key: secreto `RECAPTCHA_SITE_KEY` en GitHub Actions (pública por diseño, mismo mecanismo de marcador que Maps/GA4 — ADR-017). Secret key: secreto `RECAPTCHA_SECRET_KEY`, **nunca en el bundle**, solo en el entorno de la Lambda `contacto`. Verificado en vivo contra la API real de Google (`siteverify`) con un token deliberadamente inválido: rechazó con 400 antes de llegar a SES — confirma que la integración real funciona sin arriesgar un envío de correo de prueba |
 
 **Nombres de stack esperados:** `letiende-co-staging` y `letiende-co-production` — confirmado
 (T-0007): `serverless.yml` declara `service: letiende-co`, y Serverless Framework arma el nombre del
@@ -659,10 +659,6 @@ stack como `${service}-${stage}`. Todavía no desplegado, solo empaquetado.
 | Distribución CloudFront de staging | por crear |
 | Distribución CloudFront de producción | por crear |
 | Registro `A` alias `staging.letiende.co` | por crear |
-| Par de llaves reCAPTCHA v3 (`google.com/recaptcha/admin`, dominios `letiende.co`,
-  `staging.letiende.co`, `localhost`) | **por crear — pendiente del humano.** El código (T-0009,
-  ADR-020) ya está listo con marcadores; sin las llaves reales, `/api/contacto` responde 400 a
-  cualquier envío (comportamiento esperado, no un bug) |
 
 **Registro de esfuerzo.** `metrics/pricing.json` tiene `as_of: 2026-06-24` para Anthropic — 69 días
 al 01/09/2026. **Vence el 22/09/2026**: pasado ese punto hay que reverificar las tarifas contra
@@ -1339,6 +1335,8 @@ puntaje mínimo 0.5, chequeo de `action`), en ADR-020.
 sustituir (sin llaves reales todavía), el fallo se maneja con gracia — aviso de error genérico, cero
 errores de consola.
 
-**Pendiente del humano:** crear el par de llaves en `google.com/recaptcha/admin` (v3, los tres
-dominios) y pasarlas — mientras tanto `/api/contacto` sigue respondiendo 400 a cualquier envío real,
-a propósito.
+**Cerrado el mismo día:** el humano ya creó el par de llaves y las dio; guardadas como los secrets
+`RECAPTCHA_SITE_KEY`/`RECAPTCHA_SECRET_KEY` de GitHub Actions (nunca en el repositorio). Verificado en
+vivo contra la API real de `siteverify` con un token deliberadamente inválido — rechazó con 400 antes
+de llegar a SES, sin riesgo de un envío de correo de prueba (la lección de ADR-019/§7 sobre no
+invocar servicios externos reales sin cuidado, aplicada esta vez desde el principio).
