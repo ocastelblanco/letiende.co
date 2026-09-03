@@ -11,17 +11,48 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ## Tarea T-0013 — [INFRA] Cambios mínimos en Ágora: `--base-href /cartelera/`, barra común, sitemap, 301
 
-> **Estado (03/09/2026): implementada, PR #58 del repositorio `agora-letiende` abierto, sin fusionar
-> todavía.** Los cuatro cambios están hechos y verificados en vivo (build, tests, curl y navegador
-> real). Se encontró y se resolvió, con confirmación explícita del humano en cada decisión, un
-> hallazgo real no anticipado por esta planeación: con `baseHref` fijo en `/cartelera/`, el Router de
-> Angular del lado cliente exige que la URL real ya lleve ese prefijo — sin una redirección adicional,
-> `agora.letiende.co/login` (y el resto del panel autenticado) habría respondido 404, rompiendo el
-> acceso directo del staff. La redirección 301 quedó en dos ramas: `/`/`evento/:slug` cross-domain a
-> `letiende.co/cartelera` (SEO), el resto mismo dominio con el prefijo agregado (el staff sigue
-> entrando por `agora.letiende.co`). Detalle técnico completo en `docs/MEMORY.md` de este repositorio,
-> §5, y en `docs/MEMORY.md`/`docs/TODO.md` del propio repositorio de Ágora. Esta tarea sigue activa
-> hasta que el humano revise y fusione el PR #58 — nada de esto se despliega solo.
+> **Estado (03/09/2026, actualizado): T-0013 (Ágora) y T-0014 (Babel) implementadas, verificadas de
+> punta a punta en vivo (curl real + navegador real con `claude-in-chrome`), con **cuatro rondas de
+> hallazgos reales** encontrados y corregidos tras el primer despliegue — ninguno anticipado por la
+> planeación original de `tech-specs.md` §7.2/§7.3. Detalle técnico completo de cada uno en
+> `docs/MEMORY.md` §7 de este repositorio, y en `docs/MEMORY.md`/`docs/TODO.md` de los propios
+> repositorios de Ágora y Babel. Ninguno de estos PRs se fusiona solo — quedan a la espera de revisión
+> humana:
+>
+> 1. **`baseHref` fijo rompe rutas sin prefijo fuera del proxy** — con `baseHref: /cartelera/`
+>    (Ágora) / `/libros/` (Babel), el Router de Angular del lado cliente exige que la URL real ya
+>    lleve el prefijo. Redirección 301 en dos ramas: `/`/`evento-o-libro-detalle` cross-domain a
+>    `letiende.co/cartelera|libros` (SEO), el resto mismo dominio con el prefijo agregado (el staff
+>    sigue entrando por `agora.letiende.co`/`babel.letiende.co` igual que siempre).
+> 2. **El sitemap no respondía a través del proxy** — CloudFront reenvía la ruta completa sin
+>    `OriginPath`, así que `staging.letiende.co/cartelera/sitemap.xml` llegaba a cada app como
+>    literalmente `/cartelera/sitemap.xml`/`/libros/sitemap.xml`, que no calzaba con la ruta
+>    `/sitemap.xml` sin prefijo registrada en su API Gateway (404/302 según la app). Corregido
+>    registrando también la ruta con prefijo en cada API Gateway (`agora-letiende`#61,
+>    `babel-letiende`#111).
+> 3. **El `Host` real del visitante nunca llega al SSR de Ágora/Babel** — la política
+>    `AllViewerExceptHostHeader` (obligatoria para que API Gateway no rechace con 403) despoja el
+>    header `Host` original. Corregido con una `CloudFront Function` (`FuncionInyectarHostVisitante`)
+>    que lo copia a un header propio (`x-le-tiende-host`) antes de reenviar (`letiende.co`#20).
+> 4. **Las llamadas a la API propia (`/api/...`) de Ágora/Babel no llegaban a su app cuando estaban
+>    embebidas** — el hallazgo más grave, reportado en vivo por el humano ("nada funciona"): esas
+>    rutas son absolutas (`http.get('/api/eventos-publicos')`), y el navegador las resuelve contra el
+>    ORIGEN de la página, ignorando el `<base href>` por completo — salían sin prefijo hacia
+>    `staging.letiende.co/api/...`, que CloudFront enrutaba al comportamiento por defecto (este mismo
+>    contenedor) en vez de a la app real. Arreglo en dos partes, ambas necesarias: (a) la misma
+>    `CloudFront Function` del punto 3, ampliada para quitar el prefijo de `/api/*`/`/sitemap.xml`
+>    antes de reenviar al origen (`letiende.co`#23); (b) el `absoluteUrlInterceptor` de cada app
+>    (ya existía para el caso SSR) extendido para anteponer el prefijo a las llamadas `/api/*` cuando
+>    `EmbebidoService.embebido` es `true` (`agora-letiende`#62, `babel-letiende`#111). Verificado con
+>    navegador real: las 5 llamadas de API entre las dos apps (`eventos-publicos`, `libros`,
+>    `espacios`, `muebles`, `ubicaciones`) salen prefijadas y responden 200, catálogo y cartelera
+>    cargan datos reales, sin errores de consola.
+>
+> **PRs abiertos esperando revisión humana al cierre de esta ronda:** `letiende.co`#23 (prefijo de
+> API/sitemap); `agora-letiende`#61 (sitemap), `#62` (interceptor); `babel-letiende`#111 (T-0014
+> completa, con los 4 hallazgos ya incorporados). `letiende.co`#20 (host visitante) ya fusionado y en
+> producción — todo lo demás está en `staging`, verificado, pero no se despliega a producción sin que
+> el humano revise y fusione cada PR.
 
 **Origen:** `tech-specs.md` §7.3, T-11 — T-13 (T-0011: ACM + CloudFront + `staging.letiende.co`)
 completada y verificada en vivo el 03/09/2026 (PR #17 + #18), así que esta tarea ya no tiene ningún
