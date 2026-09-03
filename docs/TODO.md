@@ -165,7 +165,17 @@ bloqueo pendiente
   `/robots.txt`, 404 real en una ruta inventada) y con
   `aws lambda get-function-configuration --function-name letiende-co-staging-contacto`: `SES_REMITENTE`
   y `RECAPTCHA_SECRET_KEY` con su valor real, no la cadena vacía del gotcha de `${env:X, ''}`
-  (tech-specs.md §9). Esto además destraba T-0011: ya no depende de nada. Detalle completo en
+  (tech-specs.md §9). Esto además destraba T-0011: ya no depende de nada.
+
+  **Fusionado el mismo día:** el humano fusionó el PR #14 a `main` y eliminó la rama remota. Eso
+  disparó `desplegar-produccion` de verdad (`push` a `main`) — se verificó con
+  `gh run view --json jobs` que en ese run **solo** corrió `desplegar-produccion`
+  (`build-y-test`/`desplegar-staging` quedaron `skipped`, confirmando en producción lo mismo que ya se
+  había confirmado por diseño para staging: cada job solo se dispara por el evento que le corresponde).
+  `letiende-co-production` existe de verdad — verificado con `curl` real (200 HTML en `/`, 404 real) y
+  `aws lambda get-function-configuration --function-name letiende-co-production-contacto` con los
+  secrets reales. El sitio público (`letiende.co`, CloudFront `E33QAN86FY24JZ`) **no cambió**: nada
+  apunta todavía a este stack nuevo, eso es el cutover de T-0011/T-14/T-15. Detalle completo en
   `MEMORY.md` ADR-021 y §5.
 
 - **T-0001** — [FEATURE] Andamiaje de la aplicación Angular 22 con SSR y Tailwind 4. Completada
