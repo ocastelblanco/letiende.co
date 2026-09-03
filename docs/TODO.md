@@ -9,64 +9,6 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0009 — [FEATURE] Lambda de contacto con SES y antiabuso
-
-**Origen:** PRD §5 F-6, `tech-specs.md` §5, T-7 · `CLAUDE.md` §5, A03/A07 · depende de T-0006 (hecha)
-
-**Contexto.** `ContactoComponent` (T-0006) ya tiene el formulario completo, validado en el navegador,
-con la casilla de consentimiento (Ley 1581). `enviar()` hoy solo pone `estadoEnvio` en
-`'backend-pendiente'` — no hace ninguna llamada HTTP real. Esta tarea es ese backend.
-
-**Archivos:**
-
-- `server/api/handlers/contacto.ts` (nuevo)
-- `server/api/handlers/contacto.spec.ts`
-- `src/server.ts` (agrega `app.post('/api/contacto', …)`, junto a `/robots.txt` y `/sitemap.xml` de
-  T-0008)
-- `src/app/features/contacto/contacto.ts` (`enviar()` pasa a hacer la petición HTTP real)
-- `package.json` (`@aws-sdk/client-ses` como dependencia nueva)
-
-**Qué hacer:**
-
-1. Handler que reciba `{ nombre, correo, mensaje, consentimientoDatos }`, limpie cada campo de texto
-   con algo equivalente a `v.replace(/[\r\n]/g, ' ').trim().slice(0, 200)` (CLAUDE.md §5, A03 —
-   inyección de encabezados de correo) y **rechace la petición si `consentimientoDatos` no es
-   `true`**, incluso si el navegador ya validó lo mismo: la validación del cliente no basta.
-
-2. Envía por AWS SES con `@aws-sdk/client-ses`. `Source` es **siempre**
-   `process.env.SES_REMITENTE` — nunca un valor del cuerpo de la petición. El correo de quien escribe
-   va en `ReplyToAddresses`, nunca en `Source` (CLAUDE.md, prohibición absoluta).
-
-3. Antiabuso, los tres a la vez, no por separado — es parte de la definición de terminado, no una
-   mejora posterior (CLAUDE.md §5, A07):
-   - Campo trampa oculto (*honeypot*): un campo que un humano nunca llena: si llega con contenido,
-     responder 200 sin enviar nada (no delatar al bot con un 4xx).
-   - Límite por dirección IP en una ventana de tiempo — decidir dónde vive el contador (¿DynamoDB
-     nuevo? PRD §9/D-1 dice sin base de datos propia fuera de lo estrictamente necesario; evaluar
-     alternativa en memoria de la Lambda vs. costo de un almacén nuevo antes de implementar).
-   - Tope de longitud por campo (ya cubierto por el `.slice(0, 200)` del punto 1, pero verificar que
-     `mensaje` tenga un tope propio, más generoso que nombre/correo).
-
-4. **Nunca** escribir nombre, correo ni contenido del mensaje en los logs de CloudWatch (Ley 1581,
-   CLAUDE.md). Los mensajes no se almacenan: se envían y se acaban ahí.
-
-5. `ContactoComponent.enviar()` pasa a hacer `HttpClient.post('/api/contacto', …)` de verdad. El
-   `signal` de estado gana un caso más para el error del backend (además de `'backend-pendiente'`),
-   sin inventar mensajes de éxito que no correspondan a una respuesta real.
-
-**Definition of done:**
-
-- [ ] `npm run build -- --configuration=production` sin errores
-- [ ] `npm run lint` y `npx tsc --noEmit` sin errores
-- [ ] `npm test -- --watch=false` pasa, con pruebas del handler: consentimiento ausente rechaza,
-      inyección de `\r\n` en `nombre`/`correo` no llega a los encabezados de SES, honeypot lleno
-      responde 200 sin enviar
-- [ ] `Source` de SES verificado como `process.env.SES_REMITENTE` por lectura del código, nunca del
-      cuerpo de la petición
-- [ ] Verificado que nombre/correo/mensaje no aparecen en ningún `console.log` ni log de CloudWatch
-
----
-
 ## Tarea T-0007 — [FEATURE] `serverless.yml` del contenedor (solo SSR)
 
 **Origen:** `tech-specs.md` §11, T-8 · depende solo de T-1 (hecha)
@@ -111,6 +53,84 @@ bloque cuando exista código real que desplegar.
       verificables por lectura del YAML, no solo declarados
 - [ ] `docs/MEMORY.md` actualizado con el nombre real del stack y cualquier decisión tomada sobre el
       adaptador Lambda del SSR
+
+---
+
+## Tarea T-0009 — [FEATURE] Lambda de contacto con SES y antiabuso
+
+**Origen:** PRD §5 F-6, `tech-specs.md` §5 y §1 (diagrama de arquitectura), T-7 · `CLAUDE.md` §5,
+A03/A07 · **depende de T-0007** (necesita que `serverless.yml` ya exista, para agregarle la función
+`contacto`)
+
+**Contexto.** `ContactoComponent` (T-0006) ya tiene el formulario completo, validado en el navegador,
+con la casilla de consentimiento (Ley 1581). `enviar()` hoy solo pone `estadoEnvio` en
+`'backend-pendiente'` — no hace ninguna llamada HTTP real. Esta tarea es ese backend.
+
+**Corrección frente al primer borrador de esta tarea:** `contacto` **no** es una ruta de Express
+dentro de `src/server.ts`. El diagrama de `tech-specs.md` §1 la muestra como una **Lambda separada**,
+hermana de `ssr`, con su propia flecha a SES — mismo patrón que Ágora
+(`agora/server/api/handlers/*.ts`, cada uno una Lambda propia con `APIGatewayProxyHandlerV2`, nunca
+montadas en su Express del SSR). Separarla importa: permisos de IAM para enviar por SES escopados
+solo a esta función, no a `ssr`, y un bug en el formulario de contacto no puede tumbar el SSR ni
+viceversa.
+
+**Archivos:**
+
+- `server/api/handlers/contacto.ts` (nuevo — handler `APIGatewayProxyHandlerV2`, no una ruta Express)
+- `server/api/handlers/contacto.spec.ts`
+- `server/tsconfig.json` (nuevo, mismo patrón que el de Ágora: `include: ["api/**/*.ts"]`, runtime
+  `nodejs24.x`, tipos `node` + `aws-lambda`)
+- `serverless.yml` (agrega la función `contacto` y su ruta `POST /api/contacto` en el HTTP API que
+  T-0007 ya declaró — **no** bajo el comodín `/{proxy+}` de `ssr`)
+- `src/app/features/contacto/contacto.ts` (`enviar()` pasa a hacer la petición HTTP real; agrega el
+  campo honeypot al `FormGroup`)
+- `src/app/features/contacto/contacto.html` (campo honeypot, oculto de verdad — no solo
+  `display:none`, ver punto 3)
+- `package.json` (`@aws-sdk/client-ses` y `@types/aws-lambda` como dependencias nuevas)
+
+**Qué hacer:**
+
+1. Handler que reciba `{ nombre, correo, mensaje, consentimientoDatos, <campo honeypot> }`, limpie
+   cada campo de texto con algo equivalente a `v.replace(/[\r\n]/g, ' ').trim().slice(0, 200)`
+   (CLAUDE.md §5, A03 — inyección de encabezados de correo; `mensaje` con un tope propio, más
+   generoso) y **rechace la petición si `consentimientoDatos` no es `true`**, incluso si el navegador
+   ya validó lo mismo: la validación del cliente no basta.
+
+2. Envía por AWS SES con `@aws-sdk/client-ses`. `Source` es **siempre**
+   `process.env.SES_REMITENTE` — nunca un valor del cuerpo de la petición. El correo de quien escribe
+   va en `ReplyToAddresses`, nunca en `Source` (CLAUDE.md, prohibición absoluta).
+
+3. Antiabuso, los tres a la vez, no por separado — es parte de la definición de terminado, no una
+   mejora posterior (CLAUDE.md §5, A07):
+   - Campo trampa oculto (*honeypot*): si llega con contenido, responder 200 sin enviar nada (no
+     delatar al bot con un 4xx). En el HTML tiene que estar realmente oculto a un humano (fuera de
+     pantalla + `aria-hidden`/`tabindex="-1"`, no `display:none` a secas — algunos rastreadores de
+     accesibilidad sí leen `display:none` y podría confundir a un lector de pantalla real).
+   - Límite por dirección IP en una ventana de tiempo — evaluar en memoria de la Lambda (gratis, pero
+     no se comparte entre invocaciones concurrentes ni sobrevive un cold start: mitigación parcial,
+     no una garantía) frente al costo de un almacén nuevo (DynamoDB con TTL, que choca con PRD §9/D-1
+     "sin base de datos propia"; o una regla de tasa de AWS WAF, que es infraestructura de CloudFront
+     y no existe hasta T-13). Decidir y documentar el trade-off en `MEMORY.md`, no dejarlo implícito.
+   - Tope de longitud por campo (punto 1).
+
+4. **Nunca** escribir nombre, correo ni contenido del mensaje en los logs de CloudWatch (Ley 1581,
+   CLAUDE.md). Los mensajes no se almacenan: se envían y se acaban ahí.
+
+5. `ContactoComponent.enviar()` pasa a hacer `HttpClient.post('/api/contacto', …)` de verdad. El
+   `signal` de estado gana un caso más para el error del backend (además de `'backend-pendiente'`),
+   sin inventar mensajes de éxito que no correspondan a una respuesta real.
+
+**Definition of done:**
+
+- [ ] `npm run build -- --configuration=production` sin errores
+- [ ] `npm run lint` y `npx tsc --noEmit` sin errores (incluido `server/tsconfig.json`)
+- [ ] `npm test -- --watch=false` pasa, con pruebas del handler: consentimiento ausente rechaza,
+      inyección de `\r\n` en `nombre`/`correo` no llega a los encabezados de SES, honeypot lleno
+      responde 200 sin enviar
+- [ ] `Source` de SES verificado como `process.env.SES_REMITENTE` por lectura del código, nunca del
+      cuerpo de la petición
+- [ ] Verificado que nombre/correo/mensaje no aparecen en ningún `console.log` ni log de CloudWatch
+- [ ] `npx serverless package --stage staging` sin errores con la función `contacto` incluida
 
 ---
 
