@@ -15,8 +15,8 @@ describe('NosotrosComponent', () => {
     const fixture = TestBed.createComponent(NosotrosComponent);
     fixture.detectChanges();
     const texto = (fixture.nativeElement as HTMLElement).textContent?.trim() ?? '';
-    expect(texto).toContain('centro cultural');
-    expect(texto).toContain('teatro');
+    expect(texto).toContain('casa cultural');
+    expect(texto).toContain('escenario');
     expect(texto).toContain('librería');
   });
 
