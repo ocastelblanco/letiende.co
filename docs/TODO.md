@@ -22,16 +22,57 @@ entrada T-0013/T-0014, hallazgo 8) quedó cerrado — dos `ResponseHeadersPolicy
 verificadas en vivo contra `staging.letiende.co` (CSP completo en las páginas propias del contenedor,
 los otros 4 encabezados sin CSP en `/cartelera/*`/`/libros/*`/`/assets/*`, decisión explícita del
 humano para no arriesgar el checkout real de Ágora). Detalle completo en el Historial de abajo,
-`tech-specs.md` §7.2 y `CLAUDE.md` §5. PR **#25**, abierto, esperando revisión humana. Con esto,
-**nada** bloquea técnicamente el cutover — T-15 (roadmap) queda listo para que el humano decida cuándo
-ejecutarlo.
+`tech-specs.md` §7.2 y `CLAUDE.md` §5. PR **#25, fusionado**. Con esto, **nada** bloquea técnicamente
+el cutover.
+
+**T-0016 — [INFRA] Preparación del cutover (T-15), COMPLETA (04/09/2026):** dejado listo para que el
+humano solo tenga que ejecutar, no investigar, cuando decida el momento. Ver
+`docs/runbook-cutover-t15.md` para la secuencia exacta y el estado verificado en vivo (certificado
+ACM, ambas distribuciones, registros de Route 53). Hallazgo real durante la preparación: la
+distribución de producción (`ER22S2WADMM83`) todavía no tenía `Aliases`/`ViewerCertificate` propios en
+`serverless.yml` (quedaba en `AWS::NoValue`, sin que el roadmap lo mencionara como pendiente aparte) —
+agregado en PR **`infra/prepara-cutover-t15`**, con el certificado ya `ISSUED` de la distribución
+vieja (`ca9cd231-…`, cubre `letiende.co` y `www.letiende.co`). **Ese PR no se fusiona solo**: fusionarlo
+antes de quitar el alias de la distribución vieja hace fallar el deploy (`CNAMEAlreadyExists`) — el
+runbook cubre el orden correcto. El cutover en sí (quitar el alias viejo, fusionar ese PR, mover
+Route 53) sigue sin ejecutarse — eso sigue siendo la decisión del humano.
 
 ---
 
 ## Historial
 
+- **T-0016** — [INFRA] Preparación del cutover (T-15). Completada 04/09/2026, PR
+  `infra/prepara-cutover-t15` (código) + `docs/runbook-cutover-t15.md` (secuencia de ejecución).
+  Verificado contra la cuenta real de AWS, no de memoria: `ListDistributions`/
+  `GetDistributionConfig` de las tres distribuciones relevantes, `DescribeCertificate` del ACM de
+  `letiende.co` (`ca9cd231-…`, `ISSUED`, SAN cubre `www.letiende.co`, vence 2027-01-28,
+  `InUseBy` solo la distribución vieja — no exclusivo, se puede referenciar desde la nueva sin
+  conflicto) y `ListResourceRecordSets` de la zona de producción (`Z010633738KAGFIPOZVEW`: los
+  registros `A` de `letiende.co`/`www.letiende.co` apuntan hoy a `d1gbhem25hsxvv.cloudfront.net`,
+  la distribución vieja; además hay `MX`/`TXT`/`NS`/`SOA` que el runbook marca explícitamente como
+  intocables).
+
+  **Hallazgo real, no anticipado por el roadmap:** `serverless.yml` nunca declaró `Aliases`/
+  `ViewerCertificate` de producción — la distribución nueva (`ER22S2WADMM83`) seguía con
+  `CloudFrontDefaultCertificate` y sin alias, condición que haría inútil cualquier cambio de DNS
+  hasta corregirla. Agregado `Aliases: !If [EsStaging, ['staging.letiende.co'], ['letiende.co',
+  'www.letiende.co']]` y el `ViewerCertificate` con el ARN fijo del certificado ya existente (no se
+  creó uno nuevo). Verificado con `serverless package --stage production` y `--stage staging` (el
+  `Fn::If` resuelve distinto en cada uno, confirmado leyendo el JSON generado), build, 49/49 pruebas
+  y lint limpios.
+
+  **Decisión de diseño explícita, no delegada a CloudFormation:** el registro de Route 53 de
+  producción se deja fuera de este stack a propósito (ADR-006) — moverlo es un paso manual del
+  runbook, no una propiedad gestionada por `serverless.yml`, para que revertirlo no dependa del
+  ciclo de vida de este stack.
+
+  El PR de código queda **listo pero sin fusionar**: fusionarlo antes de quitar el alias de la
+  distribución vieja hace fallar el deploy real (`CNAMEAlreadyExists`, CloudFront no permite el
+  mismo alias en dos distribuciones a la vez). El cutover real (la secuencia completa de 4 pasos del
+  runbook) sigue sin ejecutarse — es la parte que el humano decide cuándo hacer.
+
 - **T-0015** — [INFRA] Encabezados de seguridad de CloudFront (CSP y 4 más). Completada 04/09/2026, PR
-  #25 abierto (sin fusionar todavía). Cierra el hallazgo 8 de la entrada T-0013/T-0014 de abajo: ninguna
+  #25, fusionado. Cierra el hallazgo 8 de la entrada T-0013/T-0014 de abajo: ninguna
   de las tres distribuciones de CloudFront del dominio emitía `Content-Security-Policy`,
   `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy` ni `X-Frame-Options`, pese a
   que `CLAUDE.md` §5 (A05) los exige — nunca se implementó un `ResponseHeadersPolicy` en T-0011.

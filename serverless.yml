@@ -99,12 +99,23 @@ functions:
 resources:
   # T-0011: certificado ACM + distribución de CloudFront + registro DNS de
   # staging. La distribución de producción se crea en el mismo cambio (misma
-  # estructura de behaviors, tech-specs.md §7.2) pero SIN alias todavía: no
-  # se le puede poner letiende.co/www.letiende.co como Aliases mientras la
-  # distribución actual (E33QAN86FY24JZ, docs/MEMORY.md §5) siga teniéndolos
-  # — CloudFront no permite el mismo alias en dos distribuciones a la vez.
-  # El alias se mueve en el cutover real (T-14/T-15), quitándolo de la vieja
-  # y poniéndolo en esta en la misma operación (ADR-006).
+  # estructura de behaviors, tech-specs.md §7.2).
+  #
+  # T-15 (cutover), preparado en este cambio: Aliases/ViewerCertificate de
+  # producción reutilizan letiende.co/www.letiende.co y el certificado ACM
+  # que hoy tiene la distribución vieja (E33QAN86FY24JZ, `ca9cd231-…`,
+  # SAN cubre ambos nombres, ISSUED hasta 2027-01-28 — verificado con
+  # acm describe-certificate el 04/09/2026, no asumido). Se referencia por
+  # ARN fijo, sin declarar un `AWS::CertificateManager::Certificate` nuevo:
+  # ya existe y no es exclusivo de una distribución, a diferencia del alias.
+  #
+  # ADVERTENCIA PARA QUIEN FUSIONE ESTO A `main`: fusionar dispara
+  # `desplegar-produccion` (`.github/workflows/deploy.yml`), que aplicaría
+  # este Alias de inmediato. CloudFront no permite el mismo alias en dos
+  # distribuciones a la vez, así que ese deploy FALLA (CNAMEAlreadyExists)
+  # si `letiende.co`/`www.letiende.co` siguen en la distribución vieja.
+  # **No fusionar sin haber quitado antes ese alias de la distribución
+  # vieja** — ver `docs/runbook-cutover-t15.md` para la secuencia completa.
   Conditions:
     EsStaging: !Equals ['${sls:stage}', 'staging']
 
@@ -301,14 +312,19 @@ resources:
           Comment: !Sub 'letiende-co ${sls:stage}'
           HttpVersion: http2
           IPV6Enabled: true
-          Aliases: !If [EsStaging, ['staging.letiende.co'], !Ref 'AWS::NoValue']
+          Aliases: !If [EsStaging, ['staging.letiende.co'], ['letiende.co', 'www.letiende.co']]
           ViewerCertificate:
             Fn::If:
               - EsStaging
               - AcmCertificateArn: !Ref CertificadoStaging
                 SslSupportMethod: sni-only
                 MinimumProtocolVersion: TLSv1.2_2021
-              - CloudFrontDefaultCertificate: true
+              # ARN fijo del certificado ya ISSUED de letiende.co/www.letiende.co
+              # (ver comentario de Conditions arriba) — no uno gestionado por
+              # este stack.
+              - AcmCertificateArn: arn:aws:acm:us-east-1:696912647258:certificate/ca9cd231-0aef-40ad-88dc-b8dc8369441b
+                SslSupportMethod: sni-only
+                MinimumProtocolVersion: TLSv1.2_2021
           # Los cuatro orígenes de tech-specs.md §7.2. Los endpoints de
           # Ágora/Babel son el execute-api CRUDO de cada stage (verificado
           # contra la cuenta real con apigatewayv2 GetApis el 03/09/2026,
@@ -422,8 +438,12 @@ resources:
 
     # Alias en la zona de producción de Route 53 (Z010633738KAGFIPOZVEW,
     # tech-specs.md §7.1) — la distribución de producción NO gana un
-    # registro en este cambio (ver comentario de Conditions arriba): eso es
-    # el cutover, T-14/T-15.
+    # registro aquí, a propósito: el registro de `letiende.co`/
+    # `www.letiende.co` sigue siendo el que ya existe (fuera de este stack,
+    # apuntando hoy a la distribución vieja E33QAN86FY24JZ) y el cutover lo
+    # cambia a mano (ADR-006, docs/runbook-cutover-t15.md) — no vía
+    # CloudFormation. Gestionarlo aquí ataría el rollback del dominio raíz
+    # al ciclo de vida de este stack, exactamente lo que ADR-006 evita.
     RegistroDnsStaging:
       Type: AWS::Route53::RecordSet
       Condition: EsStaging
