@@ -6,7 +6,14 @@
       <h2 id="titulo-ubicacion" class="text-xl font-semibold tracking-tight text-primary">
         Dónde y cuándo
       </h2>
-      <p class="mt-2">{{ datosNegocio.direccion }}</p>
+      <p class="mt-2">
+        Te esperamos en la <strong>{{ datosNegocio.calle }}</strong
+        >, sobre el Parkway, el corazón hipster de Bogotá 🧔🏻 👓 ☕ 🧢.
+      </p>
+      <br />
+      <h3 class="text-md font-semibold tracking-tight text-primary">
+        En la casa cultural Le Tiende, puedes darte gusto todos los días de la semana:
+      </h3>
       @for (bloque of datosNegocio.horarios; track bloque.diasEs) {
         <p>{{ bloque.diasEs }}: {{ bloque.horarioEs }}</p>
       }
@@ -24,7 +31,10 @@
       <h2 id="titulo-formulario" class="text-xl font-semibold tracking-tight text-primary">
         Escríbenos
       </h2>
-
+      <small
+        >Para reservar un espacio en nuestro café o nuestro auditorio, por favor déjanos algunos
+        datos:</small
+      >
       @if (estadoEnvio() === 'enviado') {
         <div
           role="status"
