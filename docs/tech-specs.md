@@ -389,6 +389,30 @@ Todos los sufijos son `.us-east-1.amazonaws.com`, omitidos en la tabla por ancho
    `OriginPath`), pero cada API Gateway solo tenía registrada la ruta sin prefijo. Se registró también
    la ruta con prefijo en el API Gateway de cada app.
 
+**Un séptimo hallazgo, real incidente de producción (T-0013/T-0014, PR #63 de `agora-letiende` y #112
+de `babel-letiende`):** la redirección de `/`/`evento-o-libro-detalle` que el diseño original hacía
+CROSS-DOMAIN a `letiende.co/cartelera|libros/...` (para consolidar SEO) se desplegó a producción de
+Ágora/Babel antes de que el cutover real de este stack (T-15) hiciera que ese destino existiera —
+`letiende.co` en producción sigue sirviendo el sitio estático viejo (`E33QAN86FY24JZ`). Como
+`agora.letiende.co`/`babel.letiende.co` son hoy el único acceso público real, ambos quedaron rotos.
+Corregido en ambos repos: mientras el cutover no ocurra, toda ruta redirige mismo dominio con el
+prefijo; la rama cross-domain queda comentada en el código de cada uno para restaurarse cuando T-15
+esté hecho — **no antes**, y es responsabilidad de quien ejecute T-15 volver a esos dos repos después
+del cutover para restaurarla.
+
+**Octavo hallazgo, encontrado en la verificación previa a T-15 (03/09/2026), no relacionado con el
+proxy:** ninguna de las tres distribuciones de CloudFront del dominio (`E33QAN86FY24JZ`/actual,
+`EQW683KP4VXIV`/staging, `ER22S2WADMM83`/producción nueva) emite los encabezados de seguridad que
+`CLAUDE.md` §5 (A05) exige como obligatorios en **todos** los behaviors: `Content-Security-Policy`,
+`Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `Referrer-Policy:
+strict-origin-when-cross-origin`, `X-Frame-Options: SAMEORIGIN` — verificado con `curl -i` real contra
+las tres, ninguna los trae. `serverless.yml` de este repositorio nunca declaró un
+`ResponseHeadersPolicy` de CloudFront (grep vacío); T-0011 nunca lo incluyó, pese a que la regla ya
+existía en `CLAUDE.md` cuando se planeó. No es una regresión de T-0013/T-0014 — es un requisito
+documentado desde antes que nunca se implementó. **Recomendado resolverlo antes o como parte de T-15**:
+después del cutover, `letiende.co` sirve contenido embebido de dos aplicaciones de terceros bajo el
+mismo origen, así que la ausencia de CSP pesa más que hoy.
+
 ### 7.3 Qué cambia en Ágora y en Babel
 
 El humano autorizó modificar ambos repositorios, con la instrucción de hacerlo **al mínimo**. La

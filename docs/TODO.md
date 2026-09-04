@@ -9,134 +9,67 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-## Tarea T-0013 — [INFRA] Cambios mínimos en Ágora: `--base-href /cartelera/`, barra común, sitemap, 301
-
-> **Estado (03/09/2026, actualizado): T-0013 (Ágora) y T-0014 (Babel) implementadas, verificadas de
-> punta a punta en vivo (curl real + navegador real con `claude-in-chrome`), con **cuatro rondas de
-> hallazgos reales** encontrados y corregidos tras el primer despliegue — ninguno anticipado por la
-> planeación original de `tech-specs.md` §7.2/§7.3. Detalle técnico completo de cada uno en
-> `docs/MEMORY.md` §7 de este repositorio, y en `docs/MEMORY.md`/`docs/TODO.md` de los propios
-> repositorios de Ágora y Babel. Ninguno de estos PRs se fusiona solo — quedan a la espera de revisión
-> humana:
->
-> 1. **`baseHref` fijo rompe rutas sin prefijo fuera del proxy** — con `baseHref: /cartelera/`
->    (Ágora) / `/libros/` (Babel), el Router de Angular del lado cliente exige que la URL real ya
->    lleve el prefijo. Redirección 301 en dos ramas: `/`/`evento-o-libro-detalle` cross-domain a
->    `letiende.co/cartelera|libros` (SEO), el resto mismo dominio con el prefijo agregado (el staff
->    sigue entrando por `agora.letiende.co`/`babel.letiende.co` igual que siempre).
-> 2. **El sitemap no respondía a través del proxy** — CloudFront reenvía la ruta completa sin
->    `OriginPath`, así que `staging.letiende.co/cartelera/sitemap.xml` llegaba a cada app como
->    literalmente `/cartelera/sitemap.xml`/`/libros/sitemap.xml`, que no calzaba con la ruta
->    `/sitemap.xml` sin prefijo registrada en su API Gateway (404/302 según la app). Corregido
->    registrando también la ruta con prefijo en cada API Gateway (`agora-letiende`#61,
->    `babel-letiende`#111).
-> 3. **El `Host` real del visitante nunca llega al SSR de Ágora/Babel** — la política
->    `AllViewerExceptHostHeader` (obligatoria para que API Gateway no rechace con 403) despoja el
->    header `Host` original. Corregido con una `CloudFront Function` (`FuncionInyectarHostVisitante`)
->    que lo copia a un header propio (`x-le-tiende-host`) antes de reenviar (`letiende.co`#20).
-> 4. **Las llamadas a la API propia (`/api/...`) de Ágora/Babel no llegaban a su app cuando estaban
->    embebidas** — el hallazgo más grave, reportado en vivo por el humano ("nada funciona"): esas
->    rutas son absolutas (`http.get('/api/eventos-publicos')`), y el navegador las resuelve contra el
->    ORIGEN de la página, ignorando el `<base href>` por completo — salían sin prefijo hacia
->    `staging.letiende.co/api/...`, que CloudFront enrutaba al comportamiento por defecto (este mismo
->    contenedor) en vez de a la app real. Arreglo en dos partes, ambas necesarias: (a) la misma
->    `CloudFront Function` del punto 3, ampliada para quitar el prefijo de `/api/*`/`/sitemap.xml`
->    antes de reenviar al origen (`letiende.co`#23); (b) el `absoluteUrlInterceptor` de cada app
->    (ya existía para el caso SSR) extendido para anteponer el prefijo a las llamadas `/api/*` cuando
->    `EmbebidoService.embebido` es `true` (`agora-letiende`#62, `babel-letiende`#111). Verificado con
->    navegador real: las 5 llamadas de API entre las dos apps (`eventos-publicos`, `libros`,
->    `espacios`, `muebles`, `ubicaciones`) salen prefijadas y responden 200, catálogo y cartelera
->    cargan datos reales, sin errores de consola.
->
-> **PRs abiertos esperando revisión humana al cierre de esta ronda:** `letiende.co`#23 (prefijo de
-> API/sitemap); `agora-letiende`#61 (sitemap), `#62` (interceptor); `babel-letiende`#111 (T-0014
-> completa, con los 4 hallazgos ya incorporados). `letiende.co`#20 (host visitante) ya fusionado y en
-> producción — todo lo demás está en `staging`, verificado, pero no se despliega a producción sin que
-> el humano revise y fusione cada PR.
-
-**Origen:** `tech-specs.md` §7.3, T-11 — T-13 (T-0011: ACM + CloudFront + `staging.letiende.co`)
-completada y verificada en vivo el 03/09/2026 (PR #17 + #18), así que esta tarea ya no tiene ningún
-bloqueo pendiente. **Repositorio afectado:** `~/Documents/LeTiende/letiende.co/agora/` (no este
-repositorio) — el cambio se planea, verifica y documenta aquí porque es parte del rollout coordinado
-del proxy, pero el commit/PR real sale del repositorio de Ágora, con su propio `CLAUDE.md` y su propio
-Git Flow.
-
-**Archivos (en el repo de Ágora):**
-
-- `angular.json` — `"baseHref": "/cartelera/"` en el target `build`
-- El componente de la barra de navegación propia de Ágora — se reemplaza por la barra común de
-  `DESIGN.md` §7 de este repositorio (mismo punto de montaje, distinto contenido — ADR-003, "se
-  reemplaza, no se oculta")
-- El handler que emite el sitemap de Ágora — las URLs pasan a `https://letiende.co/cartelera/…`
-- El handler de SSR de Ágora — redirección 301 cuando `Host` es `agora.letiende.co` (snippet exacto
-  en `tech-specs.md` §7.3)
-
-**Qué hacer:**
-
-1. `--base-href /cartelera/`: el router y los assets de Ágora tienen que resolver bajo ese prefijo.
-   Consecuencia a tener presente (`tech-specs.md` §7.3): una vez compilado así, la URL cruda de
-   `execute-api` deja de servir bien los assets — probar de ahora en adelante siempre por
-   `https://staging.letiende.co/cartelera`, nunca por la URL cruda de Ágora.
-2. Barra de navegación: **reemplazo**, no ocultamiento (ADR-003) — mismo componente compartido, mismo
-   punto de montaje donde hoy Ágora renderiza la suya.
-3. Sitemap de Ágora con URLs bajo `https://letiende.co/cartelera/…` — de lo contrario apunta a
-   direcciones que van a redirigir (301).
-4. Redirección 301 en el SSR cuando `Host === 'agora.letiende.co'`, hacia
-   `https://letiende.co/cartelera${originalUrl}` — snippet ya verificado en `tech-specs.md` §7.3. No
-   toca infraestructura: el subdominio viejo sigue mapeado al mismo API Gateway.
-5. **Diff mínimo, autorizado explícitamente por el humano** (`tech-specs.md` §7.3): estos cuatro
-   cambios y nada más. Si aparece la tentación de tocar algo adicional de Ágora, detenerse y
-   consultarlo antes.
-
-**Definition of done:**
-
-- [ ] `curl https://staging.letiende.co/cartelera/` responde con el HTML real de Ágora (no el 404 de
-      este contenedor, no un `Cannot GET` de Express crudo — verificado ya hoy que el proxy llega al
-      origen correcto, pero Ágora todavía no tiene rutas bajo ese prefijo)
-- [ ] La barra visible en `/cartelera` es la común de `DESIGN.md` §7, idéntica a la de `letiende.co`
-      (navegar de `/` a `/cartelera` sin salto visual — mismo criterio de verificación de ADR-003)
-- [ ] `curl https://staging.letiende.co/cartelera/sitemap.xml` (o donde Ágora lo sirva) tiene URLs
-      `https://letiende.co/cartelera/…`, no `https://agora.letiende.co/…`
-- [ ] Redirección 301 real desde `agora.letiende.co` verificada con `curl -I`, no solo leída en el
-      código
-- [ ] Ningún cambio fuera de los cuatro autorizados
-- [ ] `docs/MEMORY.md` de este repositorio actualizado con el resultado
-
----
-
-## Tarea T-0014 — [INFRA] Cambios mínimos en Babel: `--base-href /libros/`, barra común, sitemap, 301
-
-**Origen:** `tech-specs.md` §7.3, T-12 — mismo desbloqueo que T-0013 (T-13/T-0011 completada), mismo
-patrón exacto de cuatro cambios, aplicado al repositorio de Babel
-(`~/Documents/LeTiende/letiende.co/babel/`) en vez de Ágora. Se ejecuta en paralelo o justo después de
-T-0013, sin dependencia entre ambas.
-
-**Archivos (en el repo de Babel):**
-
-- `angular.json` — `"baseHref": "/libros/"` en el target `build`
-- El componente de la barra de navegación propia de Babel — reemplazo por la barra común (ADR-003)
-- El handler que emite el sitemap de Babel — hoy **no existe sitemap propio** (verificado en T-0008,
-  `docs/MEMORY.md` ADR-018): esta tarea es la que lo crea, con URLs `https://letiende.co/libros/…`
-- El handler de SSR de Babel — redirección 301 cuando `Host` es `babel.letiende.co`
-
-**Qué hacer:** los mismos cinco puntos de T-0013, adaptados a `/libros/` y a Babel. La diferencia real
-frente a Ágora: Babel no tiene sitemap propio todavía, así que este cambio no es "corregir URLs" sino
-"crear el sitemap por primera vez" — no inventar su estructura, seguir el mismo patrón que ya usa este
-repositorio en `server.ts` (rutas dinámicas de Express, no `public/`).
-
-**Definition of done:**
-
-- [ ] `curl https://staging.letiende.co/libros/` responde con el HTML real de Babel
-- [ ] Barra común visible en `/libros`, sin salto visual respecto a `letiende.co`
-- [ ] Babel expone un sitemap real con URLs `https://letiende.co/libros/…` (verificar que existe,
-      hoy no hay ninguno)
-- [ ] Redirección 301 real desde `babel.letiende.co` verificada con `curl -I`
-- [ ] Ningún cambio fuera de los cuatro autorizados
-- [ ] `docs/MEMORY.md` de este repositorio actualizado con el resultado
+**Sin tareas activas por decisión explícita (04/09/2026).** T-0013 y T-0014 (abajo, en el Historial)
+cerraron el rollout del proxy — T-11/T-12/T-13/T-14 del roadmap técnico (`tech-specs.md` §11) ya están
+completos. La siguiente pieza del roadmap es **T-15: el cutover real** (verificación completa del
+proxy + cambio del registro de producción en Route 53) — una acción sobre DNS de producción,
+deliberadamente **no auto-seleccionada aquí**: requiere que el humano decida cuándo y confirme antes de
+empezar, mismo criterio ya aplicado a otras acciones irreversibles de este proyecto. Ver el análisis de
+qué falta antes de T-15 en `docs/MEMORY.md` §7 (últimas dos filas) y en el Historial de este mismo
+documento, entrada T-0013/T-0014 (hallazgos 6 y 7) — nada de eso bloquea técnicamente el cutover salvo
+el hallazgo de los encabezados de seguridad ausentes, que si se puede, conviene resolver antes o junto
+con T-15.
 
 ---
 
 ## Historial
+
+- **T-0013/T-0014** — [INFRA] Integración de Ágora y Babel con el proxy: `--base-href`, barra común,
+  sitemap, redirecciones 301. Completadas y verificadas en producción real 03-04/09/2026. Cambios
+  reales en `agora-letiende` (PRs #58, #59, #60, #61, #62, #63 — todos fusionados) y en
+  `babel-letiende` (PR #111 y #112 — ambos fusionados), coordinados desde este repositorio (T-11/T-12
+  del roadmap técnico, `tech-specs.md` §11) pero ejecutados en los repos hermanos, con su propio
+  `CLAUDE.md` y su propio Git Flow, tal como estaba planeado. `letiende.co` aportó su propia mitad:
+  `FuncionInyectarHostVisitante` (PR #20 y #23, fusionados) — la `CloudFront Function` que inyecta el
+  `Host` real del visitante en `x-le-tiende-host` y quita el prefijo de proxy de `/api/*` y
+  `/sitemap.xml` antes de reenviar a cada app.
+
+  **Siete hallazgos reales, ninguno anticipado por la planeación original de `tech-specs.md` §7.2/§7.3**
+  (detalle técnico completo de cada uno en `docs/MEMORY.md` §7 de este repositorio y en
+  `docs/MEMORY.md`/`docs/TODO.md` de Ágora y Babel):
+
+  1. `baseHref` fijo rompe rutas sin prefijo fuera del proxy — redirección 301 desde el dominio antiguo.
+  2. El sitemap no respondía a través del proxy (falta de `OriginPath`, ruta sin registrar en cada API
+     Gateway).
+  3. El `Host` real del visitante no llegaba a Ágora/Babel (`AllViewerExceptHostHeader` lo despoja) —
+     corregido con el header propio `x-le-tiende-host`.
+  4. Las llamadas a `/api/*` no llegaban a la app cuando estaba embebida — el más grave, reportado en
+     vivo por el humano ("nada funciona"): una ruta absoluta ignora el `<base href>` por completo. Arreglo
+     en dos partes: CloudFront quita el prefijo antes del origen, y el `absoluteUrlInterceptor` de cada
+     app lo antepone en el navegador cuando está embebida.
+  5. **Incidente real de producción**, también reportado en vivo por el humano: la redirección
+     cross-domain de `/`/detalle a `letiende.co/cartelera|libros` se desplegó a producción antes de que
+     el cutover (T-15, todavía no ejecutado) hiciera que ese destino existiera — `agora.letiende.co`/
+     `babel.letiende.co`, el único acceso público real hoy, quedaron rotos (caían en `/eventos`, el
+     fallback del sitio viejo). Corregido colapsando la redirección a "mismo dominio con el prefijo,
+     sin excepción" en ambos repos, hasta que T-15 exista — la rama cross-domain queda comentada en el
+     código para restaurarse entonces, no antes.
+  6. **Verificación previa a T-15 (04/09/2026):** la distribución de producción nueva (`ER22S2WADMM83`,
+     sin alias todavía) se probó de punta a punta contra su propio dominio de CloudFront
+     (`d1o48r8wylv3sh.cloudfront.net`, sin afectar tráfico real) — los 4 behaviors, el header de host
+     embebido, el prefijo de `/api/*`/sitemap y los orígenes reales de producción de Ágora/Babel
+     funcionan correctamente. `robots.txt` bloquea correctamente ese dominio no-canónico.
+  7. **Hallazgo de la misma verificación, no relacionado con el proxy:** ninguna de las tres
+     distribuciones de CloudFront del dominio emite los encabezados de seguridad que `CLAUDE.md` §5
+     exige — nunca se implementó un `ResponseHeadersPolicy` en T-0011, pese a que la regla ya existía
+     cuando se planeó. No bloquea el cutover técnicamente, pero se recomienda resolverlo antes o junto
+     con T-15 (después del cutover, `letiende.co` sirve contenido embebido de terceros bajo el mismo
+     origen, así que la ausencia de CSP pesa más que hoy). Detalle completo en `tech-specs.md` §7.2.
+
+  Verificado en producción real tras cada fusión, no solo en staging: `curl` contra
+  `https://agora.letiende.co/` y `https://babel.letiende.co/` (301 → mismo dominio con el prefijo → 200)
+  y navegador real (`claude-in-chrome`) contra `staging.letiende.co/cartelera` y `/libros` (datos reales,
+  sin errores de consola). Registro de esfuerzo de esta ronda en `metrics/events/`.
 
 - **T-0011** — [INFRA] Certificado ACM, distribuciones de CloudFront y `staging.letiende.co`.
   Completada 03/09/2026, PR #17 (certificado + distribuciones + DNS) y PR #18 (fix del prefijo
