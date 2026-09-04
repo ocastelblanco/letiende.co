@@ -210,9 +210,24 @@ contenido que venga de Ágora, de Babel o del visitante.
 ### A05 — Configuración incorrecta
 
 **Regla — encabezados de respuesta.** CloudFront aplica, en todos los behaviors:
-`Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`,
+`Strict-Transport-Security`, `X-Content-Type-Options: nosniff`,
 `Referrer-Policy: strict-origin-when-cross-origin` y `X-Frame-Options: SAMEORIGIN`.
-La CSP debe permitir los orígenes de Google Fonts y del mapa, y nada más.
+
+**`Content-Security-Policy` solo en el `DefaultCacheBehavior`** (las páginas propias de este
+contenedor: `/`, `/nosotros`, `/contacto`, `/preguntas-frecuentes`, etc.) — **no** en `/cartelera/*`
+ni en `/libros/*`. Esas dos rutas sirven páginas renderizadas por Ágora y Babel, con dependencias
+externas reales que este repositorio no audita (el checkout de `checkout.bold.co` de Ágora, que
+mueve dinero real; Firebase Auth de ambos) — un CSP pensado solo para el contenedor podría romperlas
+en silencio. Decisión explícita del humano (04/09/2026): cerrar el CSP de esas dos rutas es una
+tarea aparte, coordinada con esos repos, no una extensión automática de esta.
+
+**Orígenes que la CSP del contenedor debe permitir, y ningún otro:** Google Fonts
+(`fonts.googleapis.com`/`fonts.gstatic.com`), el mapa embebido (`www.google.com`, iframe de
+`/contacto`) y Google Analytics 4 (`www.googletagmanager.com` en `script-src`;
+`google-analytics.com`/`analytics.google.com` en `connect-src` — GA4 es funcionalidad real, ADR-015,
+sin esto se rompe en silencio apenas se active el CSP). El bucket de imágenes de eventos de Ágora
+(`agora-activos-<stage>.s3.us-east-1.amazonaws.com`) va en `img-src`: la portada de este contenedor
+muestra imágenes de eventos ajenas, cargadas directo desde ese bucket.
 
 **Regla — la ruta comodín responde 404 de verdad.** Una página de "no encontrada" que devuelve
 HTTP 200 hace que los buscadores indexen basura y es un problema de configuración, no de contenido.
