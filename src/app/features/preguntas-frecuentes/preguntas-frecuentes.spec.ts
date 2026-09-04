@@ -23,7 +23,7 @@ describe('PreguntasFrecuentesComponent', () => {
     expect(texto).toContain('Carrera 24 #37-44');
     expect(texto).toContain('parqueadero');
     expect(texto).toContain('movilidad reducida');
-    expect(texto).toContain('escaleras');
+    expect(texto).toContain('accesible');
     expect(texto).toContain('WhatsApp');
     expect(texto).toContain('+57 318 7056288');
   });

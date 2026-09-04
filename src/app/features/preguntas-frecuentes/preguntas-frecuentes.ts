@@ -48,24 +48,30 @@ export class PreguntasFrecuentesComponent {
     return [
       {
         pregunta: '¿Cuáles son los horarios de atención?',
-        respuesta: `Nuestros horarios de atención son: ${horarios}.`,
+        respuesta: `Puedes venir a darte gusto todos los días de la semana: ${horarios}.`,
       },
       {
         pregunta: '¿Dónde queda Le Tiende?',
-        respuesta: `Le Tiende queda en ${DATOS_NEGOCIO.direccion}.`,
+        respuesta: `En el Parkway, el corazón hipster de Bogotá 🧔🏻 👓 ☕ 🧢. La dirección es ${DATOS_NEGOCIO.direccion}.`,
       },
       {
         pregunta: '¿Hay parqueadero?',
-        respuesta: 'No, Le Tiende no cuenta con parqueadero propio.',
+        respuesta:
+          'Le Tiende no cuenta con parqueadero propio, pero puedes encontrar varios 🅿️ en la zona o puedes llegar fácilmente en transporte público 🚌 o bici 🚲.',
       },
       {
         pregunta: '¿El espacio es accesible para personas con movilidad reducida?',
         respuesta:
-          'El acceso actual es limitado: el espacio tiene escaleras y otras barreras físicas que todavía no se han resuelto.',
+          'El acceso actual no está optimizado, pero estamos trabajando 👷🏽 para hacer nuestro espacio accesible para todos 🦽 🦯 🧏🏽‍♂️.',
+      },
+      {
+        pregunta: '¿Son pet friendly?',
+        respuesta: 'Sí, las mascotas 🐶 🐱 son bienvenidas… con algunas excepciones 🐍.',
       },
       {
         pregunta: '¿Cómo puedo programar un evento propio en el espacio?',
-        respuesta: 'Escríbenos por WhatsApp al +57 318 7056288 para conversar sobre tu propuesta.',
+        respuesta:
+          'Escríbenos por WhatsApp al +57 318 7056288 y reservamos el espacio para tu evento o espectáculo.',
       },
     ];
   }
