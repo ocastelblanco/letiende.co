@@ -397,6 +397,17 @@ resources:
             AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
             CachedMethods: [GET, HEAD]
             Compress: true
+            # Hallazgo real del cutover de T-15 (04/09/2026): AllViewerExceptHostHeader
+            # nunca reenvía el Host real aquí tampoco (mismo motivo que en
+            # /cartelera/*//libros/*, más arriba) — sin esto, /robots.txt de
+            # server.ts jamás puede distinguir `letiende.co` de
+            # `staging.letiende.co`/execute-api crudo, porque req.hostname
+            # siempre ve el dominio de API Gateway. Verificado en vivo contra
+            # producción real tras el cutover: https://letiende.co/robots.txt
+            # respondía `Disallow: /` con el dominio real ya apuntando aquí.
+            FunctionAssociations:
+              - EventType: viewer-request
+                FunctionARN: !GetAtt FuncionInyectarHostVisitante.FunctionARN
           CacheBehaviors:
             - PathPattern: /cartelera/*
               TargetOriginId: AgoraOrigin

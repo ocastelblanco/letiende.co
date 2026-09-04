@@ -25,12 +25,22 @@ const RUTAS_PROPIAS = ['/', '/nosotros', '/contacto', '/preguntas-frecuentes'];
 
 /**
  * ADR-002 (docs/MEMORY.md): staging necesita `Disallow: /`, para no competir
- * contra producción por las mismas palabras. `req.hostname` es lo único que
- * distingue un stage del otro, porque los dos despliegan el mismo artefacto.
+ * contra producción por las mismas palabras. `req.hostname` NUNCA es
+ * `letiende.co` aquí — `AllViewerExceptHostHeader` (necesario para que API
+ * Gateway no responda 403) nunca reenvía el Host real del visitante, ni
+ * siquiera en el `DefaultCacheBehavior` propio del contenedor. Se lee
+ * `x-le-tiende-host` (`FuncionInyectarHostVisitante`, `letiende.co`
+ * `serverless.yml`), el mismo header que ya usan Ágora y Babel para lo
+ * mismo. Hallazgo real del cutover de T-15 (04/09/2026): con `req.hostname`
+ * esto SIEMPRE respondía `Disallow: /`, sin importar el dominio real —
+ * nunca se notó porque nunca hubo un dominio real apuntando a este stack
+ * hasta ese cutover.
  */
 app.get('/robots.txt', (req, res) => {
   res.type('text/plain');
-  if (req.hostname !== HOST_PRODUCCION) {
+  const hostReal =
+    (req.headers['x-le-tiende-host'] as string | undefined)?.split(':')[0] ?? req.hostname;
+  if (hostReal !== HOST_PRODUCCION) {
     res.send('User-agent: *\nDisallow: /\n');
     return;
   }
