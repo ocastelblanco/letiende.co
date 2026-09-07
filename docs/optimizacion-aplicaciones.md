@@ -131,9 +131,9 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 | OPT-1 | **Activa** | T-0019 | — | — |
 | OPT-2 | Pendiente | — | — | — |
 | OPT-3 | Pendiente | — | — | — |
-| OPT-4 | **Activa** | T-0018 | babel-letiende#122, comandante#23 (ambos en curso) | Autoría IA: Babel = AI-generated (79,2% agente, medido); Comandante sin badge (sin registro de esfuerzo propio que lo respalde) |
+| OPT-4 | **Activa, PRs listos para revisión** | T-0018 | babel-letiende#122, comandante#23 | Autoría IA: Babel = AI-generated (79,2% agente, medido); Comandante sin badge (sin registro de esfuerzo propio que lo respalde) |
 | OPT-5 | Pendiente | — | — | — |
-| OPT-18 | **Activa** | T-0018 (ampliada) | letiende.co#35 (en curso) | Ágora, Babel y Comandante siguen pendientes — ver §4 para el plan de cada uno |
+| OPT-18 | **Activa, PRs listos para revisión** | T-0018 (ampliada) | letiende.co#35, agora-letiende#66, babel-letiende#122, comandante#23 | Comandante quedó con un fallo de prueba preexistente y ajeno a este cambio (`app.component.spec.ts`, error ESM de `@ionic/core`) — verificado con `git stash` que ya fallaba antes, no se tocó |
 | OPT-6 | Pendiente | — | — | — |
 | OPT-7 | Pendiente | — | — | — |
 | OPT-8 | Pendiente | — | — | — |
