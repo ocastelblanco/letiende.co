@@ -254,9 +254,22 @@ resources:
               # crítico en un <style> propio en <head> (Beasties/Critters,
               # verificado en el HTML real servido — sin esto, esa hoja de
               # estilo queda bloqueada y la primera pintura sale sin estilo).
+              # script-src incluye el hash sha256 de un <script> inline que
+              # gtag.js inyecta por su cuenta al inicializarse (no es código
+              # de este repositorio — verificado: ningún archivo de este repo
+              # crea un <script> inline sin src). Se usa el hash exacto en vez
+              # de 'unsafe-inline' porque 'unsafe-inline' habilitaría CUALQUIER
+              # script inline, incluido uno inyectado por un XSS futuro
+              # (CLAUDE.md §5, A03); el hash solo permite ejecutar ese
+              # contenido exacto e inmutable. Si Google cambia ese snippet
+              # interno en el futuro, el hash dejará de calzar y GA4
+              # simplemente dejará de rastrear en silencio (no es un riesgo
+              # de seguridad, pero conviene revisar la consola si algún día
+              # GA4 deja de disparar eventos).
               ContentSecurityPolicy: >-
                 default-src 'self'; script-src 'self'
-                https://www.googletagmanager.com; style-src 'self'
+                https://www.googletagmanager.com
+                'sha256-8sGKvDKC8crv9OBcqEMvqrNDWlm1/80h7NJpJzqOnLI='; style-src 'self'
                 'unsafe-inline' https://fonts.googleapis.com; font-src 'self'
                 https://fonts.gstatic.com; img-src 'self' data:
                 https://agora-activos-${sls:stage}.s3.us-east-1.amazonaws.com;
