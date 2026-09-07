@@ -32,12 +32,22 @@ menor a mayor esfuerzo; acá solo se referencian las 2 activas.
 badge de autoría verificado por repo, la corrección de la inconsistencia histórica de Ágora) en el
 Historial de abajo.
 
-**T-0020 — [ACCESIBILIDAD] Landmark `<main>` en Ágora, ACTIVA:** agregar un elemento `<main>` (o
-`role="main"`) envolviendo el contenido principal de la página — Lighthouse lo marca como único
-hallazgo de accesibilidad de ese repo: "Document does not have a main landmark". Corresponde a
-**OPT-5** de `docs/optimizacion-aplicaciones.md` §4. Cambio de un archivo, sin riesgo de despliegue
-más allá del flujo normal de ese repo (PR → staging → verificar con Lighthouse otra vez → fusionar).
-DoD: `landmark-one-main` pasa en un reporte nuevo de Lighthouse contra la página real;
+**T-0020 — [ACCESIBILIDAD] Landmark `<main>` en Ágora (OPT-5), COMPLETA (07/09/2026):** PR
+`agora-letiende#68`, fusionado por el humano. No existía ningún `<main>` en toda la app — se envolvió
+el `router-outlet`. Detalle en el Historial de abajo.
+
+**T-0022 — [CALIDAD] Fallo de prueba por resolución ESM de `@ionic/core` en Comandante, ACTIVA:**
+`app.component.spec.ts` falla con `Directory import '@ionic/core/components' is not supported`.
+Corresponde a **OPT-19** de `docs/optimizacion-aplicaciones.md` §4 — hallazgo que ya se había visto
+tres veces (T-0018, T-0021) siempre como "preexistente y ajeno, verificado y no tocado", nunca
+convertido en tarea propia hasta que el humano lo pidió explícitamente hoy. **Por qué importa más allá
+del ruido:** una suite roja permanente esconde cualquier fallo real nuevo entre el mismo ruido —
+rompe la señal de CI. **Investigar antes de tocar nada:** identificar qué *test runner* usa Comandante
+(revisar `package.json`/`angular.json` — puede ser Karma, Vitest, u otro) y por qué intenta resolver
+`@ionic/core/components` como *directory import* bajo ESM — candidatos a verificar, no asumir: config
+de resolución de módulos del runner (`moduleNameMapper`/`deps.optimizer`/`transformIgnorePatterns`,
+según cuál sea), o un cambio de punto de entrada en la versión instalada de `@ionic/core` frente a la
+que el proyecto espera. DoD: `npm test` pasa limpio en Comandante, sin excluir ni saltar la prueba;
 `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
 
 **T-0019 — [SEO] Meta description en Ágora, Babel y Comandante (OPT-1), COMPLETA (07/09/2026):** los
@@ -47,16 +57,20 @@ tres repos ya tenían servicio de SEO/`Meta` propio, solo faltaba llamarlo en la
 sesión), donde se optó por un `<meta>` estático en `index.html` en vez de construir un servicio
 dinámico que nunca se ejecutaría para ese caso. Detalle completo en el Historial de abajo.
 
-**T-0021 — [SEO] `robots.txt` inválido en Babel y Comandante, ACTIVA:** corregir la sintaxis —
-Lighthouse reporta "robots.txt is not valid" en Babel (sin detalle) y "16 errores" en Comandante.
-Corresponde a **OPT-2** de `docs/optimizacion-aplicaciones.md` §4. **Investigar antes de tocar nada:**
-correr el mismo validador que usa Lighthouse (o el validador de Google Search Console) contra el
-`robots.txt` real de cada repo para ver los errores exactos — no adivinar la causa. `letiende.co` ya
-resuelve esto bien (`server.ts`, ruta dinámica que distingue producción de staging por host, ADR-015/
-ADR-018) — puede servir de referencia si el problema es de estructura, pero el contenido específico de
-cada `robots.txt` es de cada repo, no se copia. DoD: el validador confirma 0 errores contra el
-`robots.txt` real de producción de ambos repos; `docs/optimizacion-aplicaciones.md` §5 actualizado;
-esfuerzo registrado.
+**T-0021 — [SEO] `robots.txt` inválido en Babel y Comandante (OPT-2), COMPLETA (07/09/2026):** PRs
+`babel-letiende#124` y `comandante#25`, fusionados por el humano. Causa real en ambos: no existía
+ningún `robots.txt` en absoluto — Babel caía en el catch-all SSR de Angular, Comandante servía el
+`index.html` completo vía el rewrite `**` de Firebase Hosting (cada línea de ese HTML contaba como
+directiva inválida, explica los "16 errores" exactos que reportaba Lighthouse). Detalle completo en
+el Historial de abajo.
+
+**T-0023 — [SEO/AEO] Crear `llms.txt` en Babel y Comandante, ACTIVA:** la categoría "agentic-browsing"
+de Lighthouse lo exige — es la que más pesa en el puntaje de 32/100 de Babel. Corresponde a **OPT-3**
+de `docs/optimizacion-aplicaciones.md` §4. **Investigar antes de escribir contenido:** `llms.txt` es
+un estándar emergente, no formal — revisar qué estructura/contenido espera el auditor de Lighthouse
+exactamente (el propio mensaje de la auditoría trae la referencia) antes de inventar un formato.
+DoD: la auditoría `llms-txt` de Lighthouse pasa contra la URL real de ambos repos;
+`docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -83,6 +97,32 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0021** — [SEO] `robots.txt` inválido en Babel y Comandante (OPT-2). Completada 07/09/2026, dos
+  PR fusionados: `babel-letiende#124`, `comandante#25`.
+
+  **Regla seguida: investigar antes de tocar nada, no adivinar la causa.** El error de Lighthouse
+  ("no válido" en Babel, "16 errores" en Comandante) no traía detalle — se obtuvo el `robots.txt` real
+  servido en producción de cada uno antes de escribir cualquier fix:
+  - **Babel:** no existía ninguna ruta `/robots.txt`. La petición caía en el catch-all SSR de Angular,
+    que devolvía `200` con HTML vacío — Lighthouse lo interpretaba como robots.txt inválido porque,
+    de hecho, no era un robots.txt en absoluto. Corregido con una ruta Express dedicada en
+    `server.ts`, registrada antes del middleware de redirección del dominio antiguo.
+  - **Comandante:** mismo problema de fondo, causa distinta. Sin archivo `robots.txt` en `public/`, el
+    rewrite `"source": "**"` de `firebase.json` servía el `index.html` completo de la SPA como
+    respuesta — **cada línea de ese HTML contaba como una directiva inválida**, explicando
+    exactamente los "16 errores" que reportaba Lighthouse (no un número arbitrario). Corregido
+    agregando un `public/robots.txt` estático — verificado en vivo con `firebase serve` que un
+    archivo estático gana sobre el rewrite.
+
+  Verificado con SSR/hosting real en ambos (`curl` contra el servidor local, no solo el código), y
+  ambos repos corrieron su build/test antes del PR.
+
+- **T-0020** — [ACCESIBILIDAD] Landmark `<main>` en Ágora (OPT-5). Completada 07/09/2026, PR
+  `agora-letiende#68`. No existía ningún `<main>` en ningún componente de la app (verificado antes de
+  agregar uno, para no terminar con dos anidados) — se envolvió el `<router-outlet />` en `app.html`.
+  Verificado con SSR real: `curl` contra la página confirma exactamente un `<main>`/`</main>`
+  envolviendo el contenido correcto.
 
 - **T-0019** — [SEO] Meta description en Ágora, Babel y Comandante (OPT-1). Completada 07/09/2026,
   tres PR fusionados: `agora-letiende#67`, `babel-letiende#123`, `comandante#24`.
