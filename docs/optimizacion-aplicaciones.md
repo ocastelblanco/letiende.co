@@ -131,12 +131,12 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 |---|---|---|---|---|
 | OPT-1 | **Completada** | T-0019 | agora-letiende#67, babel-letiende#123, comandante#24 | Comandante sin SSR ni servicio SEO propio (rutas protegidas por `authGuard`, Lighthouse audita sin sesión) — se optó por un `<meta>` estático en `index.html` en vez de construir un servicio dinámico innecesario |
 | OPT-2 | **Completada** | T-0021 | babel-letiende#124, comandante#25 | Causa real en ambos: no existía ningún `robots.txt` — Babel caía en el catch-all SSR (HTML vacío, 200); Comandante servía el `index.html` completo vía el rewrite `**` de Firebase Hosting, cada línea contaba como directiva inválida (explica los "16 errores" exactos) |
-| OPT-3 | **Activa** | T-0023 | — | — |
+| OPT-3 | **Completada** | T-0023 | babel-letiende#125, comandante#27 | Babel enlaza contenido público real; Comandante dice explícitamente que no tiene rutas públicas, sin inventar enlaces |
 | OPT-4 | **Completada** | T-0018 | babel-letiende#122, comandante#23 | Autoría IA: Babel = AI-generated (79,2% agente, medido); Comandante sin badge (sin registro de esfuerzo propio que lo respalde) |
 | OPT-5 | **Completada** | T-0020 | agora-letiende#68 | No existía ningún `<main>` en toda la app — envuelve el `router-outlet` |
 | OPT-18 | **Completada** | T-0018 (ampliada) | letiende.co#35, agora-letiende#66, babel-letiende#122, comandante#23 | Comandante quedó con un fallo de prueba preexistente y ajeno a este cambio (`app.component.spec.ts`, error ESM de `@ionic/core`) — verificado con `git stash` que ya fallaba antes, no se tocó |
-| OPT-6 | Pendiente | — | — | — |
-| OPT-7 | Pendiente | — | — | — |
+| OPT-6 | **Activa** | T-0024 | — | — |
+| OPT-7 | **Activa** | T-0025 | — | — |
 | OPT-8 | Pendiente | — | — | — |
 | OPT-9 | Pendiente | — | — | — |
 | OPT-10 | Pendiente | — | — | — |
@@ -147,7 +147,7 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 | OPT-15 | Pendiente | — | — | — |
 | OPT-16 | Pendiente | — | — | Depende de OPT-7/12/13/15 |
 | OPT-17 | Pendiente | — | — | Relacionado con babel-letiende#121 — máxima prioridad de impacto, pero deliberadamente no seleccionada como una de las 2 activas todavía: es la más grande del roadmap y este repositorio no toca código de Babel a la ligera. |
-| OPT-19 | **Activa** | T-0022 | — | Agregada por pedido explícito del humano (07/09/2026) — el fallo de Comandante ya se había visto tres veces sin convertirse en tarea |
+| OPT-19 | **Completada** | T-0022 | comandante#26 | Causa real: `@ionic/angular@8.8.8` hace *directory import* de `@ionic/core/components`, Node ESM lo rechaza. Corregido con `patch-package` — vigilar en el próximo `ng update` que toque `@ionic/angular` |
 
 ## 6. Fuentes
 

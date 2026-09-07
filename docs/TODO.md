@@ -36,19 +36,16 @@ Historial de abajo.
 `agora-letiende#68`, fusionado por el humano. No existía ningún `<main>` en toda la app — se envolvió
 el `router-outlet`. Detalle en el Historial de abajo.
 
-**T-0022 — [CALIDAD] Fallo de prueba por resolución ESM de `@ionic/core` en Comandante, ACTIVA:**
-`app.component.spec.ts` falla con `Directory import '@ionic/core/components' is not supported`.
-Corresponde a **OPT-19** de `docs/optimizacion-aplicaciones.md` §4 — hallazgo que ya se había visto
-tres veces (T-0018, T-0021) siempre como "preexistente y ajeno, verificado y no tocado", nunca
-convertido en tarea propia hasta que el humano lo pidió explícitamente hoy. **Por qué importa más allá
-del ruido:** una suite roja permanente esconde cualquier fallo real nuevo entre el mismo ruido —
-rompe la señal de CI. **Investigar antes de tocar nada:** identificar qué *test runner* usa Comandante
-(revisar `package.json`/`angular.json` — puede ser Karma, Vitest, u otro) y por qué intenta resolver
-`@ionic/core/components` como *directory import* bajo ESM — candidatos a verificar, no asumir: config
-de resolución de módulos del runner (`moduleNameMapper`/`deps.optimizer`/`transformIgnorePatterns`,
-según cuál sea), o un cambio de punto de entrada en la versión instalada de `@ionic/core` frente a la
-que el proyecto espera. DoD: `npm test` pasa limpio en Comandante, sin excluir ni saltar la prueba;
-`docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+**T-0022 — [CALIDAD] Fallo de prueba ESM de `@ionic/core` en Comandante (OPT-19), COMPLETA
+(07/09/2026):** PR `comandante#26`, fusionado por el humano. Causa raíz real: `@ionic/angular@8.8.8`
+importa `@ionic/core/components` como *directory import* sin `/index.js`, que Node ESM nativo rechaza
+en el entorno de pruebas. Corregido con `patch-package` sobre la dependencia instalada — detalle
+completo, incluidos dos hallazgos que destapó el fix (falta de `provideRouter` para `IonRouterOutlet`,
+un test de scaffold obsoleto), en el Historial de abajo. **Nota de coordinación:** el humano fusionó
+`comandante#27` (T-0023) antes que este PR por error, lo que produjo un conflicto real de `git merge`
+en el `TODO.md` de Comandante (dos tareas insertadas en el mismo punto) — resuelto conservando ambas
+entradas, verificado con build + pruebas reales después del merge antes de confirmar que el PR podía
+fusionarse.
 
 **T-0019 — [SEO] Meta description en Ágora, Babel y Comandante (OPT-1), COMPLETA (07/09/2026):** los
 tres PR fusionados por el humano — `agora-letiende#67`, `babel-letiende#123`, `comandante#24`. Los
@@ -64,12 +61,27 @@ ningún `robots.txt` en absoluto — Babel caía en el catch-all SSR de Angular,
 directiva inválida, explica los "16 errores" exactos que reportaba Lighthouse). Detalle completo en
 el Historial de abajo.
 
-**T-0023 — [SEO/AEO] Crear `llms.txt` en Babel y Comandante, ACTIVA:** la categoría "agentic-browsing"
-de Lighthouse lo exige — es la que más pesa en el puntaje de 32/100 de Babel. Corresponde a **OPT-3**
-de `docs/optimizacion-aplicaciones.md` §4. **Investigar antes de escribir contenido:** `llms.txt` es
-un estándar emergente, no formal — revisar qué estructura/contenido espera el auditor de Lighthouse
-exactamente (el propio mensaje de la auditoría trae la referencia) antes de inventar un formato.
-DoD: la auditoría `llms-txt` de Lighthouse pasa contra la URL real de ambos repos;
+**T-0023 — [SEO/AEO] `llms.txt` en Babel y Comandante (OPT-3), COMPLETA (07/09/2026):** PRs
+`babel-letiende#125` y `comandante#27`, fusionados por el humano. Contenido basado en la convención
+real de `llmstxt.org`, verificado contra el código fuente exacto de la auditoría de Lighthouse — Babel
+enlaza contenido público real (catálogo), Comandante (sin rutas públicas) lo dice explícitamente en
+vez de inventar enlaces falsos. Detalle en el Historial de abajo.
+
+**T-0024 — [ACCESIBILIDAD] Contraste de color (WCAG) en Babel y Comandante, ACTIVA:** Lighthouse
+reporta "Background and foreground colors do not have a sufficient contrast ratio" en ambos — real,
+no cosmético. Corresponde a **OPT-6** de `docs/optimizacion-aplicaciones.md` §4. **Investigar antes de
+tocar nada:** identificar el/los componente(s) y combinación de color/token exactos que fallan (el
+detalle de la auditoría de Lighthouse trae el selector CSS del elemento) — revisar contra los tokens
+compartidos de `DESIGN.md` de cada repo antes de asumir cuál color es el problema. DoD: la auditoría
+`color-contrast` de Lighthouse pasa contra la URL real de ambos repos;
+`docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+
+**T-0025 — [RENDIMIENTO] `width`/`height` explícitos en imágenes, ACTIVA:** Lighthouse marca
+"Image elements do not have explicit `width` and `height`" en los cuatro repos — causa *layout shift*
+durante la carga. Corresponde a **OPT-7** de `docs/optimizacion-aplicaciones.md` §4. Cambio de
+plantilla, sin riesgo de despliegue más allá del flujo normal de cada repo. DoD: la auditoría
+`unsized-images` de Lighthouse pasa contra la URL real de los cuatro repos (incluido `letiende.co`
+mismo — revisar `features/inicio` y donde más aplique);
 `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
@@ -97,6 +109,53 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0023** — [SEO/AEO] `llms.txt` en Babel y Comandante (OPT-3). Completada 07/09/2026, dos PR
+  fusionados: `babel-letiende#125`, `comandante#27`.
+
+  Antes de escribir contenido, se verificó la convención real de `llmstxt.org` (H1 + blockquote de
+  resumen + secciones H2 con links Markdown) y los requisitos exactos de la auditoría `llms-txt` de
+  Lighthouse contra su propio código fuente (`GoogleChrome/lighthouse`), no adivinados: un H1, al
+  menos un link Markdown, más de 50 caracteres.
+  - **Babel:** tiene contenido público real (catálogo SSR, sin autenticación) — se agregó una ruta
+    Express (`/llms.txt`, mismo patrón que `/robots.txt` de T-0021) enlazando el catálogo público
+    real y la documentación del repo.
+  - **Comandante:** herramienta interna sin ninguna ruta pública (mismo criterio que su
+    `robots.txt: Disallow: /`) — el `llms.txt` **lo dice explícitamente** en vez de inventar
+    contenido público que no existe; el único link real es al repositorio de GitHub.
+
+  Verificado con build + servidor real (SSR local en Babel, `firebase serve` en Comandante) — el
+  contenido responde de verdad en `/llms.txt`, no solo existe en el código.
+
+- **T-0022** — [CALIDAD] Fallo de prueba ESM de `@ionic/core` en Comandante (OPT-19). Completada
+  07/09/2026, PR `comandante#26`.
+
+  **Causa raíz, confirmada por depuración empírica, no supuesta:** `@ionic/angular@8.8.8` empaqueta
+  sus archivos `fesm2022` (`ionic-angular-common.mjs`, `ionic-angular-standalone.mjs`) con imports
+  estáticos a `@ionic/core/components` sin el sufijo `/index.js` — Node ESM nativo no resuelve
+  *directory imports* (a diferencia de CJS/`require`), y como las pruebas de
+  `@angular/build:unit-test` corren en entorno Node (jsdom/happy-dom, no navegador), ese paquete se
+  externaliza y su import llega sin transformar al loader nativo de Node. Se verificó
+  experimentalmente que `optimizeDeps.include`, `resolve.noExternal` y `test.server.deps.inline` en
+  `vitest.config.ts` **no** evitan la externalización para este caso — solo corregir la ruta de
+  import real lo resuelve, exactamente lo que sugiere el propio mensaje de error de Node.
+
+  **Fix:** `patch-package` (nueva dependencia + `postinstall`), parcheando `@ionic/angular@8.8.8`
+  instalado para importar `@ionic/core/components/index.js`. Es una superficie de mantenimiento
+  nueva a vigilar: si Ionic actualiza de versión y cambia esos archivos, el parche puede dejar de
+  aplicar — falla ruidosamente en la instalación, no en silencio, pero hay que revisarlo en el
+  próximo `ng update`/`npm update` de ese repo que toque `@ionic/angular`.
+
+  Arreglar el crash destapó dos problemas reales más, corregidos en el mismo PR: faltaba
+  `provideRouter` para la dependencia `ActivatedRoute` de `IonRouterOutlet` en el `TestBed`, y un
+  test de scaffold obsoleto (`<h1>` que ya no existe en la plantilla real). `npm test` pasa limpio,
+  sin excluir ni saltar la prueba — la regla que pedía el DoD.
+
+  **Incidente de coordinación durante el cierre:** el humano fusionó `comandante#27` (T-0023) antes
+  que este PR por error, produciendo un conflicto de `git merge` real en `TODO.md` de Comandante (dos
+  entradas de historial insertadas en el mismo punto por ambas ramas). Resuelto conservando las dos
+  entradas completas, sin perder ninguna; verificado con build + pruebas reales corridas de nuevo
+  después del merge, antes de confirmar que el PR quedaba listo para fusionarse.
 
 - **T-0021** — [SEO] `robots.txt` inválido en Babel y Comandante (OPT-2). Completada 07/09/2026, dos
   PR fusionados: `babel-letiende#124`, `comandante#25`.
