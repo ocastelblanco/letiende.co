@@ -67,14 +67,26 @@ real de `llmstxt.org`, verificado contra el código fuente exacto de la auditor�
 enlaza contenido público real (catálogo), Comandante (sin rutas públicas) lo dice explícitamente en
 vez de inventar enlaces falsos. Detalle en el Historial de abajo.
 
-**T-0024 — [ACCESIBILIDAD] Contraste de color (WCAG) en Babel y Comandante, ACTIVA:** Lighthouse
-reporta "Background and foreground colors do not have a sufficient contrast ratio" en ambos — real,
-no cosmético. Corresponde a **OPT-6** de `docs/optimizacion-aplicaciones.md` §4. **Investigar antes de
-tocar nada:** identificar el/los componente(s) y combinación de color/token exactos que fallan (el
-detalle de la auditoría de Lighthouse trae el selector CSS del elemento) — revisar contra los tokens
-compartidos de `DESIGN.md` de cada repo antes de asumir cuál color es el problema. DoD: la auditoría
-`color-contrast` de Lighthouse pasa contra la URL real de ambos repos;
-`docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+**T-0024 — [ACCESIBILIDAD] Contraste de color (WCAG) en Babel y Comandante, ACTIVA — PR abiertos,
+esperando fusión humana:** investigado con los cuatro reportes reales de Lighthouse (`color-contrast`)
+antes de tocar nada, no adivinado. **Babel** (`/libros/`, 1678 elementos): el precio de cada tarjeta
+del catálogo usa `text-secondary` (`#E8630A`) a 14px negrita — 3.37:1 sobre blanco, bajo el 4.5:1
+exigido a texto normal (14px negrita no llega al umbral de "texto grande"). **Comandante**
+(`/admin/dashboard`, 9 elementos): `text-espresso/45` (3.04:1), `/40` (2.62:1), `/35` (2.28:1) — la
+variable `--color-espresso` con modificador de opacidad de Tailwind, nunca documentada en `DESIGN.md`
+de ese repo (solo el color a opacidad plena), usada para jerarquía de texto secundario en 4 vistas
+distintas, no solo la auditada.
+
+**Fix, verificado con la fórmula real de contraste relativo de WCAG, no aproximado:** Babel gana un
+token nuevo, `--color-secondary-accesible: #B84D08` (5.12:1), aplicado solo donde `secondary`
+coloreaba texto pequeño real (precio de catálogo y detalle, enlace activo de la barra) —
+`secondary` puro se conserva en bordes/fondos/anillos de foco, que no exigen 4.5:1. Comandante sube la
+opacidad mínima por nivel preservando la jerarquía relativa (`/30→/62`, `/35→/64`, `/40→/68`,
+`/45→/70`), en los 4 archivos donde aparece el patrón. Ambos build+pruebas verificados; CSS compilado
+inspeccionado para confirmar que la clase nueva resuelve al color esperado. PR
+`babel-letiende#126` y `comandante#28` abiertos, sin fusionar todavía. Pendiente tras la fusión:
+volver a correr Lighthouse contra las URL reales para cerrar el ciclo con una medición nueva —
+`docs/optimizacion-aplicaciones.md` §5 ya referencia ambos PR.
 
 **T-0025 — [RENDIMIENTO] `width`/`height` explícitos en imágenes, ACTIVA:** Lighthouse marca
 "Image elements do not have explicit `width` and `height`" en los cuatro repos — causa *layout shift*
