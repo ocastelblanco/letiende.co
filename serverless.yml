@@ -254,22 +254,52 @@ resources:
               # crítico en un <style> propio en <head> (Beasties/Critters,
               # verificado en el HTML real servido — sin esto, esa hoja de
               # estilo queda bloqueada y la primera pintura sale sin estilo).
-              # script-src incluye el hash sha256 de un <script> inline que
-              # gtag.js inyecta por su cuenta al inicializarse (no es código
-              # de este repositorio — verificado: ningún archivo de este repo
-              # crea un <script> inline sin src). Se usa el hash exacto en vez
-              # de 'unsafe-inline' porque 'unsafe-inline' habilitaría CUALQUIER
-              # script inline, incluido uno inyectado por un XSS futuro
-              # (CLAUDE.md §5, A03); el hash solo permite ejecutar ese
-              # contenido exacto e inmutable. Si Google cambia ese snippet
-              # interno en el futuro, el hash dejará de calzar y GA4
-              # simplemente dejará de rastrear en silencio (no es un riesgo
-              # de seguridad, pero conviene revisar la consola si algún día
-              # GA4 deja de disparar eventos).
+              # script-src incluye TRES hashes sha256 — CORRECCIÓN de un error
+              # de diagnóstico anterior, que los atribuía a gtag.js: en
+              # realidad son el "event dispatch contract" que Angular 22
+              # genera él mismo en el SSR cuando `provideClientHydration()`
+              # (app.config.ts) trae event replay por defecto — dos <script>
+              # inline consecutivos en el HTML real servido: uno define
+              # `window.__jsaction_bootstrap` (id="ng-event-dispatch-contract",
+              # UN SOLO hash, idéntico en todas las rutas — verificado contra
+              # /, /nosotros, /contacto, /preguntas-frecuentes y el 404), el
+              # otro lo invoca con la lista exacta de eventos que ESA página
+              # necesita — y esa lista SÍ varía por ruta: las páginas sin
+              # formulario solo piden "click" (un hash), pero /contacto tiene
+              # un formulario reactivo y pide
+              # click/submit/input/compositionstart/compositionend/change +
+              # blur en captura (un hash DISTINTO) — verificado con `curl`
+              # real contra las 5 rutas del contenedor. Sin el hash de
+              # /contacto, ese <script> queda bloqueado y el formulario nunca
+              # llega a montar sus listeners de event replay.
+              #
+              # Riesgo real, ACEPTADO explícitamente por el humano
+              # (07/09/2026): esto es intrínsecamente fráil — cualquier página
+              # nueva del contenedor cuyos componentes registren una
+              # combinación de eventos distinta (otro formulario, otro
+              # patrón interactivo) produce un hash nuevo que hay que agregar
+              # a mano aquí, y el fallo es silencioso (consola del
+              # navegador, no build ni pruebas) hasta que alguien lo nota en
+              # producción — ya pasó dos veces seguidas con este mismo
+              # mecanismo. El mecanismo correcto y durable es un nonce
+              # generado por petición en el SSR (server.ts) en vez de hashes
+              # estáticos — requiere que ese nonce se propague a Angular vía
+              # `CSP_NONCE` y que esta ResponseHeadersPolicy deje de
+              # sobreescribir el CSP (`Override: false` solo en este campo)
+              # para que el header real, con el nonce, pase desde el origen.
+              # Evaluación de ese rediseño: tarea aparte, no bloquea este fix
+              # (decisión explícita del humano, mismo criterio que otras
+              # decisiones de alcance de CSP de este archivo).
+              # Riesgo aparte, ya documentado arriba: los dos primeros hashes
+              # son del código INTERNO de Angular — una actualización de
+              # versión que cambie ese script (aunque sea reformatearlo) los
+              # invalida en silencio.
               ContentSecurityPolicy: >-
                 default-src 'self'; script-src 'self'
                 https://www.googletagmanager.com
-                'sha256-8sGKvDKC8crv9OBcqEMvqrNDWlm1/80h7NJpJzqOnLI='; style-src 'self'
+                'sha256-VM2mZqyEQZoLzoTrp5EigFvzQ0+f1wSeBuoOn95WHCg='
+                'sha256-8sGKvDKC8crv9OBcqEMvqrNDWlm1/80h7NJpJzqOnLI='
+                'sha256-YR5UaeMJmcF2QvNpSDX5Em8xm7vOc4QqcnkdA1JMBlM='; style-src 'self'
                 'unsafe-inline' https://fonts.googleapis.com; font-src 'self'
                 https://fonts.gstatic.com; img-src 'self' data:
                 https://agora-activos-${sls:stage}.s3.us-east-1.amazonaws.com;
