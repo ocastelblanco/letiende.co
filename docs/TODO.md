@@ -67,26 +67,12 @@ real de `llmstxt.org`, verificado contra el código fuente exacto de la auditor�
 enlaza contenido público real (catálogo), Comandante (sin rutas públicas) lo dice explícitamente en
 vez de inventar enlaces falsos. Detalle en el Historial de abajo.
 
-**T-0024 — [ACCESIBILIDAD] Contraste de color (WCAG) en Babel y Comandante, ACTIVA — PR abiertos,
-esperando fusión humana:** investigado con los cuatro reportes reales de Lighthouse (`color-contrast`)
-antes de tocar nada, no adivinado. **Babel** (`/libros/`, 1678 elementos): el precio de cada tarjeta
-del catálogo usa `text-secondary` (`#E8630A`) a 14px negrita — 3.37:1 sobre blanco, bajo el 4.5:1
-exigido a texto normal (14px negrita no llega al umbral de "texto grande"). **Comandante**
-(`/admin/dashboard`, 9 elementos): `text-espresso/45` (3.04:1), `/40` (2.62:1), `/35` (2.28:1) — la
-variable `--color-espresso` con modificador de opacidad de Tailwind, nunca documentada en `DESIGN.md`
-de ese repo (solo el color a opacidad plena), usada para jerarquía de texto secundario en 4 vistas
-distintas, no solo la auditada.
-
-**Fix, verificado con la fórmula real de contraste relativo de WCAG, no aproximado:** Babel gana un
-token nuevo, `--color-secondary-accesible: #B84D08` (5.12:1), aplicado solo donde `secondary`
-coloreaba texto pequeño real (precio de catálogo y detalle, enlace activo de la barra) —
-`secondary` puro se conserva en bordes/fondos/anillos de foco, que no exigen 4.5:1. Comandante sube la
-opacidad mínima por nivel preservando la jerarquía relativa (`/30→/62`, `/35→/64`, `/40→/68`,
-`/45→/70`), en los 4 archivos donde aparece el patrón. Ambos build+pruebas verificados; CSS compilado
-inspeccionado para confirmar que la clase nueva resuelve al color esperado. PR
-`babel-letiende#126` y `comandante#28` abiertos, sin fusionar todavía. Pendiente tras la fusión:
-volver a correr Lighthouse contra las URL reales para cerrar el ciclo con una medición nueva —
-`docs/optimizacion-aplicaciones.md` §5 ya referencia ambos PR.
+**T-0024 — [ACCESIBILIDAD] Contraste de color (WCAG) en Babel y Comandante (OPT-6), COMPLETA
+(07/09/2026):** los tres PR fusionados por el humano — `babel-letiende#126`, `comandante#28`,
+`letiende.co#40`. Verificado en producción real tras la fusión: `curl` contra el CSS compilado de
+`https://letiende.co/libros/` y `https://comandante.letiende.co/` confirma que `text-secondary-
+accesible` y `text-espresso/{62,64,68,70}` resuelven a los colores esperados. Detalle completo en el
+Historial de abajo.
 
 **T-0025 — [RENDIMIENTO] `width`/`height` explícitos en imágenes, ACTIVA:** Lighthouse marca
 "Image elements do not have explicit `width` and `height`" en los cuatro repos — causa *layout shift*
@@ -95,6 +81,17 @@ plantilla, sin riesgo de despliegue más allá del flujo normal de cada repo. Do
 `unsized-images` de Lighthouse pasa contra la URL real de los cuatro repos (incluido `letiende.co`
 mismo — revisar `features/inicio` y donde más aplique);
 `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+
+**T-0026 — [RENDIMIENTO] Activar `sourceMap` en el build de producción de Babel y Comandante
+(OPT-8), ACTIVA:** Lighthouse marca "Missing source maps for large first-party JavaScript" en ambos.
+Cambio de flag en `angular.json` (`sourceMap: true` en la configuración `production`), sin efecto en
+runtime — pero **evaluar antes de fusionar** el impacto en el tamaño del paquete de despliegue:
+Babel empaqueta su SSR como Lambda (límite de tamaño real, ver `ADR` de esta tarea en Babel una vez
+exista), mientras que Comandante despliega a Firebase Hosting sin Lambda propia, así que ese límite no
+le aplica — verificar esta asimetría antes de aplicar el mismo cambio a ciegas en los dos. DoD: la
+auditoría `source-maps` de Lighthouse pasa contra la URL real de ambos repos; el tamaño del paquete de
+despliegue de Babel no cruza el límite de Lambda; `docs/optimizacion-aplicaciones.md` §5 actualizado;
+esfuerzo registrado.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -121,6 +118,33 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0024** — [ACCESIBILIDAD] Contraste de color (WCAG) en Babel y Comandante (OPT-6). Completada
+  07/09/2026, tres PR fusionados: `babel-letiende#126`, `comandante#28`, `letiende.co#40`.
+
+  Investigado con los cuatro reportes reales de Lighthouse (`color-contrast`) antes de tocar nada, no
+  adivinado. **Babel** (`/libros/`, 1678 elementos): el precio de cada tarjeta del catálogo usa
+  `text-secondary` (`#E8630A`) a 14px negrita — 3.37:1 sobre blanco, bajo el 4.5:1 exigido a texto
+  normal (14px negrita no llega al umbral de "texto grande"). **Comandante** (`/admin/dashboard`, 9
+  elementos): `text-espresso/45` (3.04:1), `/40` (2.62:1), `/35` (2.28:1) — la variable
+  `--color-espresso` con modificador de opacidad de Tailwind, nunca documentada en el `DESIGN.md` de
+  ese repo (solo el color a opacidad plena), usada para jerarquía de texto secundario en 4 vistas
+  distintas, no solo la auditada.
+
+  **Fix, verificado con la fórmula real de contraste relativo de WCAG, no aproximado** (incluida la
+  variante de Comandante sobre `bg-espresso/8`, más exigente que sobre blanco puro): Babel gana un
+  token nuevo, `--color-secondary-accesible: #B84D08` (5.12:1), aplicado solo donde `secondary`
+  coloreaba texto pequeño real (precio de catálogo y detalle, enlace activo de la barra) —
+  `secondary` puro se conserva en bordes/fondos/anillos de foco, que no exigen 4.5:1. Comandante sube
+  la opacidad mínima por nivel preservando la jerarquía relativa (`/30→/62`, `/35→/64`, `/40→/68`,
+  `/45→/70`), en los 4 archivos donde aparece el patrón, no solo el dashboard auditado.
+
+  Verificado en producción real tras la fusión, no solo con el resultado del build: `curl` contra el
+  CSS compilado real de `https://letiende.co/libros/` confirma `text-secondary-accesible{color:var(
+  --color-secondary-accesible)}` con el valor `#b84d08`, y contra `https://comandante.letiende.co/`
+  confirma las cuatro clases `text-espresso/{62,64,68,70}` resolviendo al `color-mix()` esperado.
+  Pendiente, no bloqueante: volver a correr Lighthouse (`color-contrast`) contra ambas URL para cerrar
+  el ciclo con una medición nueva, según el protocolo de `docs/optimizacion-aplicaciones.md` §1.6.
 
 - **T-0023** — [SEO/AEO] `llms.txt` en Babel y Comandante (OPT-3). Completada 07/09/2026, dos PR
   fusionados: `babel-letiende#125`, `comandante#27`.
