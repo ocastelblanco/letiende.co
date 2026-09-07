@@ -5,7 +5,7 @@
 **El sitio principal de Le Tiende — la fachada que une, bajo un solo dominio y un solo menú, la boletería, el catálogo de la librería y (próximamente) la carta del café bar, sin reimplementar ninguno de los tres.**
 
 [![Estado](https://img.shields.io/badge/estado-en%20desarrollo-dbab09?style=flat-square)](docs/MEMORY.md)
-[![Licencia](https://img.shields.io/badge/licencia-MIT-blue?style=flat-square)](LICENSE)
+[![Licencia](https://img.shields.io/badge/licencia-Apache%202.0-blue?style=flat-square)](LICENSE)
 [![Angular](https://img.shields.io/badge/Angular-22-DD0031?style=flat-square&logo=angular&logoColor=white)](https://angular.dev)
 [![AWS](https://img.shields.io/badge/AWS-Lambda_·_CloudFront_·_API_Gateway-232F3E?style=flat-square&logo=amazonaws&logoColor=white)](https://aws.amazon.com)
 [![Serverless](https://img.shields.io/badge/IaC-Serverless_Framework_4-FD5750?style=flat-square&logo=serverless&logoColor=white)](https://serverless.com)
@@ -97,7 +97,7 @@ Código, commits y comentarios se escriben en **español colombiano**.
 
 ## Licencia
 
-[MIT](LICENSE).
+[Apache 2.0](LICENSE).
 
 ## Soporte
 
