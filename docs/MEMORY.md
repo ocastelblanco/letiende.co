@@ -9,13 +9,13 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 
 | | |
 |---|---|
-| **Versión** | 0.0.0 — andamiaje + barra/pie comunes + `README`/`LICENSE` + pruebas continuas + portada con eventos reales de Ágora + páginas institucionales + preguntas frecuentes + íconos/manifest + Google Maps + GA4 + capa de SEO/AEO + `serverless.yml` (SSR + contacto) + CI/CD + ACM/CloudFront/DNS de staging desplegados de verdad |
-| **Fase** | T-0001 a T-0012 completadas y en `main`; T-0011 (ACM + CloudFront + staging.letiende.co) completada y verificada en vivo — ver historial de `docs/TODO.md`. Próximas: T-0013/T-0014 (cambios en Ágora y Babel) |
+| **Versión** | 1.0.0 — roadmap completo de etapa 1 (T-1 a T-15, `tech-specs.md` §11) cerrado y **en producción real desde el 04/09/2026**: contenedor completo, proxy a Ágora/Babel, cutover ejecutado. Hoy arranca el roadmap de mantenimiento (`docs/optimizacion-aplicaciones.md`) |
+| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. Activas: T-0018/T-0019, del roadmap de optimización del ecosistema |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
-| **Rama** | `fix/assets-prefijo-cloudfront` (desde `main`), PR #18 |
-| **Producción** | `https://letiende.co` (CloudFront `E33QAN86FY24JZ`) — todavía sirve el **sitio estático anterior**. `letiende-co-production` despliega de verdad (T-0010) y ya tiene su propia distribución de CloudFront (`ER22S2WADMM83`, T-0011), pero sin alias — nada de DNS apunta a él todavía, eso es el cutover de T-14/T-15 |
+| **Rama** | `main` |
+| **Producción** | `https://letiende.co` / `https://www.letiende.co` sirven de verdad el contenedor de este repositorio — CloudFront `ER22S2WADMM83`, cutover ejecutado el 04/09/2026 (T-0017), verificado en vivo el 07/09/2026 (`cloudfront ListDistributions` + `route53 ListResourceRecordSets` reales, y navegador real contra las 4 rutas propias). La distribución vieja (`E33QAN86FY24JZ`) sigue existiendo pero **sin ningún alias** — ya no sirve tráfico real |
 | **Staging** | `letiende-co-staging` despliega de verdad, con dominio propio real: `https://staging.letiende.co` (ACM `ISSUED`, CloudFront `EQW683KP4VXIV`, T-0011) — verificado en vivo por el humano y por `curl` |
-| **Última sesión** | 03/09/2026 — T-0011: certificado ACM + CloudFront + DNS de staging, verificado en vivo (PR #17 fusionado, PR #18 con el fix del prefijo `/assets` en curso) |
+| **Última sesión** | 07/09/2026 — arreglo del timeout SSR de Babel en `/libros` (`babel-letiende` PR #121), dos rondas del CSP de `letiende.co` (PR #32 y #33 — primera atribuyó el problema a `gtag.js`, corregido: era el *event replay* de Angular, con hash distinto por ruta), corrección retroactiva del estado del cutover (T-0017, nunca cerrado en estos documentos), y creación de `docs/optimizacion-aplicaciones.md` con las 2 primeras tareas activas (T-0018/T-0019) |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -598,6 +598,33 @@ habría sido inconsistencia, no mejora, mientras Ágora y Babel sigan como está
 a la vez (Ágora, Babel, letiende.co), no uno aislado — de lo contrario la cuenta termina con dos
 mecanismos de autenticación de CI conviviendo sin necesidad.
 
+### ADR-022 — El roadmap de optimización entre los cuatro repositorios vive en `letiende.co`
+
+**Fecha:** 07/09/2026 · **Estado:** aceptada
+
+**Contexto.** Con el cutover ya hecho (T-0017) y los cuatro sitios en producción real, apareció trabajo
+de mantenimiento que no pertenece a un solo repositorio: unificar el estilo de los cuatro `README` y
+cerrar los hallazgos de cuatro reportes reales de Lighthouse. Ninguno de los cuatro repos tenía un
+lugar único para rastrear algo así — cada uno lleva su propio `docs/TODO.md` para su propio roadmap de
+producto, y ese roadmap no está pensado para tareas que cruzan repos.
+
+**Decisión.** El roadmap completo vive en `letiende.co/docs/optimizacion-aplicaciones.md`, con su
+propia tabla de seguimiento. `letiende.co/docs/TODO.md` solo referencia, en cada momento, cuáles 2
+tareas de ese roadmap son las activas del motor JIT — mismo criterio que ya usa este archivo para el
+roadmap propio de este repositorio.
+
+**Razón.** `letiende.co` ya es, por diseño (ADR-001), el contenedor que unifica a los otros tres bajo
+un solo dominio y un solo menú — es el candidato natural para también ser el punto único de
+seguimiento de trabajo que los toca a los cuatro, sin que eso signifique que este repositorio empiece
+a poseer código ajeno (violaría la misma ADR-001 que lo justifica).
+
+**Consecuencia.** La implementación real de cada tarea sigue ocurriendo en el repositorio dueño del
+código, con su propio `CLAUDE.md` y su propio git flow — nunca se toca un repo hermano sin leer primero
+sus reglas. Cuando una tarea de ese roadmap empieza a ejecutarse en un repo hermano, ese repo también
+gana su propia entrada en su propio `TODO.md`, con una referencia de vuelta a
+`optimizacion-aplicaciones.md` — el documento de este repositorio es la fuente de verdad de "qué está
+pendiente entre los cuatro", no un sustituto del roadmap propio de cada uno.
+
 ---
 
 ## 4. Dependencias
@@ -907,6 +934,7 @@ Encontrado durante T-0002 (README y `LICENSE`), en el repositorio de **Ágora**,
 | [`tech-specs.md`](tech-specs.md) | Arquitectura, rutas, infraestructura, endpoints |
 | [`DESIGN.md`](DESIGN.md) | Sistema de diseño y contrato visual entre los tres repos |
 | [`TODO.md`](TODO.md) | Las 2 tareas atómicas activas |
+| [`optimizacion-aplicaciones.md`](optimizacion-aplicaciones.md) | Roadmap de deuda técnica entre los cuatro repositorios (README + Lighthouse) — ADR-022 |
 | `../metrics/` | Registro de esfuerzo y costo |
 
 **Repositorios hermanos**, referencia constante:
@@ -1430,3 +1458,56 @@ errores de consola.
 vivo contra la API real de `siteverify` con un token deliberadamente inválido — rechazó con 400 antes
 de llegar a SES, sin riesgo de un envío de correo de prueba (la lección de ADR-019/§7 sobre no
 invocar servicios externos reales sin cuidado, aplicada esta vez desde el principio).
+
+---
+
+**07/09/2026 — Bug reportado en `/libros`, dos correcciones de producción, T-0017 (cierre retroactivo
+del cutover) y arranque del roadmap de optimización.**
+
+**1. Timeout SSR de Babel en `/libros`.** El humano reportó `{"message":"Internal Server Error"}` en
+la primera carga, corregido al reintentar segundos después. Diagnóstico con CloudWatch real (no
+supuesto): `babel-letiende-production-ssr` hacía timeout consistente a los 10.000 ms exactos —
+`Init Duration` normal (~250 ms, descarta *cold start*), la Lambda simplemente tardaba más de su
+`timeout` de 10s. Causa: el catálogo público llama `GET /api/libros` durante el propio SSR, que
+depende del mismo `Scan` paginado sobre `babel-libros` (2.000+ libros) que ya obligaba a `timeout: 25`
+en las funciones API hermanas (`libros`, `librosInventario`, etc.) — la función `ssr` nunca recibió
+ese mismo ajuste. Corregido en `babel-letiende` (PR #121, fusionado): `timeout: 25` en `ssr` +
+`loading="lazy"` en las portadas del catálogo (pedido junto, no arregla el bug pero es mejora real).
+Verificado en producción tras el merge.
+
+**2. CSP de `letiende.co` — dos rondas, la primera con diagnóstico equivocado.** Error de consola:
+`Executing inline script violates ... script-src`. Primer intento (PR #32): se atribuyó a `gtag.js` y
+se agregó un hash sha256 — **incorrecto**, verificado después contra el HTML real de producción con
+`curl` + `crypto.createHash`: los dos `<script>` inline bloqueados son el "event dispatch contract" que
+Angular 22 genera él mismo en el SSR (`provideClientHydration()` trae *event replay* por defecto), no
+código de terceros. El hash agregado en el PR #32 coincidía por casualidad con uno de los dos scripts,
+dejando el otro bloqueado — `TypeError: window.__jsaction_bootstrap is not a function` en producción.
+Segundo hallazgo, verificando las 5 rutas reales antes de cerrar: el contenido del script invocador
+**varía por ruta** (`/contacto`, con formulario reactivo, registra 6 eventos más que las demás) — hace
+falta un tercer hash. Corregido en PR #33 (dos commits), verificado esta vez de punta a punta con
+navegador real contra las 4 rutas propias del contenedor: cero errores de consola. Documentado en
+`serverless.yml` que este enfoque de hashes es frágil (cualquier ruta nueva con otro patrón de eventos
+necesita su propio hash) y que la alternativa (nonce por petición) no vale claramente la pena para este
+proyecto — solo `/` es SSR real, el resto es `Prerender`, así que terminaría siendo un híbrido, no una
+sustitución limpia.
+
+**3. T-0017 — cierre retroactivo del cutover.** Al preparar el roadmap de optimización se encontró que
+`TODO.md`/`MEMORY.md` seguían diciendo que el cutover de T-15 "sigue sin ejecutarse", pero la cuenta
+real de AWS mostraba lo contrario (`ER22S2WADMM83` con los alias de producción, Route 53 apuntando ahí
+desde el 04/09/2026). Reconstruido con evidencia del propio `git log`: el cutover sí se ejecutó ese día,
+con un incidente real encontrado y corregido en el momento (`robots.txt` bloqueaba la indexación con el
+dominio real ya activo, PR #29) y la restauración de las redirecciones cross-domain en Ágora/Babel
+(PR #30) — solo faltó la entrada de cierre en estos documentos. Corregido hoy, con ADR-022 documentando
+además por qué el roadmap de optimización (punto 4) vive en este repositorio.
+
+**4. `docs/optimizacion-aplicaciones.md` — roadmap nuevo, entre los cuatro repositorios.** A partir de
+cuatro reportes reales de Lighthouse (`../fuentes/ReportesLighthouse/`, fuera de control de versiones)
+y la comparación directa de los cuatro `README`, 17 tareas ordenadas de menor a mayor esfuerzo
+(OPT-1 a OPT-17). Hallazgo que conecta con el punto 1: Lighthouse midió 8.930 ms de respuesta del
+servidor en `/libros` — la misma causa del timeout que hoy solo ganó más presupuesto de tiempo (OPT-17,
+la tarea de mayor esfuerzo y mayor impacto del roadmap). Ver ADR-022 para por qué vive aquí y no en
+cada repo por separado.
+
+**Próxima tarea sugerida:** T-0018 (insignias de README en Babel/Comandante) y T-0019 (meta description
+en Ágora/Babel/Comandante) — ambas ya activas en `TODO.md`, ambas de riesgo de despliegue bajo o nulo,
+pensadas a propósito como punto de partida seguro del roadmap de optimización.
