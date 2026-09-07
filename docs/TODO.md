@@ -26,15 +26,39 @@ de reportes reales de Lighthouse contra producción y comparación de los cuatro
 es el nivel de detalle completo — evidencia, esfuerzo estimado, y las 17 tareas completas ordenadas de
 menor a mayor esfuerzo; acá solo se referencian las 2 activas.
 
-**T-0018 — [DOCS] Unificar insignias de README en Babel y Comandante, ACTIVA:** agregar las insignias
-`License`, `SLIM` y `AI-assisted` (estilo `flat-square`, mismo criterio que `letiende.co` y que las
-insignias que esos dos repos ya tienen) a `README.md`/`README.es.md` de `babel-letiende` y
-`comandante`. Ambos ya son bilingües y ya usan el estilo correcto — falta agregar 3 insignias.
-Corresponde a **OPT-4** de `docs/optimizacion-aplicaciones.md` §4. **Sin riesgo de despliegue:** el
-`README` no forma parte del artefacto construido en ninguno de los dos repos — verificar igual que
-`angular.json` no lo incluya en ningún `assets`/`fileReplacements` antes de asumirlo. DoD: las 3
-insignias presentes en ambos idiomas de ambos repos, con el mismo orden/estilo que `letiende.co`;
-`docs/optimizacion-aplicaciones.md` §5 actualizado con el/los PR(s); esfuerzo registrado con
+**T-0018 — [DOCS] Unificar insignias de README en Babel y Comandante + OPT-18 (relicenciar a Apache
+2.0), ACTIVA, ampliada el mismo día:** agregar las insignias `License`, `SLIM` y el nivel de autoría IA
+correcto (estilo `flat-square`, mismo criterio que `letiende.co`) a `README.md`/`README.es.md` de
+`babel-letiende` y `comandante`. Ambos ya son bilingües y ya usan el estilo correcto — faltaban 3
+insignias. Corresponde a **OPT-4** de `docs/optimizacion-aplicaciones.md` §4. **Sin riesgo de
+despliegue:** el `README`/`LICENSE` no forman parte del artefacto construido en ninguno de los cuatro
+repos.
+
+**Primera ronda (OPT-4), completada por el ejecutor, PRs abiertos sin fusionar:**
+`babel-letiende#122` (badge de autoría **AI-generated**, no "AI-assisted" — verificado contra
+`tracking-detail.csv` real de ese repo: 79,2% agente / 20,8% humano, no copiado de `letiende.co`) y
+`comandante#23` (badge de autoría **omitido**: ese repo no tiene ningún registro de esfuerzo propio
+para verificarlo — correctamente no inventado). El ejecutor encontró, verificando el `LICENSE` real de
+cada repo antes de poner el badge (mismo cuidado que ya se documentó con Ágora en T-0002/§7), que
+**Comandante no tiene ningún archivo `LICENSE`** — ni en el repo, ni en `package.json`, ni en el
+historial de git.
+
+**Ampliación (OPT-18), decidida por el humano el mismo día:** en vez de solo tapar el hueco de
+Comandante, migrar los **cuatro** repositorios a licencia Apache 2.0. Efecto por repo:
+- `letiende.co` (este repo): tenía MIT real — `LICENSE` reemplazado por el texto canónico de
+  `https://www.apache.org/licenses/LICENSE-2.0.txt` (mismo texto exacto que ya usa el `LICENSE` real
+  de Ágora, verificado línea por línea, sin encabezado de copyright agregado — mismo criterio que ese
+  archivo), badges de `README.md`/`README.es.md` actualizados.
+- Ágora: **ya tenía Apache 2.0 como archivo real** — la inconsistencia del badge (decía "MIT", nunca
+  corregida desde que se detectó en T-0002/§7 por estar fuera de alcance de esa tarea) se cierra aquí.
+- Babel: tenía MIT real (verificado en la primera ronda) — mismo reemplazo que `letiende.co`, como
+  commit adicional al PR `babel-letiende#122` ya abierto.
+- Comandante: no tenía nada — se agrega el archivo y el badge por primera vez, como commit adicional
+  al PR `comandante#23` ya abierto.
+
+DoD: las 3 insignias de README presentes en ambos idiomas de los cuatro repos, con el mismo
+orden/estilo; los cuatro `LICENSE` son Apache 2.0 real y consistente con su badge;
+`docs/optimizacion-aplicaciones.md` §5 actualizado con todos los PR; esfuerzo registrado con
 `/ai-effort-tracking capture`.
 
 **T-0019 — [SEO] Meta description faltante en Ágora, Babel y Comandante, ACTIVA:** agregar
