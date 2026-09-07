@@ -128,11 +128,11 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 
 | ID | Estado | `T-NNNN` en `TODO.md` | PR(s) | Notas |
 |---|---|---|---|---|
-| OPT-1 | **Activa, PRs listos para revisión** | T-0019 | agora-letiende#67, babel-letiende#123, comandante#24 | Comandante sin SSR ni servicio SEO propio (rutas protegidas por `authGuard`, Lighthouse audita sin sesión) — se optó por un `<meta>` estático en `index.html` en vez de construir un servicio dinámico innecesario |
-| OPT-2 | Pendiente | — | — | — |
+| OPT-1 | **Completada** | T-0019 | agora-letiende#67, babel-letiende#123, comandante#24 | Comandante sin SSR ni servicio SEO propio (rutas protegidas por `authGuard`, Lighthouse audita sin sesión) — se optó por un `<meta>` estático en `index.html` en vez de construir un servicio dinámico innecesario |
+| OPT-2 | **Activa, PRs listos para revisión** | T-0021 | babel-letiende#124, comandante#25 | Causa real en ambos: no existía ningún `robots.txt` — Babel caía en el catch-all SSR (HTML vacío, 200); Comandante servía el `index.html` completo vía el rewrite `**` de Firebase Hosting, cada línea contaba como directiva inválida (explica los "16 errores" exactos) |
 | OPT-3 | Pendiente | — | — | — |
 | OPT-4 | **Completada** | T-0018 | babel-letiende#122, comandante#23 | Autoría IA: Babel = AI-generated (79,2% agente, medido); Comandante sin badge (sin registro de esfuerzo propio que lo respalde) |
-| OPT-5 | **Activa** | T-0020 | — | — |
+| OPT-5 | **Activa, PR listo para revisión** | T-0020 | agora-letiende#68 | No existía ningún `<main>` en toda la app — envuelve el `router-outlet` |
 | OPT-18 | **Completada** | T-0018 (ampliada) | letiende.co#35, agora-letiende#66, babel-letiende#122, comandante#23 | Comandante quedó con un fallo de prueba preexistente y ajeno a este cambio (`app.component.spec.ts`, error ESM de `@ionic/core`) — verificado con `git stash` que ya fallaba antes, no se tocó |
 | OPT-6 | Pendiente | — | — | — |
 | OPT-7 | Pendiente | — | — | — |
