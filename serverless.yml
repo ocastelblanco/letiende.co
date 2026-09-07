@@ -254,21 +254,34 @@ resources:
               # crítico en un <style> propio en <head> (Beasties/Critters,
               # verificado en el HTML real servido — sin esto, esa hoja de
               # estilo queda bloqueada y la primera pintura sale sin estilo).
-              # script-src incluye el hash sha256 de un <script> inline que
-              # gtag.js inyecta por su cuenta al inicializarse (no es código
-              # de este repositorio — verificado: ningún archivo de este repo
-              # crea un <script> inline sin src). Se usa el hash exacto en vez
-              # de 'unsafe-inline' porque 'unsafe-inline' habilitaría CUALQUIER
-              # script inline, incluido uno inyectado por un XSS futuro
-              # (CLAUDE.md §5, A03); el hash solo permite ejecutar ese
-              # contenido exacto e inmutable. Si Google cambia ese snippet
-              # interno en el futuro, el hash dejará de calzar y GA4
-              # simplemente dejará de rastrear en silencio (no es un riesgo
-              # de seguridad, pero conviene revisar la consola si algún día
-              # GA4 deja de disparar eventos).
+              # script-src incluye dos hashes sha256 — CORRECCIÓN de un error
+              # de diagnóstico anterior, que los atribuía a gtag.js: los dos
+              # son en realidad el "event dispatch contract" que Angular 22
+              # genera él mismo en el SSR cuando `provideClientHydration()`
+              # (app.config.ts) trae event replay por defecto — dos <script>
+              # inline consecutivos en el HTML real servido: uno define
+              # `window.__jsaction_bootstrap` (id="ng-event-dispatch-contract"),
+              # el otro lo invoca de inmediato. Verificado byte a byte contra
+              # el HTML real de producción con `curl` + `crypto.createHash`:
+              # ambos hashes calculados localmente coinciden exactamente con
+              # los que blinda el navegador. Sin los DOS, el segundo <script>
+              # (el que invoca) corre pero el primero (el que define) sigue
+              # bloqueado, y el resultado es "TypeError:
+              # window.__jsaction_bootstrap is not a function" en producción —
+              # justo el fallo que dejó el primer intento de este fix, que
+              # solo agregó uno de los dos hashes. Se usa hash exacto en vez
+              # de 'unsafe-inline' porque 'unsafe-inline' habilitaría
+              # CUALQUIER script inline, incluido uno inyectado por un XSS
+              # futuro (CLAUDE.md §5, A03). Riesgo real a vigilar: estos
+              # hashes son del código INTERNO de Angular, no de este
+              # repositorio — una actualización de versión de Angular que
+              # cambie ese script (aunque sea solo reformatearlo) los
+              # invalida en silencio y rompe la hidratación de clics
+              # tempranos en producción hasta recalcularlos.
               ContentSecurityPolicy: >-
                 default-src 'self'; script-src 'self'
                 https://www.googletagmanager.com
+                'sha256-VM2mZqyEQZoLzoTrp5EigFvzQ0+f1wSeBuoOn95WHCg='
                 'sha256-8sGKvDKC8crv9OBcqEMvqrNDWlm1/80h7NJpJzqOnLI='; style-src 'self'
                 'unsafe-inline' https://fonts.googleapis.com; font-src 'self'
                 https://fonts.gstatic.com; img-src 'self' data:
