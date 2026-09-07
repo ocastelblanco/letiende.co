@@ -128,8 +128,8 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 
 | ID | Estado | `T-NNNN` en `TODO.md` | PR(s) | Notas |
 |---|---|---|---|---|
-| OPT-1 | **Activa, PRs listos para revisión** | T-0019 | agora-letiende#67, babel-letiende#123, comandante#24 | Comandante sin SSR ni servicio SEO propio (rutas protegidas por `authGuard`, Lighthouse audita sin sesión) — se optó por un `<meta>` estático en `index.html` en vez de construir un servicio dinámico innecesario |
-| OPT-2 | Pendiente | — | — | — |
+| OPT-1 | **Completada** | T-0019 | agora-letiende#67, babel-letiende#123, comandante#24 | Comandante sin SSR ni servicio SEO propio (rutas protegidas por `authGuard`, Lighthouse audita sin sesión) — se optó por un `<meta>` estático en `index.html` en vez de construir un servicio dinámico innecesario |
+| OPT-2 | **Activa** | T-0021 | — | — |
 | OPT-3 | Pendiente | — | — | — |
 | OPT-4 | **Completada** | T-0018 | babel-letiende#122, comandante#23 | Autoría IA: Babel = AI-generated (79,2% agente, medido); Comandante sin badge (sin registro de esfuerzo propio que lo respalde) |
 | OPT-5 | **Activa** | T-0020 | — | — |

@@ -40,15 +40,23 @@ más allá del flujo normal de ese repo (PR → staging → verificar con Lighth
 DoD: `landmark-one-main` pasa en un reporte nuevo de Lighthouse contra la página real;
 `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
 
-**T-0019 — [SEO] Meta description faltante en Ágora, Babel y Comandante, ACTIVA:** agregar
-`<meta name="description">` en las tres aplicaciones — Lighthouse las marca ausentes en las tres.
-`letiende.co` ya resuelve esto con `MetaService`; verificar primero si cada repo hermano ya tiene un
-servicio de SEO equivalente (los tres declaran capa de SEO/AEO en su propio `tech-specs.md`) antes de
-crear uno nuevo — es más probable que el servicio exista y a esta ruta puntual simplemente no se le
-haya llamado. Corresponde a **OPT-1** de `docs/optimizacion-aplicaciones.md` §4. Pasa por el flujo
-normal de cada repo: PR → staging → verificar con Lighthouse otra vez → fusionar. DoD: las tres
-aplicaciones sirven una descripción real y específica (no genérica) en cada ruta pública auditada;
-`docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+**T-0019 — [SEO] Meta description en Ágora, Babel y Comandante (OPT-1), COMPLETA (07/09/2026):** los
+tres PR fusionados por el humano — `agora-letiende#67`, `babel-letiende#123`, `comandante#24`. Los
+tres repos ya tenían servicio de SEO/`Meta` propio, solo faltaba llamarlo en la ruta pública auditada
+— salvo Comandante, sin SSR y con todas las rutas protegidas por `authGuard` (Lighthouse audita sin
+sesión), donde se optó por un `<meta>` estático en `index.html` en vez de construir un servicio
+dinámico que nunca se ejecutaría para ese caso. Detalle completo en el Historial de abajo.
+
+**T-0021 — [SEO] `robots.txt` inválido en Babel y Comandante, ACTIVA:** corregir la sintaxis —
+Lighthouse reporta "robots.txt is not valid" en Babel (sin detalle) y "16 errores" en Comandante.
+Corresponde a **OPT-2** de `docs/optimizacion-aplicaciones.md` §4. **Investigar antes de tocar nada:**
+correr el mismo validador que usa Lighthouse (o el validador de Google Search Console) contra el
+`robots.txt` real de cada repo para ver los errores exactos — no adivinar la causa. `letiende.co` ya
+resuelve esto bien (`server.ts`, ruta dinámica que distingue producción de staging por host, ADR-015/
+ADR-018) — puede servir de referencia si el problema es de estructura, pero el contenido específico de
+cada `robots.txt` es de cada repo, no se copia. DoD: el validador confirma 0 errores contra el
+`robots.txt` real de producción de ambos repos; `docs/optimizacion-aplicaciones.md` §5 actualizado;
+esfuerzo registrado.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -75,6 +83,30 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0019** — [SEO] Meta description en Ágora, Babel y Comandante (OPT-1). Completada 07/09/2026,
+  tres PR fusionados: `agora-letiende#67`, `babel-letiende#123`, `comandante#24`.
+
+  Antes de escribir nada, se verificó en cada repo si ya existía un servicio de SEO equivalente a
+  `MetaService` de `letiende.co` — en los tres **ya existía**, solo faltaba llamarlo en la ruta pública
+  auditada por Lighthouse:
+  - **Ágora:** `Meta`/`Title` de `@angular/platform-browser` ya se usaba en `DetalleEventoComponent`,
+    pero no en `CarteleraComponent` (la ruta pública real, `/cartelera` vía `baseHref`). Agregado ahí.
+  - **Babel:** mismo patrón — `LibroDetalleComponent` ya lo usaba, `CatalogoPublicoComponent` no.
+    Agregado ahí. Hallazgo aparte, no relacionado con el fix: `@angular/ssr` 22.x valida el header
+    `Host` contra `allowedHosts` del manifest — para probar SSR en local hace falta
+    `NG_ALLOWED_HOSTS=localhost` (configuración preexistente de cada repo, no tocada).
+  - **Comandante:** **no** tenía ningún servicio de SEO, y **no se construyó uno** — decisión de
+    ingeniería explícita: ese repo no tiene SSR (`ng build` simple, Firebase Hosting client-side) y
+    **todas las rutas salvo `/login` están protegidas por `authGuard`**, así que un `Meta.updateTag()`
+    en cualquier componente protegido nunca se ejecutaría para el visitante sin sesión que Lighthouse
+    audita (auditó `/admin/dashboard` sin autenticarse). Se agregó un `<meta name="description">`
+    **estático** en `src/index.html`, que Firebase Hosting sirve igual para cualquier ruta — proporcional
+    al problema real, sin construir infraestructura que ese caso no necesita.
+
+  Las tres descripciones salieron de texto real ya existente en cada repo (`README`/`CLAUDE.md`), no
+  inventadas. Verificado con build + SSR real (Ágora, Babel) o build + inspección del `index.html`
+  compilado (Comandante) — no solo con el código, con el HTML servido de verdad.
 
 - **T-0018** — [DOCS] Insignias de README (OPT-4) + relicenciar los cuatro repos a Apache 2.0
   (OPT-18). Completada 07/09/2026, cuatro PR fusionados: `letiende.co#35`, `agora-letiende#66`,
