@@ -136,7 +136,7 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 | OPT-5 | **Completada** | T-0020 | agora-letiende#68 | No existía ningún `<main>` en toda la app — envuelve el `router-outlet` |
 | OPT-18 | **Completada** | T-0018 (ampliada) | letiende.co#35, agora-letiende#66, babel-letiende#122, comandante#23 | Comandante quedó con un fallo de prueba preexistente y ajeno a este cambio (`app.component.spec.ts`, error ESM de `@ionic/core`) — verificado con `git stash` que ya fallaba antes, no se tocó |
 | OPT-6 | **Completada** | T-0024 | babel-letiende#126, comandante#28, letiende.co#40 | Fórmula real de contraste WCAG, no aproximada. Babel: `text-secondary` (3.37:1) → token nuevo `secondary-accesible` (5.12:1), solo en texto pequeño. Comandante: `text-espresso/{30,35,40,45}` (2.28–3.04:1) → `/{62,64,68,70}` (5.32–7.11:1), en los 4 archivos con el patrón, no solo el dashboard auditado. Verificado en producción real con `curl` contra el CSS compilado tras la fusión. Pendiente, no bloqueante: re-medición de Lighthouse. |
-| OPT-7 | **Activa** | T-0025 | — | — |
+| OPT-7 | **Activa — PR abiertos, esperando fusión** | T-0025 | letiende.co#42, agora-letiende#69, babel-letiende#127, comandante#29 | Siempre el mismo elemento: el logo, sin `width`/`height`. Corregidas todas las instancias de cada repo (1/2/3/9), no solo la auditada — el resto de imágenes ya usa `aspect-ratio` explícito o ambas dimensiones fijas. Pendiente: fusión humana + re-medición de Lighthouse. |
 | OPT-8 | **Activa** | T-0026 | — | Evaluar la asimetría Babel (Lambda, límite de tamaño real) / Comandante (Firebase Hosting, sin Lambda) antes de aplicar el mismo flag a ciegas. |
 | OPT-9 | Pendiente | — | — | — |
 | OPT-10 | Pendiente | — | — | — |

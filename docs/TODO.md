@@ -74,13 +74,17 @@ vez de inventar enlaces falsos. Detalle en el Historial de abajo.
 accesible` y `text-espresso/{62,64,68,70}` resuelven a los colores esperados. Detalle completo en el
 Historial de abajo.
 
-**T-0025 — [RENDIMIENTO] `width`/`height` explícitos en imágenes, ACTIVA:** Lighthouse marca
-"Image elements do not have explicit `width` and `height`" en los cuatro repos — causa *layout shift*
-durante la carga. Corresponde a **OPT-7** de `docs/optimizacion-aplicaciones.md` §4. Cambio de
-plantilla, sin riesgo de despliegue más allá del flujo normal de cada repo. DoD: la auditoría
-`unsized-images` de Lighthouse pasa contra la URL real de los cuatro repos (incluido `letiende.co`
-mismo — revisar `features/inicio` y donde más aplique);
-`docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+**T-0025 — [RENDIMIENTO] `width`/`height` explícitos en imágenes, ACTIVA — PR abiertos, esperando
+fusión humana:** Lighthouse marcaba "Image elements do not have explicit `width` and `height`" en los
+cuatro repos — siempre el mismo elemento, el logo, sin dimensiones explícitas (causa real de *layout
+shift*, no cosmético). Verificado antes de tocar nada: el resto de imágenes de cada repo (portadas de
+eventos y libros, avatares, QR) ya usan `aspect-ratio` explícito en CSS o ambas dimensiones fijas, así
+que no las marca el mismo audit. Se agregó `width`/`height` con la proporción real del viewBox del SVG
+del logo (525.26×230.56) en **todas** las instancias de cada repo, no solo la auditada — 1 en
+`letiende.co`, 2 en Ágora, 3 en Babel, 9 en Comandante. El tamaño visible lo sigue controlando la
+clase/`style` de Tailwind que ya existía en cada una. Build + pruebas en verde en los cuatro. PR
+`letiende.co#42`, `agora-letiende#69`, `babel-letiende#127`, `comandante#29` abiertos, sin fusionar
+todavía. Pendiente tras la fusión: volver a correr Lighthouse contra las URL reales.
 
 **T-0026 — [RENDIMIENTO] Activar `sourceMap` en el build de producción de Babel y Comandante
 (OPT-8), ACTIVA:** Lighthouse marca "Missing source maps for large first-party JavaScript" en ambos.
