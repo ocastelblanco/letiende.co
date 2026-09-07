@@ -86,7 +86,7 @@ día o más, rediseño acotado a un flujo) · **XL** (días, cambio de arquitect
 | OPT-1 | Agregar `<meta name="description">` | Ágora, Babel, Comandante | Lighthouse SEO: "Document does not have a meta description". `letiende.co` ya lo resuelve con `MetaService` — mismo patrón replicable. |
 | OPT-2 | Corregir sintaxis de `robots.txt` | Babel, Comandante | Comandante: 16 errores reportados por el validador de Lighthouse. Babel: "no válido", sin detalle — revisar con el mismo validador antes de tocarlo. |
 | OPT-3 | Crear `llms.txt` | Babel, Comandante | Categoría "agentic-browsing" lo exige — es la que más pesa en el puntaje de 32/100 de Babel. |
-| OPT-4 | Agregar insignias `License`, `SLIM` y `AI-assisted` | Babel, Comandante | Ya usan el mismo estilo `flat-square` y ya son bilingües (`README.md`/`README.es.md`) — solo faltan estas tres para calzar con el set de `letiende.co`. Sin riesgo de despliegue: el `README` no forma parte del artefacto construido. |
+| OPT-4 | Agregar insignias `License`, `SLIM` y autoría IA (nivel a verificar por repo, no copiar el de `letiende.co`) | Babel, Comandante | Ya usan el mismo estilo `flat-square` y ya son bilingües (`README.md`/`README.es.md`) — solo faltan estas tres para calzar con el set de `letiende.co`. Sin riesgo de despliegue: el `README` no forma parte del artefacto construido. |
 | OPT-5 | Agregar landmark `<main>` | Ágora | Único hallazgo de accesibilidad de Ágora: "Document does not have a main landmark". |
 | OPT-18 | Migrar los cuatro repositorios a licencia Apache 2.0 | `letiende.co`, Ágora, Babel, Comandante | Surgió al ejecutar OPT-4: el ejecutor encontró que **Comandante no tiene ningún archivo `LICENSE`** (ni en el repo, ni en `package.json`, ni en el historial de git — hallazgo real, no de la prosa del README). Consultado el humano, decisión explícita (07/09/2026): unificar los cuatro en Apache 2.0, no solo tapar el hueco de Comandante. Efecto por repo: `letiende.co` y Babel tenían MIT real — cambia el archivo y el badge; Ágora **ya tenía Apache 2.0 como archivo real, pero el badge decía MIT** (inconsistencia conocida desde `docs/TODO.md` T-0002, nunca corregida por estar fuera de alcance de esa tarea — se corrige aquí) — solo hace falta arreglar el badge; Comandante no tenía nada — se agrega el archivo y el badge por primera vez. |
 
@@ -131,9 +131,9 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 | OPT-1 | **Activa** | T-0019 | — | — |
 | OPT-2 | Pendiente | — | — | — |
 | OPT-3 | Pendiente | — | — | — |
-| OPT-4 | **Activa** | T-0018 | — | — |
+| OPT-4 | **Activa** | T-0018 | babel-letiende#122, comandante#23 (ambos en curso) | Autoría IA: Babel = AI-generated (79,2% agente, medido); Comandante sin badge (sin registro de esfuerzo propio que lo respalde) |
 | OPT-5 | Pendiente | — | — | — |
-| OPT-18 | **Activa** | T-0018 (ampliada) | en curso | Junto con OPT-4, mismos PRs de Babel/Comandante ampliados con un commit más |
+| OPT-18 | **Activa** | T-0018 (ampliada) | letiende.co#35 (en curso) | Ágora, Babel y Comandante siguen pendientes — ver §4 para el plan de cada uno |
 | OPT-6 | Pendiente | — | — | — |
 | OPT-7 | Pendiente | — | — | — |
 | OPT-8 | Pendiente | — | — | — |
