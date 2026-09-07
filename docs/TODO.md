@@ -9,12 +9,43 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-**Sin tareas activas por decisión explícita (04/09/2026).** T-0013 y T-0014 (abajo, en el Historial)
-cerraron el rollout del proxy — T-11/T-12/T-13/T-14 del roadmap técnico (`tech-specs.md` §11) ya están
-completos. La siguiente pieza del roadmap es **T-15: el cutover real** (verificación completa del
-proxy + cambio del registro de producción en Route 53) — una acción sobre DNS de producción,
-deliberadamente **no auto-seleccionada aquí**: requiere que el humano decida cuándo y confirme antes de
-empezar, mismo criterio ya aplicado a otras acciones irreversibles de este proyecto.
+**Corrección encontrada hoy (07/09/2026), no un anuncio nuevo: el cutover de T-15 ya está hecho.**
+Este archivo llevaba tres días diciendo "sigue sin ejecutarse" — el motor JIT nunca llegó a
+recalcularse después de la ejecución real. Verificado contra la cuenta real de AWS antes de corregir
+nada aquí: `ER22S2WADMM83` (producción) tiene los alias `letiende.co`/`www.letiende.co`, Route 53 ya
+apunta ambos registros `A` a esa distribución, y la distribución vieja (`E33QAN86FY24JZ`) no tiene
+ningún alias. Detalle completo, con la línea de tiempo reconstruida desde el propio historial de git
+(el trabajo sí se hizo y sí se documentó en commits — solo faltó la entrada de cierre en este
+archivo), en la nueva entrada **T-0017** del Historial de abajo.
+
+Con el objetivo de etapa 1 (OBJ-5, `PRD.md` §6) cerrado del todo, la "Cola priorizada" que traía este
+archivo (T-14 → T-15) queda agotada — ver esa sección al final, actualizada. El motor JIT tomó las
+siguientes dos tareas de la única cola con trabajo real pendiente: `docs/optimizacion-aplicaciones.md`,
+el roadmap de deuda técnica **entre los cuatro repositorios de Le Tiende** (creado 07/09/2026, a partir
+de reportes reales de Lighthouse contra producción y comparación de los cuatro `README`). Ese documento
+es el nivel de detalle completo — evidencia, esfuerzo estimado, y las 17 tareas completas ordenadas de
+menor a mayor esfuerzo; acá solo se referencian las 2 activas.
+
+**T-0018 — [DOCS] Unificar insignias de README en Babel y Comandante, ACTIVA:** agregar las insignias
+`License`, `SLIM` y `AI-assisted` (estilo `flat-square`, mismo criterio que `letiende.co` y que las
+insignias que esos dos repos ya tienen) a `README.md`/`README.es.md` de `babel-letiende` y
+`comandante`. Ambos ya son bilingües y ya usan el estilo correcto — falta agregar 3 insignias.
+Corresponde a **OPT-4** de `docs/optimizacion-aplicaciones.md` §4. **Sin riesgo de despliegue:** el
+`README` no forma parte del artefacto construido en ninguno de los dos repos — verificar igual que
+`angular.json` no lo incluya en ningún `assets`/`fileReplacements` antes de asumirlo. DoD: las 3
+insignias presentes en ambos idiomas de ambos repos, con el mismo orden/estilo que `letiende.co`;
+`docs/optimizacion-aplicaciones.md` §5 actualizado con el/los PR(s); esfuerzo registrado con
+`/ai-effort-tracking capture`.
+
+**T-0019 — [SEO] Meta description faltante en Ágora, Babel y Comandante, ACTIVA:** agregar
+`<meta name="description">` en las tres aplicaciones — Lighthouse las marca ausentes en las tres.
+`letiende.co` ya resuelve esto con `MetaService`; verificar primero si cada repo hermano ya tiene un
+servicio de SEO equivalente (los tres declaran capa de SEO/AEO en su propio `tech-specs.md`) antes de
+crear uno nuevo — es más probable que el servicio exista y a esta ruta puntual simplemente no se le
+haya llamado. Corresponde a **OPT-1** de `docs/optimizacion-aplicaciones.md` §4. Pasa por el flujo
+normal de cada repo: PR → staging → verificar con Lighthouse otra vez → fusionar. DoD: las tres
+aplicaciones sirven una descripción real y específica (no genérica) en cada ruta pública auditada;
+`docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -34,12 +65,53 @@ distribución de producción (`ER22S2WADMM83`) todavía no tenía `Aliases`/`Vie
 agregado en PR **`infra/prepara-cutover-t15`**, con el certificado ya `ISSUED` de la distribución
 vieja (`ca9cd231-…`, cubre `letiende.co` y `www.letiende.co`). **Ese PR no se fusiona solo**: fusionarlo
 antes de quitar el alias de la distribución vieja hace fallar el deploy (`CNAMEAlreadyExists`) — el
-runbook cubre el orden correcto. El cutover en sí (quitar el alias viejo, fusionar ese PR, mover
-Route 53) sigue sin ejecutarse — eso sigue siendo la decisión del humano.
+runbook cubre el orden correcto. El cutover en sí se ejecutó el mismo día, horas después de esta
+preparación — ver **T-0017**, entrada nueva del Historial (corrección del 07/09/2026: nunca se había
+registrado el cierre).
 
 ---
 
 ## Historial
+
+- **T-0017** — [INFRA] Cutover real (T-15): ejecución, verificación y cierre de OBJ-5. Ejecutada
+  04/09/2026 — **entrada de cierre escrita hoy, 07/09/2026**, tres días después: el trabajo se hizo y
+  quedó en el historial de `git` (commits y PRs reales), pero nadie actualizó `TODO.md`/`MEMORY.md`
+  para reflejar que había terminado. Encontrado al preparar el roadmap de optimización del ecosistema
+  (`docs/optimizacion-aplicaciones.md`), verificado contra la cuenta real de AWS antes de escribir esta
+  entrada — no contra lo que decía la documentación.
+
+  **Reconstrucción de la secuencia real, con evidencia:**
+  1. PR **#28** (`infra/prepara-cutover-t15`, fusionado 04/09/2026 22:39) — la preparación de T-0016.
+  2. **Cutover ejecutado** (paso manual del runbook, fuera de `serverless.yml` por diseño — ADR-006):
+     Route 53 movió `letiende.co`/`www.letiende.co` de la distribución vieja (`E33QAN86FY24JZ`, ya sin
+     alias) a la nueva de producción (`ER22S2WADMM83`). Confirmado hoy con `cloudfront ListDistributions`
+     y `route53 ListResourceRecordSets` reales — ambos registros `A` apuntan a
+     `d1o48r8wylv3sh.cloudfront.net`, la distribución nueva.
+  3. PR **#29** (`fix/robots-txt-host-real-produccion`, fusionado 04/09/2026 23:12) — **incidente real
+     de producción, encontrado en la verificación posterior al cutover**: `https://letiende.co/robots.txt`
+     respondía `Disallow: /` con el dominio real ya apuntando a este stack, bloqueando la indexación de
+     Google. Causa: `AllViewerExceptHostHeader` nunca reenvía el `Host` real, ni siquiera en el
+     `DefaultCacheBehavior` propio del contenedor — el fix de `x-le-tiende-host`
+     (`FuncionInyectarHostVisitante`) solo se había asociado a `/cartelera/*` y `/libros/*` (T-0013/
+     T-0014), nunca al comportamiento por defecto. Nunca se detectó antes porque nunca hubo un dominio
+     real apuntando a este stack hasta el cutover mismo. Corregido asociando la misma función también al
+     `DefaultCacheBehavior` y haciendo que `/robots.txt` lea `x-le-tiende-host` en vez de
+     `req.hostname`.
+  4. PR **#30** (`chore/registra-esfuerzo-restauracion-cross-domain`, fusionado 04/09/2026 23:38) —
+     siguiendo lo que ya avisaba `tech-specs.md` §7.2 (hallazgo 5 de T-0013/T-0014): con el cutover
+     verificado en vivo, se restauró la redirección cross-domain de Ágora y Babel hacia
+     `letiende.co/cartelera|libros` (código real en `agora-letiende#65` y `babel-letiende#120`,
+     coordinado desde este repositorio).
+
+  **Por qué la documentación quedó desactualizada:** los PRs #29 y #30 sí registraron el trabajo real
+  (incluido, en #29, decir explícitamente "tras el cutover" en el propio mensaje de commit), pero
+  ninguno actualizó el bloque activo de `TODO.md` ni `MEMORY.md` §1 para marcar T-15/T-16 como
+  completas — el motor JIT se quedó apuntando a un estado de tres días atrás hasta esta corrección.
+  **Lección para sesiones futuras:** cerrar el código de una tarea no es lo mismo que cerrar la tarea
+  en el motor JIT — falta siempre el último paso de actualizar `TODO.md`/`MEMORY.md` antes de terminar
+  la sesión, incluso si el trabajo real ya quedó bien hecho y bien commiteado.
+
+  Con esto, el objetivo de etapa 1 **OBJ-5** (`PRD.md` §6) queda formalmente cerrado.
 
 - **T-0016** — [INFRA] Preparación del cutover (T-15). Completada 04/09/2026, PR
   `infra/prepara-cutover-t15` (código) + `docs/runbook-cutover-t15.md` (secuencia de ejecución).
@@ -430,14 +502,12 @@ Route 53) sigue sin ejecutarse — eso sigue siendo la decisión del humano.
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
 
-En orden, según `tech-specs.md` §11 (T-6 a T-10 ya hechas; F-7 ya hecha, T-0012; T-13/T-0011 ya
-completada — T-11/T-12 son las tareas activas T-0013/T-0014):
+El roadmap original de `tech-specs.md` §11 (T-1 a T-15) está **completo** — OBJ-5 (`PRD.md` §6) cerrado
+con T-0017. Las 2 tareas activas de hoy (T-0018/T-0019) salen de una cola distinta, la de
+mantenimiento: `docs/optimizacion-aplicaciones.md` §4, 17 tareas ordenadas de menor a mayor esfuerzo
+(OPT-1 a OPT-17), con su propia tabla de seguimiento en §5 de ese documento. Consultar ese archivo para
+calcular la siguiente pareja de tareas activas, no este.
 
-1. **T-14 → T-15** Redirecciones 301 y cutover — **después** de que T-0013 y T-0014 terminen. Cierra
-   el objetivo de etapa 1 OBJ-5 (`PRD.md` §6)
-2. Etapa 2 (no empieza antes de que OBJ-5 esté resuelto): carta del café bar (F-8, depende de
-   Comandante) y actualización de la interfaz de datos heredada (F-9, `letiende-api`, ADR-007 —
-   pendiente averiguar quién la consume)
-
-> El orden de T-13 frente a T-11/T-12 no es arbitrario: el `--base-href /cartelera/` de Ágora solo se
-> puede validar detrás de un CloudFront, y desde ADR-002 existe uno en staging para hacerlo.
+Cuando ese roadmap también se agote, la siguiente cola es la etapa 2 del producto (no empieza antes):
+carta del café bar (F-8, depende de Comandante) y actualización de la interfaz de datos heredada (F-9,
+`letiende-api`, ADR-007 — pendiente averiguar quién la consume).

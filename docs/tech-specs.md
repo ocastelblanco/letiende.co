@@ -400,6 +400,11 @@ prefijo; la rama cross-domain queda comentada en el código de cada uno para res
 esté hecho — **no antes**, y es responsabilidad de quien ejecute T-15 volver a esos dos repos después
 del cutover para restaurarla.
 
+> **Actualización (07/09/2026): T-15 ya ocurrió (04/09/2026) y la rama cross-domain ya se restauró**
+> (`agora-letiende#65`, `babel-letiende#120`) — ver `docs/MEMORY.md`, entrada T-0017 del historial de
+> `docs/TODO.md`, para la reconstrucción completa con evidencia real de AWS. Este párrafo se deja tal
+> cual para preservar el contexto histórico de por qué existió el incidente.
+
 **Octavo hallazgo, encontrado en la verificación previa a T-15 (03/09/2026), no relacionado con el
 proxy:** ninguna de las tres distribuciones de CloudFront del dominio (`E33QAN86FY24JZ`/actual,
 `EQW683KP4VXIV`/staging, `ER22S2WADMM83`/producción nueva) emite los encabezados de seguridad que
