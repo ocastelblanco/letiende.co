@@ -155,13 +155,14 @@ en una ventana de incógnito o un perfil sin extensiones para no repetir este fa
 `docs/optimizacion-aplicaciones.md` §5 actualizado.
 
 **T-0032 — [RENDIMIENTO] Comprimir y servir en formato moderno las imágenes de eventos (OPT-14),
-ACTIVA:** Lighthouse (`image-delivery-insight`) marca ahorro real en Ágora y letiende.co — las
-portadas de eventos del bucket `agora-activos-<stage>` se sirven sin comprimir y sin formato moderno
-(WebP/AVIF). Corresponde al mismo bucket que T-0030 ya tocó (`CacheControl`), esta vez el formato/peso
-del archivo, no el cacheo. DoD: portadas nuevas servidas en formato moderno con tamaños responsivos
-(evaluar conversión en la subida vs. un servicio de transformación en el borde); verificado con
-`curl -I`/tamaño real contra producción; sin romper las portadas ya subidas; `docs/optimizacion-
-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+COMPLETA (08/09/2026):** PR `agora-letiende#72`, fusionado por el humano. `convertirImagenAWebp()`
+(canvas, máximo 1600px, calidad 0.82) integrada en el flujo de subida de portadas/logotipos — sin
+servicio de transformación en el borde, sin tocar imágenes ya subidas. `letiende.co` no necesitó
+ningún cambio, comparte el mismo bucket. Verificación real contra producción pendiente de forma
+natural: el fix solo afecta subidas *nuevas*, y no hubo ninguna en el momento del cierre — se
+verificó en su lugar con las pruebas unitarias (conversión real simulada con `canvas`/
+`createImageBitmap` mockeados) y build de producción limpio. Detalle completo en el Historial de
+abajo.
 
 **T-0033 — [RENDIMIENTO] *Lazy-load* de rutas para reducir JS sin usar en los cuatro repos
 (OPT-15), ACTIVA:** Lighthouse (`unused-javascript`) marca 1.113 KiB en Babel, 617 KiB en Ágora, ~600
@@ -171,6 +172,20 @@ detalle real del audit (`unused-javascript`, no solo el número total) las rutas
 se cargan sin usarse en la vista auditada de cada repo; corregido con `loadComponent`/rutas hijas
 lazy donde aplique, sin romper la navegación; verificado con build (tamaño de chunks) y con la vista
 real en el navegador; `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+
+**T-0034 — [INFRA] Servir los estáticos de Babel desde S3 + CloudFront, no desde el Lambda `ssr`
+(OPT-20), ACTIVA:** hallazgo real del incidente de T-0026 (08/09/2026) — habilitar `sourceMap` en
+Babel causó un 500 real en producción porque el Lambda `ssr` sirve sus propios estáticos con
+`express.static`, y la respuesta síncrona de Lambda tiene un límite duro de 6 MB tras la codificación
+de API Gateway. No es exclusivo de los source maps: cualquier estático futuro que crezca lo suficiente
+tropieza con el mismo límite. Mismo patrón que `letiende-assets` de `letiende.co` (S3 + CloudFront,
+`docs/tech-specs.md` §7.2 de ese repo). DoD: los estáticos de `dist/babel-letiende/browser/**` servidos
+desde un bucket S3 propio detrás de CloudFront, con el Lambda `ssr` limitado a renderizar HTML; sin
+romper `--base-href`/las rutas ya proxied desde `letiende.co`; verificado con `curl` real contra
+producción; oportunidad de reactivar `sourceMap` en Babel una vez esto exista (no en el alcance de
+esta tarea); `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado. **Nota:** OPT-16
+(pase de rendimiento del dashboard de Comandante) queda bloqueada hasta cerrar OPT-15 — no se activa
+todavía; OPT-17 (la de mayor esfuerzo e impacto) sigue deliberadamente diferida.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -197,6 +212,30 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0032** — [RENDIMIENTO] Comprimir y servir en formato moderno las imágenes de eventos (OPT-14).
+  Completada 08/09/2026, PR `agora-letiende#72` fusionado.
+
+  Se agregó `convertirImagenAWebp()` (`src/app/shared/utilidades/` de Ágora): convierte a WEBP y
+  reduce el lado más largo a un máximo de 1600px con `canvas.toBlob('image/webp', 0.82)`, integrada en
+  `EditarEventoComponent.subirImagen()` antes de llamar a `EventosService.subirActivo()`.
+
+  **Decisión de diseño, evaluada explícitamente como pedía el DoD:** conversión en el cliente, no un
+  servicio de transformación en el borde (Lambda@Edge/CloudFront Function) — no exige infraestructura
+  nueva y resuelve el problema para toda subida futura, con el costo de no reprocesar retroactivamente
+  las imágenes que ya existían. Degradación explícita por *feature-detection* (no *user-agent
+  sniffing*): si el navegador no soporta `createImageBitmap`/`canvas.toBlob`, sube el archivo original
+  sin conversión — nunca bloquea la subida por una optimización que no se pudo aplicar.
+  `letiende.co` no necesitó ningún cambio propio — embebe las mismas imágenes del mismo bucket, así
+  que las subidas nuevas ya le llegan optimizadas sin tocar ese repositorio.
+
+  Verificado con build de producción y 328/328 pruebas frontend en verde, 3 nuevas: el camino sin
+  soporte (real en el entorno de pruebas, `jsdom` no implementa `createImageBitmap`/Canvas de verdad),
+  la conversión simulada con `canvas`/`createImageBitmap` mockeados (confirma que se llama
+  `toBlob('image/webp', 0.82)` con las dimensiones reducidas correctas), y el caso donde `toBlob` no
+  produce un blob. La verificación en producción real (`curl -I` contra una imagen nueva) queda
+  pendiente de forma natural para la primera subida real que ocurra después de la fusión — no hay
+  ninguna portada nueva que verificar todavía en el momento del cierre.
 
 - **T-0031** — [RENDIMIENTO] Investigar el origen de los 309 KiB de JS sin minificar (OPT-13).
   Completada 08/09/2026 — **falso positivo del entorno de auditoría, sin ningún PR ni cambio de
