@@ -165,21 +165,20 @@ verificó en su lugar con las pruebas unitarias (conversión real simulada con `
 abajo.
 
 **T-0033 — [RENDIMIENTO] *Lazy-load* de rutas para reducir JS sin usar en los cuatro repos
-(OPT-15), ACTIVA — PR abiertos, esperando fusión humana:** investigado el detalle real del audit
-`unused-javascript` de cada repo antes de asumir que ya todo estaba lazy-loaded. **Ágora y Comandante
-ya usaban `loadComponent` en el 100% de sus rutas** (verificado contando `component:` vs
-`loadComponent`/`loadChildren` en cada `app.routes.ts`) — el desperdicio que les queda no es un
-problema de enrutamiento, es código sin usar *dentro* de un chunk ya lazy, que exige análisis de
-contenido del bundle (no de rutas) y queda fuera del alcance de esta tarea; no se tocó código en esos
-dos repos. **`letiende.co` y Babel tenían el 100% de sus rutas con `component:` (importación
-estática)** — corregido convirtiendo las 5 y las 11 rutas respectivas a `loadComponent`. El hallazgo
-más grande de todo el roadmap de optimización estaba aquí: el `main.js` de Babel pasó de **1,18 MB a
-15,49 kB** (695 KiB de eso eran, literalmente, todo el árbol de administración cargándose para
-cualquier visitante anónimo del catálogo). Verificado con SSR real local en ambos, no solo con el
-tamaño del bundle: `curl` contra rutas públicas y protegidas de los dos responde `200` (incluida una
-ruta inventada de `letiende.co`, que responde `404` real). Build + pruebas en verde en ambos antes de
-cada PR. PR `letiende.co#52` y `babel-letiende#130` abiertos, sin fusionar todavía. Pendiente tras la
-fusión: volver a correr Lighthouse contra las URL reales.
+(OPT-15), COMPLETA (08/09/2026):** `babel-letiende#130` fusionado por el humano; `letiende.co#52`
+(este mismo PR) lo completa. Investigado el detalle real del audit `unused-javascript` de cada repo
+antes de asumir que ya todo estaba lazy-loaded. **Ágora y Comandante ya usaban `loadComponent` en el
+100% de sus rutas** — el desperdicio que les queda no es un problema de enrutamiento, es código sin
+usar *dentro* de un chunk ya lazy, que exige análisis de contenido del bundle (no de rutas) y queda
+fuera del alcance de esta tarea; no se tocó código en esos dos repos. **`letiende.co` y Babel tenían el
+100% de sus rutas con `component:` (importación estática)** — corregido convirtiendo las 5 y las 11
+rutas respectivas a `loadComponent`. El hallazgo más grande de todo el roadmap de optimización estaba
+aquí: el `main.js` de Babel pasó de **1,18 MB a 15,49 kB** (695 KiB de eso eran, literalmente, todo el
+árbol de administración cargándose para cualquier visitante anónimo del catálogo). **Verificado en
+producción real, no solo con el build local:** `curl` contra `https://letiende.co/libros/main-
+OP5QUEGP.js` descarga exactamente 15.490 bytes — idéntico byte a byte al artefacto local. Pendiente,
+no bloqueante: volver a correr Lighthouse contra las URL reales para cerrar el ciclo con una medición
+nueva. Detalle completo en el Historial de abajo.
 
 **T-0034 — [INFRA] Servir los estáticos de Babel desde S3 + CloudFront, no desde el Lambda `ssr`
 (OPT-20), ACTIVA:** hallazgo real del incidente de T-0026 (08/09/2026) — habilitar `sourceMap` en
@@ -191,9 +190,18 @@ tropieza con el mismo límite. Mismo patrón que `letiende-assets` de `letiende.
 desde un bucket S3 propio detrás de CloudFront, con el Lambda `ssr` limitado a renderizar HTML; sin
 romper `--base-href`/las rutas ya proxied desde `letiende.co`; verificado con `curl` real contra
 producción; oportunidad de reactivar `sourceMap` en Babel una vez esto exista (no en el alcance de
-esta tarea); `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado. **Nota:** OPT-16
-(pase de rendimiento del dashboard de Comandante) queda bloqueada hasta cerrar OPT-15 — no se activa
-todavía; OPT-17 (la de mayor esfuerzo e impacto) sigue deliberadamente diferida.
+esta tarea); `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+
+**T-0035 — [RENDIMIENTO] Pase completo de rendimiento en el dashboard de Comandante (OPT-16),
+ACTIVA:** ya no bloqueada — dependía de cerrar OPT-7/12/13/15, las cuatro completas. LCP 5,5s, Speed
+Index 5,0s en `/admin/dashboard` — a diferencia de Babel, no hay un solo culpable: es la suma de varios
+hallazgos menores ya identificados en rondas anteriores de este mismo roadmap, aplicados juntos a esa
+vista específica. DoD: correr Lighthouse real contra `/admin/dashboard` de nuevo primero (no asumir
+que los hallazgos de las rondas anteriores siguen siendo los mismos, algunos ya se corrigieron);
+identificar qué queda real y específico de esa vista; corregido lo que aplique; verificado con una
+medición nueva de Lighthouse contra producción; `docs/optimizacion-aplicaciones.md` §5 actualizado;
+esfuerzo registrado. OPT-17 (la de mayor esfuerzo e impacto de todo el roadmap) sigue deliberadamente
+diferida — no se toca código de Babel a la ligera.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -220,6 +228,34 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0033** — [RENDIMIENTO] *Lazy-load* de rutas para reducir JS sin usar en los cuatro repos
+  (OPT-15). Completada 08/09/2026, dos PR fusionados: `babel-letiende#130`, `letiende.co#52`.
+
+  Investigado el detalle real del audit `unused-javascript` de cada repo antes de asumir que ya todo
+  estaba lazy-loaded, ni que hacía falta tocar los cuatro por igual: se contó `component:` vs
+  `loadComponent`/`loadChildren` en el `app.routes.ts` real de cada uno.
+
+  **Ágora y Comandante ya usaban `loadComponent` en el 100% de sus rutas** — ninguna de las dos
+  necesitaba ni recibió ningún cambio de código. El desperdicio que Lighthouse todavía les marca no es
+  un problema de enrutamiento: es código sin usar *dentro* de un chunk ya lazy (una librería importada
+  completa cuando solo se usa una parte, por ejemplo), que exige análisis del contenido del bundle, no
+  de las rutas — un tipo de trabajo distinto, deliberadamente fuera del alcance de esta tarea.
+
+  **`letiende.co` y Babel tenían el 100% de sus rutas con `component:` (importación estática)** —
+  corregido convirtiendo las 5 y las 11 rutas respectivas a `loadComponent`, mismo patrón exacto ya
+  usado en Ágora. El hallazgo más grande de todo el roadmap de optimización estaba aquí: el `main.js`
+  de Babel pasó de **1,18 MB a 15,49 kB** — 695 KiB de ese millón y pico de bytes eran, literalmente,
+  todo el árbol de administración (catalogar + 7 vistas de `/admin/*`, protegidas por rol) cargándose
+  en el navegador de cualquier visitante anónimo del catálogo público.
+
+  Verificado en producción real tras ambas fusiones, no solo con el tamaño del bundle local: `curl`
+  contra `https://letiende.co/libros/main-OP5QUEGP.js` descarga exactamente **15.490 bytes**, idéntico
+  byte a byte al artefacto que salió del build local antes de abrir el PR. Antes de eso, verificado con
+  SSR real local en ambos repos (no solo en el navegador de desarrollo): `curl` contra rutas públicas y
+  protegidas responde `200` en los dos (incluida una ruta inventada de `letiende.co`, que responde
+  `404` real, confirmando que el catch-all sigue funcionando después del cambio). Build + pruebas en
+  verde en ambos repos antes de cada PR.
 
 - **T-0032** — [RENDIMIENTO] Comprimir y servir en formato moderno las imágenes de eventos (OPT-14).
   Completada 08/09/2026, PR `agora-letiende#72` fusionado.
