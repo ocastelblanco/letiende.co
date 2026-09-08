@@ -74,28 +74,30 @@ vez de inventar enlaces falsos. Detalle en el Historial de abajo.
 accesible` y `text-espresso/{62,64,68,70}` resuelven a los colores esperados. Detalle completo en el
 Historial de abajo.
 
-**T-0025 — [RENDIMIENTO] `width`/`height` explícitos en imágenes, ACTIVA — PR abiertos, esperando
-fusión humana:** Lighthouse marcaba "Image elements do not have explicit `width` and `height`" en los
-cuatro repos — siempre el mismo elemento, el logo, sin dimensiones explícitas (causa real de *layout
-shift*, no cosmético). Verificado antes de tocar nada: el resto de imágenes de cada repo (portadas de
-eventos y libros, avatares, QR) ya usan `aspect-ratio` explícito en CSS o ambas dimensiones fijas, así
-que no las marca el mismo audit. Se agregó `width`/`height` con la proporción real del viewBox del SVG
-del logo (525.26×230.56) en **todas** las instancias de cada repo, no solo la auditada — 1 en
-`letiende.co`, 2 en Ágora, 3 en Babel, 9 en Comandante. El tamaño visible lo sigue controlando la
-clase/`style` de Tailwind que ya existía en cada una. Build + pruebas en verde en los cuatro. PR
-`letiende.co#42`, `agora-letiende#69`, `babel-letiende#127`, `comandante#29` abiertos, sin fusionar
-todavía. Pendiente tras la fusión: volver a correr Lighthouse contra las URL reales.
+**T-0025 — [RENDIMIENTO] `width`/`height` explícitos en imágenes en los cuatro repos (OPT-7),
+COMPLETA (07/09/2026):** los cuatro PR fusionados por el humano — `letiende.co#42`,
+`agora-letiende#69`, `babel-letiende#127`, `comandante#29`. Verificado en producción real tras la
+fusión: `curl` contra `letiende.co/`, `/cartelera/` y `/libros/` confirma `width="73" height="32"` en
+el logo de la barra. Detalle completo en el Historial de abajo.
 
 **T-0026 — [RENDIMIENTO] Activar `sourceMap` en el build de producción de Babel y Comandante
-(OPT-8), ACTIVA:** Lighthouse marca "Missing source maps for large first-party JavaScript" en ambos.
-Cambio de flag en `angular.json` (`sourceMap: true` en la configuración `production`), sin efecto en
-runtime — pero **evaluar antes de fusionar** el impacto en el tamaño del paquete de despliegue:
-Babel empaqueta su SSR como Lambda (límite de tamaño real, ver `ADR` de esta tarea en Babel una vez
-exista), mientras que Comandante despliega a Firebase Hosting sin Lambda propia, así que ese límite no
-le aplica — verificar esta asimetría antes de aplicar el mismo cambio a ciegas en los dos. DoD: la
-auditoría `source-maps` de Lighthouse pasa contra la URL real de ambos repos; el tamaño del paquete de
-despliegue de Babel no cruza el límite de Lambda; `docs/optimizacion-aplicaciones.md` §5 actualizado;
-esfuerzo registrado.
+(OPT-8), ACTIVA — PR abiertos, esperando fusión humana:** Lighthouse (`valid-source-maps`) marcaba el
+bundle principal sin mapa de fuentes en ambos. Se agregó `"sourceMap": true` a la configuración
+`production` de `angular.json` en los dos (ya existía en `development`). **Evaluada la asimetría antes
+de fusionar, como pedía el DoD:** Babel empaqueta `dist/babel-letiende/**` completo dentro de su Lambda
+`ssr` — medido con `serverless package --stage staging`, el zip pasa de 1.4 MB a 5.8 MB, muy por debajo
+del límite de 50 MB de carga directa. Comandante despliega a Firebase Hosting sin Lambda propia, así
+que su crecimiento de `dist/` (2 MB → 11 MB) no cruza ningún límite real. Build + pruebas en verde en
+ambos. PR `babel-letiende#128` y `comandante#30` abiertos, sin fusionar todavía. Pendiente tras la
+fusión: volver a correr Lighthouse contra las URL reales.
+
+**T-0027 — [CALIDAD] Revisar el panel "Issues" de Chrome DevTools en Ágora, Babel y Comandante
+(OPT-9), ACTIVA:** Lighthouse solo confirma que hay algo registrado en el panel "Issues" de cada uno,
+sin decir qué — hace falta abrirlo a mano (deprecaciones, *quirks*, errores de CSP, cookies de
+terceros) antes de decidir el arreglo, no asumir la causa. DoD: el panel "Issues" investigado con
+navegador real contra las tres URL de producción; cada hallazgo real clasificado (arreglo aplicable
+aquí vs. fuera de alcance, ej. dependencia de terceros) y documentado en
+`docs/optimizacion-aplicaciones.md` §5; esfuerzo registrado.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -122,6 +124,38 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0025** — [RENDIMIENTO] `width`/`height` explícitos en imágenes en los cuatro repos (OPT-7).
+  Completada 07/09/2026, cuatro PR fusionados: `letiende.co#42`, `agora-letiende#69`,
+  `babel-letiende#127`, `comandante#29`.
+
+  Investigado antes de tocar nada: en los cuatro repos, el único elemento que Lighthouse marcaba
+  (`unsized-images`) era el logo de marca, sin `width`/`height` explícitos — causa real de *layout
+  shift* durante la carga, no cosmético. El resto de imágenes de cada repo (portadas de eventos y
+  libros, avatares, códigos QR) ya usa `aspect-ratio` explícito en CSS o ambas dimensiones fijas vía
+  Tailwind, así que el mismo audit no las marcaba — verificado leyendo cada plantilla antes de asumir
+  qué imagen era el problema.
+
+  Se agregó `width`/`height` con la proporción real del viewBox del SVG del logo (525.26×230.56, sin
+  `width`/`height` propios en el archivo) en **todas** las instancias de cada repo, no solo la que
+  Lighthouse había auditado — 1 en `letiende.co` (barra), 2 en Ágora (barra + login), 3 en Babel
+  (barra + catálogo + login), 9 en Comandante (5 toolbars a 24px, 2 a 26px, login, sidebar de admin).
+  El tamaño visible lo sigue controlando la clase/`style` de Tailwind que ya existía en cada una — el
+  atributo HTML solo establece la proporción para que el navegador reserve el espacio correcto antes
+  de que cargue la imagen.
+
+  **Incidente de coordinación durante el cierre, encontrado y corregido en la misma sesión:** al cerrar
+  T-0024 se abrió un PR de documentación (`letiende.co#41`) y, sin que se fusionara todavía, se creó la
+  rama de esta tarea desde `main` — quedaron dos PR con contenido de cierre superpuesto. Se fusionó la
+  rama del #41 dentro de la de esta tarea (`git merge`, un conflicto real resuelto conservando ambas
+  versiones) antes de abrir el PR de `letiende.co`, y se dejó explícito en ambos PR que #41 quedaba
+  redundante una vez se fusionara #42 — el humano fusionó los dos sin que produjera ningún conflicto
+  real en `main` (git reconoció el contenido ya idéntico).
+
+  Verificado en producción real tras la fusión, no solo con el resultado del build: `curl` contra
+  `https://letiende.co/`, `https://letiende.co/cartelera/` y `https://letiende.co/libros/` confirma
+  `width="73" height="32"` en el HTML servido de verdad. Build + pruebas en verde en los cuatro repos
+  antes de cada PR.
 
 - **T-0024** — [ACCESIBILIDAD] Contraste de color (WCAG) en Babel y Comandante (OPT-6). Completada
   07/09/2026, tres PR fusionados: `babel-letiende#126`, `comandante#28`, `letiende.co#40`.
