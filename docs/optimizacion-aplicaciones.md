@@ -144,11 +144,11 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 | OPT-11 | **Completada** | T-0029 | agora-letiende#70 | Traducción fiel, sin el formato de caso de estudio de Babel/Comandante (`tracking.csv` de Ágora solo mide tiempo del agente, sin reparto humano/agente calculable). |
 | OPT-12 | **Completada** | T-0030 | agora-letiende#71, comandante#31 | Causas distintas por repo, no un patrón único: Ágora/letiende.co comparten el bucket `agora-activos-production` (`CacheControl` en el `PutObjectCommand` firmado); Comandante son sus bundles JS/CSS (`firebase.json`); Babel no tiene ninguna causa fixeable aquí — 100% orígenes de terceros, sin PR. Verificado en producción real con `curl -I` tras la fusión. |
 | OPT-13 | **Completada — falso positivo, sin PR** | T-0031 | — | Los 11 elementos del audit son `chrome-extension://` (Bitwarden, AdBlock) — 309 KiB exactos, ninguno es código de las 4 apps. Lección: correr Lighthouse en incógnito la próxima vez. |
-| OPT-14 | **Activa** | T-0032 | — | Comprimir/servir en formato moderno las portadas de eventos del bucket `agora-activos-<stage>` (afecta a Ágora y letiende.co). |
+| OPT-14 | **Completada** | T-0032 | agora-letiende#72 | Conversión a WEBP en el cliente (canvas), sin servicio en el borde. Sin tocar imágenes ya subidas. `letiende.co` sin cambio propio, comparte el bucket. |
 | OPT-15 | **Activa — PR abiertos, esperando fusión** | T-0033 | letiende.co#52, babel-letiende#130 | Ágora/Comandante ya al 100% `loadComponent` — nada que arreglar en rutas ahí. `letiende.co`/Babel al 100% eager — corregidos. Babel: `main.js` 1,18MB→15,49kB, el hallazgo más grande del roadmap. |
 | OPT-16 | Pendiente | — | — | Depende de OPT-7/12/13/15 |
 | OPT-17 | Pendiente | — | — | Relacionado con babel-letiende#121 — máxima prioridad de impacto, pero deliberadamente no seleccionada como una de las 2 activas todavía: es la más grande del roadmap y este repositorio no toca código de Babel a la ligera. |
-| OPT-20 | Pendiente | T-0026 (hallazgo) | babel-letiende#129 | Surgió del incidente real de OPT-8 en Babel — 500 en producción por el límite de respuesta de Lambda, no del tamaño del zip. |
+| OPT-20 | **Activa** | T-0034 | babel-letiende#129 (revert) | Surgió del incidente real de OPT-8 en Babel — 500 en producción por el límite de respuesta de Lambda, no del tamaño del zip. |
 | OPT-19 | **Completada** | T-0022 | comandante#26 | Causa real: `@ionic/angular@8.8.8` hace *directory import* de `@ionic/core/components`, Node ESM lo rechaza. Corregido con `patch-package` — vigilar en el próximo `ng update` que toque `@ionic/angular` |
 
 ## 6. Fuentes
