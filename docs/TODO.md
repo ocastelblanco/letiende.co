@@ -164,13 +164,21 @@ del archivo, no el cacheo. DoD: portadas nuevas servidas en formato moderno con 
 aplicaciones.md` §5 actualizado; esfuerzo registrado.
 
 **T-0033 — [RENDIMIENTO] *Lazy-load* de rutas para reducir JS sin usar en los cuatro repos
-(OPT-15), ACTIVA:** Lighthouse (`unused-javascript`) marca 1.113 KiB en Babel, 617 KiB en Ágora, ~600
-KiB en `letiende.co` y Comandante — revisar qué rutas cargan código que la vista auditada no necesita,
-no asumir que ya todo está lazy-loaded solo porque el router lo permite. DoD: identificadas con el
-detalle real del audit (`unused-javascript`, no solo el número total) las rutas/módulos concretos que
-se cargan sin usarse en la vista auditada de cada repo; corregido con `loadComponent`/rutas hijas
-lazy donde aplique, sin romper la navegación; verificado con build (tamaño de chunks) y con la vista
-real en el navegador; `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+(OPT-15), ACTIVA — PR abiertos, esperando fusión humana:** investigado el detalle real del audit
+`unused-javascript` de cada repo antes de asumir que ya todo estaba lazy-loaded. **Ágora y Comandante
+ya usaban `loadComponent` en el 100% de sus rutas** (verificado contando `component:` vs
+`loadComponent`/`loadChildren` en cada `app.routes.ts`) — el desperdicio que les queda no es un
+problema de enrutamiento, es código sin usar *dentro* de un chunk ya lazy, que exige análisis de
+contenido del bundle (no de rutas) y queda fuera del alcance de esta tarea; no se tocó código en esos
+dos repos. **`letiende.co` y Babel tenían el 100% de sus rutas con `component:` (importación
+estática)** — corregido convirtiendo las 5 y las 11 rutas respectivas a `loadComponent`. El hallazgo
+más grande de todo el roadmap de optimización estaba aquí: el `main.js` de Babel pasó de **1,18 MB a
+15,49 kB** (695 KiB de eso eran, literalmente, todo el árbol de administración cargándose para
+cualquier visitante anónimo del catálogo). Verificado con SSR real local en ambos, no solo con el
+tamaño del bundle: `curl` contra rutas públicas y protegidas de los dos responde `200` (incluida una
+ruta inventada de `letiende.co`, que responde `404` real). Build + pruebas en verde en ambos antes de
+cada PR. PR `letiende.co#52` y `babel-letiende#130` abiertos, sin fusionar todavía. Pendiente tras la
+fusión: volver a correr Lighthouse contra las URL reales.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
