@@ -92,20 +92,41 @@ inexistente cae en el 302 normal de la app (no en 500). OPT-20 queda en el backl
 (S3 + CloudFront en Babel). Detalle completo en el Historial de abajo.
 
 **T-0027 — [CALIDAD] Revisar el panel "Issues" de Chrome DevTools en Ágora, Babel y Comandante
-(OPT-9), ACTIVA:** Lighthouse solo confirma que hay algo registrado en el panel "Issues" de cada uno,
-sin decir qué — hace falta abrirlo a mano (deprecaciones, *quirks*, errores de CSP, cookies de
-terceros) antes de decidir el arreglo, no asumir la causa. DoD: el panel "Issues" investigado con
-navegador real contra las tres URL de producción; cada hallazgo real clasificado (arreglo aplicable
-aquí vs. fuera de alcance, ej. dependencia de terceros) y documentado en
-`docs/optimizacion-aplicaciones.md` §5; esfuerzo registrado.
+(OPT-9), COMPLETA (08/09/2026) — resuelta junto con T-0028, misma causa raíz real:** investigado con
+navegador real (`claude-in-chrome`) contra las tres URL de producción, sin adivinar. El JSON completo
+de Lighthouse (audit `inspector-issues`) ya traía la respuesta exacta, sin necesidad de abrir DevTools
+a mano: el único `issueType` registrado en los tres es `Cookie`, apuntando siempre a
+`apis.google.com/js/api.js` (Ágora, Comandante) o a `books.google.com` (Babel, además del anterior).
+Verificado en vivo: sin errores de consola, sin peticiones fallidas, `document.compatMode` en modo
+estándar (`CSS1Compat`, sin *quirks*) en las tres. Verificado en el código, no solo inferido:
+`GoogleAuthProvider` de Firebase Auth en `servicio-auth.ts`/`auth.service.ts` de los tres repos — el
+inicio de sesión con Google es lo que carga `apis.google.com/js/api.js`. Detalle completo en el
+Historial de abajo.
 
 **T-0028 — [PRIVACIDAD] Auditar las cookies de terceros en Ágora, Babel y Comandante (OPT-10),
-ACTIVA:** Lighthouse reporta el mismo número exacto (53) en los tres — probablemente Firebase Auth,
-pero sin confirmar todavía contra el tráfico real. DoD: confirmada la fuente real de las 53 cookies con
-DevTools (pestaña Application/Cookies) contra las tres URL de producción; si son de Firebase
-Auth/requisito de autenticación, documentado como aceptado (no se persigue un falso positivo); si hay
-alguna cookie de verdad evitable, corregida; `docs/optimizacion-aplicaciones.md` §5 actualizado;
-esfuerzo registrado.
+COMPLETA (08/09/2026):** el audit `third-party-cookies` de Lighthouse confirma que las 53 cookies de
+cada repo vienen de esa misma única fuente — `apis.google.com/js/api.js` en Ágora y Comandante,
+`books.google.com` (API de Google Books, integración real de metadatos de libros, documentada en
+`docs/PRD.md` de Babel) en Babel. **Documentado como aceptado, no un falso positivo perseguido a
+ciegas:** ambas son dependencias de terceros reales y necesarias — inicio de sesión con Google
+(requisito de autenticación) y enriquecimiento de metadatos de ISBN — no hay ninguna cookie propia ni
+evitable que corregir. Detalle completo en el Historial de abajo.
+
+**T-0029 — [DOCS] Reescribir el `README` de Ágora al estilo bilingüe (OPT-11), ACTIVA:** hoy es un
+único `README.md` en español, con insignias sin el estilo `flat-square` que ya usan los otros tres
+repos. Necesita traducir a inglés como `README.md`, mover el contenido actual a `README.es.md`, y
+alinear las insignias con el set ya usado en `letiende.co`/Babel/Comandante (T-0018). DoD: `README.md`
+en inglés y `README.es.md` en español, ambos con contenido real (no traducción automática sin
+revisar); insignias con estilo `flat-square` consistente con los otros tres repos; esfuerzo registrado.
+
+**T-0030 — [RENDIMIENTO] `Cache-Control` eficiente en CloudFront para activos estáticos en los
+cuatro repos (OPT-12), ACTIVA:** Lighthouse (`cache-insight`) marca hasta 4.737 KiB de ahorro
+potencial en Ágora, 3.834 KiB en `letiende.co` — activos estáticos sin una política de cacheo
+eficiente en las distribuciones de CloudFront de los cuatro `serverless.yml`. DoD: `ResponseHeadersPolicy`/`CacheBehavior`
+con `Cache-Control` de larga duración para activos con hash en el nombre (JS/CSS/fuentes con
+`outputHashing`), verificado con `curl -I` real contra las cuatro URL de producción; el audit
+`cache-insight` de Lighthouse mejora contra la medición base; `docs/optimizacion-aplicaciones.md` §5
+actualizado; esfuerzo registrado.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -132,6 +153,37 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0027/T-0028** — [CALIDAD/PRIVACIDAD] Panel "Issues" de Chrome DevTools (OPT-9) y cookies de
+  terceros (OPT-10) en Ágora, Babel y Comandante. Completadas juntas 08/09/2026 — no hubo PR de código,
+  el resultado fue un hallazgo documentado, no un cambio de código: ninguna de las dos exigía fusión en
+  ningún repo hermano.
+
+  Investigado con navegador real (`claude-in-chrome`) contra las tres URL de producción, y con los
+  audits completos de Lighthouse ya descargados — sin adivinar la causa antes de mirar la evidencia.
+  El JSON de Lighthouse ya traía el detalle exacto que el DoD de T-0027 pedía abrir a mano en DevTools:
+  el audit `inspector-issues` registra un único `issueType: 'Cookie'` en los tres repos, y el audit
+  `third-party-cookies` confirma que las 53 cookies que reporta cada uno vienen de esa misma fuente
+  única — `apis.google.com/js/api.js` (Ágora, Comandante) o `books.google.com` (Babel, además de la
+  anterior). Verificado en vivo con el navegador, no solo con el reporte: `read_console_messages` sin
+  ningún error ni advertencia en las tres URL, `read_network_requests` sin ninguna petición fallida,
+  `document.compatMode` en modo estándar (`CSS1Compat`) en las tres — nada más que reportar fuera de
+  esa única cookie de terceros.
+
+  **Causa raíz confirmada en el código, no solo inferida del dominio de la URL:** `GoogleAuthProvider`
+  de Firebase Auth aparece en `servicio-auth.ts` (Ágora) y `auth.service.ts` (Babel, Comandante) — el
+  inicio de sesión con Google es lo que carga `apis.google.com/js/api.js` y dispara la cookie de
+  terceros. En Babel, la segunda fuente (`books.google.com`) es la API de Google Books para
+  enriquecimiento de metadatos de ISBN, integración real documentada en `docs/PRD.md` de ese repo —
+  verificado con `grep` que no es un remanente sin usar.
+
+  **Decisión, siguiendo exactamente el criterio que ya traía el DoD original de T-0028:** documentado
+  como aceptado, no perseguido como falso positivo. Ambas fuentes son dependencias de terceros reales
+  y necesarias — inicio de sesión con Google es un requisito de autenticación, el enriquecimiento de
+  metadatos es una funcionalidad real del producto — y ninguna de las dos tiene una cookie propia del
+  proyecto ni evitable de por medio. No hay ningún cambio de código que hacer sin eliminar
+  funcionalidad real; el "arreglo" es la documentación de esta sesión, que es lo que impide que la
+  próxima auditoría de Lighthouse vuelva a perseguir el mismo hallazgo desde cero.
 
 - **T-0026** — [RENDIMIENTO] Activar `sourceMap` en el build de producción de Babel y Comandante
   (OPT-8). Completada 08/09/2026, tres PR fusionados: `comandante#30`, `babel-letiende#128` (causó el

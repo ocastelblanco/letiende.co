@@ -139,10 +139,10 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 | OPT-6 | **Completada** | T-0024 | babel-letiende#126, comandante#28, letiende.co#40 | Fórmula real de contraste WCAG, no aproximada. Babel: `text-secondary` (3.37:1) → token nuevo `secondary-accesible` (5.12:1), solo en texto pequeño. Comandante: `text-espresso/{30,35,40,45}` (2.28–3.04:1) → `/{62,64,68,70}` (5.32–7.11:1), en los 4 archivos con el patrón, no solo el dashboard auditado. Verificado en producción real con `curl` contra el CSS compilado tras la fusión. Pendiente, no bloqueante: re-medición de Lighthouse. |
 | OPT-7 | **Completada** | T-0025 | letiende.co#42, agora-letiende#69, babel-letiende#127, comandante#29 | Siempre el mismo elemento: el logo, sin `width`/`height`. Corregidas todas las instancias de cada repo (1/2/3/9), no solo la auditada — el resto de imágenes ya usa `aspect-ratio` explícito o ambas dimensiones fijas. Verificado en producción real con `curl` tras la fusión. |
 | OPT-8 | **Completada, con incidente real en Babel ya resuelto** | T-0026 | comandante#30, babel-letiende#128 (causó 500 real), babel-letiende#129 (hotfix, revierte) | Babel: el `.js.map` principal pesa 5,9MB y el Lambda `ssr` lo sirve desde dentro de sí mismo — cruzó el límite de 6MB de respuesta síncrona de Lambda (distinto del límite de tamaño del zip, que sí se evaluó bien). Revertido y verificado en producción real. Habilitarlo de verdad exige OPT-20 (S3+CloudFront). Comandante sin este problema (Firebase Hosting), verificado en producción real. |
-| OPT-9 | **Activa** | T-0027 | — | Investigar el panel "Issues" de Chrome DevTools con navegador real contra las 3 URL — Lighthouse solo confirma que hay algo, no dice qué. |
-| OPT-10 | **Activa** | T-0028 | — | Confirmar con DevTools contra las 3 URL de producción si las 53 cookies son de verdad Firebase Auth antes de decidir si hay algo que corregir. |
-| OPT-11 | Pendiente | — | — | — |
-| OPT-12 | Pendiente | — | — | — |
+| OPT-9 | **Completada — sin PR, hallazgo documentado** | T-0027 | — | Único `issueType` en los tres: `Cookie`, apuntando a `apis.google.com/js/api.js` — misma causa que OPT-10. |
+| OPT-10 | **Completada — sin PR, aceptado** | T-0028 | — | Las 53 cookies vienen de `apis.google.com/js/api.js` (`GoogleAuthProvider` de Firebase Auth, verificado en el código) y `books.google.com` (API de Google Books en Babel, funcionalidad real). Ninguna cookie propia evitable — aceptado, no falso positivo perseguido. |
+| OPT-11 | **Activa** | T-0029 | — | Traducir a inglés como `README.md`, mover el actual a `README.es.md`, alinear insignias con el resto. |
+| OPT-12 | **Activa** | T-0030 | — | `ResponseHeadersPolicy`/`CacheBehavior` con `Cache-Control` de larga duración para activos con hash, en los cuatro `serverless.yml`. |
 | OPT-13 | Pendiente | — | — | — |
 | OPT-14 | Pendiente | — | — | — |
 | OPT-15 | Pendiente | — | — | — |
