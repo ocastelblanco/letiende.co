@@ -139,13 +139,20 @@ así que solo las imágenes de eventos subidas de ahora en adelante lo llevan. D
 Historial de abajo.
 
 **T-0031 — [RENDIMIENTO] Investigar el origen de los 309 KiB de JS sin minificar en los cuatro
-repos (OPT-13), ACTIVA:** Lighthouse reporta el mismo número exacto en los cuatro proyectos — huele a
-una sola dependencia compartida (Firebase SDK es la sospecha del backlog, sin confirmar todavía).
-DoD: identificada la dependencia/archivo real detrás del número idéntico (revisar el detalle completo
-del audit `unminified-javascript` de cada repo, no asumir); si es una sola causa compartida, corregida
-una vez y verificada en los cuatro; si son causas distintas por repo (mismo patrón ya visto en OPT-12),
-documentado así explícitamente; `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo
-registrado.
+repos (OPT-13), COMPLETA (08/09/2026) — falso positivo del entorno de auditoría, sin ningún cambio de
+código:** el audit `unminified-javascript` completo de los cuatro reportes trae 11 elementos
+idénticos, byte a byte, en los cuatro — y los 11 son `chrome-extension://...`, no una sola URL de
+`letiende.co`, Ágora, Babel ni Comandante. Identificados por su ID de extensión:
+`nngceckbapebfimnlniiiahkandclblb` es **Bitwarden** (gestor de contraseñas —
+`bootstrap-autofill-overlay-notifications.js`, `fido2-*`), `gighmmpiobklfepjocnamgkkbiglidom` es
+**AdBlock** (`adblock-functions.js`, `@eyeo/webext-ad-filtering-solution` — eyeo es la empresa detrás
+de Adblock Plus/AdBlock). Suma exacta: 316.691 bytes = 309,27 KiB — coincide byte a byte con el
+"309 KiB" que traía la evidencia original del backlog. Las cuatro apps nunca tuvieron este problema:
+Lighthouse corrió en un Chrome con extensiones normales instaladas (no incógnito/perfil limpio), y
+esas extensiones inyectan sus propios scripts en cada pestaña — Lighthouse los cuenta igual que
+cualquier recurso de la página. **Lección para la próxima ronda de reportes base:** correr Lighthouse
+en una ventana de incógnito o un perfil sin extensiones para no repetir este falso positivo.
+`docs/optimizacion-aplicaciones.md` §5 actualizado.
 
 **T-0032 — [RENDIMIENTO] Comprimir y servir en formato moderno las imágenes de eventos (OPT-14),
 ACTIVA:** Lighthouse (`image-delivery-insight`) marca ahorro real en Ágora y letiende.co — las
@@ -155,6 +162,15 @@ del archivo, no el cacheo. DoD: portadas nuevas servidas en formato moderno con 
 (evaluar conversión en la subida vs. un servicio de transformación en el borde); verificado con
 `curl -I`/tamaño real contra producción; sin romper las portadas ya subidas; `docs/optimizacion-
 aplicaciones.md` §5 actualizado; esfuerzo registrado.
+
+**T-0033 — [RENDIMIENTO] *Lazy-load* de rutas para reducir JS sin usar en los cuatro repos
+(OPT-15), ACTIVA:** Lighthouse (`unused-javascript`) marca 1.113 KiB en Babel, 617 KiB en Ágora, ~600
+KiB en `letiende.co` y Comandante — revisar qué rutas cargan código que la vista auditada no necesita,
+no asumir que ya todo está lazy-loaded solo porque el router lo permite. DoD: identificadas con el
+detalle real del audit (`unused-javascript`, no solo el número total) las rutas/módulos concretos que
+se cargan sin usarse en la vista auditada de cada repo; corregido con `loadComponent`/rutas hijas
+lazy donde aplique, sin romper la navegación; verificado con build (tamaño de chunks) y con la vista
+real en el navegador; `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -181,6 +197,31 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0031** — [RENDIMIENTO] Investigar el origen de los 309 KiB de JS sin minificar (OPT-13).
+  Completada 08/09/2026 — **falso positivo del entorno de auditoría, sin ningún PR ni cambio de
+  código en ningún repo**.
+
+  El audit `unminified-javascript` completo (no solo el número total que traía la evidencia original
+  del backlog) trae 11 elementos idénticos byte a byte en los cuatro reportes de Lighthouse, y los 11
+  son `chrome-extension://...` — ninguno es una URL de `letiende.co`, Ágora, Babel ni Comandante.
+  Identificados por su ID de extensión de Chrome: `nngceckbapebfimnlniiiahkandclblb` es **Bitwarden**
+  (gestor de contraseñas — los archivos son `bootstrap-autofill-overlay-notifications.js`, `fido2-
+  page-script.js`, `fido2-content-script.js`, del autocompletado de formularios y WebAuthn de la
+  extensión); `gighmmpiobklfepjocnamgkkbiglidom` es **AdBlock** (`adblock-functions.js`,
+  `adblock-picreplacement.js`, `@eyeo/webext-ad-filtering-solution/content-main.js` — eyeo es la
+  empresa detrás de Adblock Plus/AdBlock); un tercer ID sin identificar aporta un `main.js` menor.
+  Suma exacta de `wastedBytes`: 316.691 bytes = **309,27 KiB** — coincide byte a byte con el "309 KiB"
+  original, confirmando que es la misma causa en los cuatro, tal como sospechaba la evidencia, pero no
+  la dependencia compartida (Firebase SDK) que se sospechaba — es el entorno del navegador donde corrió
+  Lighthouse, no el código de ninguna app.
+
+  **Causa de fondo:** Lighthouse corrió en una ventana normal de Chrome con extensiones instaladas
+  (no incógnito, no un perfil limpio) — las extensiones del navegador inyectan sus propios scripts en
+  cada pestaña que se visita, y Lighthouse los audita igual que cualquier recurso real de la página,
+  sin distinguir el origen. **Lección para la próxima ronda de reportes base de este roadmap:** correr
+  Lighthouse en incógnito o con un perfil de Chrome sin extensiones, para no repetir este mismo falso
+  positivo en la siguiente medición.
 
 - **T-0030** — [RENDIMIENTO] `Cache-Control` eficiente para activos estáticos (OPT-12). Completada
   08/09/2026, dos PR fusionados: `agora-letiende#71`, `comandante#31`.
