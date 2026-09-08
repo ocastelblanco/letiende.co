@@ -118,24 +118,43 @@ existente, no el formato de caso de estudio extendido de Babel/Comandante (esos 
 específicos de esos repos). Detalle completo en el Historial de abajo.
 
 **T-0030 — [RENDIMIENTO] `Cache-Control` eficiente para activos estáticos en los cuatro repos
-(OPT-12), ACTIVA — PR abiertos, esperando fusión humana:** investigado con el detalle completo de
-`cache-insight` de Lighthouse antes de tocar nada, no adivinado — el mismo audit señala orígenes
-distintos por repo, no un patrón único de `ResponseHeadersPolicy`/`CacheBehavior` en los cuatro
-`serverless.yml` como asumía la evidencia original del backlog. **Ágora y letiende.co** comparten la
-misma causa real: el bucket `agora-activos-production` (imágenes de eventos, embebidas también en la
-portada de `letiende.co` vía el proxy) con `cacheLifetimeMs: 0` — corregido en
-`agora-letiende#71` agregando `CacheControl` al `PutObjectCommand` firmado y al `PUT` del frontend
-(mismo encabezado exacto, forma parte de la firma de S3); `letiende.co` no necesita ningún cambio
-propio, el mismo fix resuelve su parte del audit. **Comandante** tiene una causa distinta y real: sus
-bundles JS/CSS (hasheados) solo tenían 1 hora de cache por el valor por defecto de Firebase Hosting,
-sin ninguna regla en `firebase.json` — corregido en `comandante#31` (`Cache-Control` de un año para
-`**/*.@(js|css)`, deliberadamente sin tocar imágenes/logo sin hash de contenido). **Babel no tiene
-ninguna causa fixeable en este repositorio:** el 100% de su desperdicio de caché son orígenes de
-terceros que no controla (`librerialerner.vteximg.com.br`, `tornamesa.co`, portadas de libros
-escaneadas; el iframe de autenticación de Firebase) — sus propios bundles ya cachean bien
-(`express.static` con `maxAge: '1y'`, verificado en T-0026). PR `agora-letiende#71` y `comandante#31`
-abiertos, sin fusionar todavía. Pendiente tras la fusión: `curl -I` real contra Ágora/Comandante y
-re-medición de Lighthouse; Babel queda documentado como aceptado, sin PR.
+(OPT-12), COMPLETA (08/09/2026):** los dos PR fusionados por el humano — `agora-letiende#71`,
+`comandante#31`. Investigado con el detalle completo de `cache-insight` de Lighthouse antes de tocar
+nada, no adivinado — el mismo audit señala orígenes distintos por repo, no un patrón único de
+`ResponseHeadersPolicy`/`CacheBehavior` en los cuatro `serverless.yml` como asumía la evidencia
+original del backlog. **Ágora y letiende.co** comparten la misma causa real: el bucket
+`agora-activos-production` (imágenes de eventos, embebidas también en la portada de `letiende.co` vía
+el proxy) con `cacheLifetimeMs: 0` — corregido agregando `CacheControl` al `PutObjectCommand` firmado
+y al `PUT` del frontend (mismo encabezado exacto, forma parte de la firma de S3); `letiende.co` no
+necesitó ningún cambio propio, el mismo fix resuelve su parte del audit. **Comandante** tenía una
+causa distinta y real: sus bundles JS/CSS (hasheados) solo tenían 1 hora de cache por el valor por
+defecto de Firebase Hosting, sin ninguna regla en `firebase.json` — corregido con `Cache-Control` de
+un año para `**/*.@(js|css)`, deliberadamente sin tocar imágenes/logo sin hash de contenido. **Babel
+no tiene ninguna causa fixeable en este repositorio:** el 100% de su desperdicio de caché son orígenes
+de terceros que no controla — documentado como aceptado, sin PR. Verificado en producción real tras
+la fusión: `curl -I` contra el bundle de Comandante confirma `Cache-Control: public, max-age=31536000,
+immutable`; en Ágora el mismo `curl` contra una imagen ya existente (subida antes del fix) no lo trae
+— esperado, no un defecto: el encabezado es metadato de S3 fijado al momento de subir, no retroactivo,
+así que solo las imágenes de eventos subidas de ahora en adelante lo llevan. Detalle completo en el
+Historial de abajo.
+
+**T-0031 — [RENDIMIENTO] Investigar el origen de los 309 KiB de JS sin minificar en los cuatro
+repos (OPT-13), ACTIVA:** Lighthouse reporta el mismo número exacto en los cuatro proyectos — huele a
+una sola dependencia compartida (Firebase SDK es la sospecha del backlog, sin confirmar todavía).
+DoD: identificada la dependencia/archivo real detrás del número idéntico (revisar el detalle completo
+del audit `unminified-javascript` de cada repo, no asumir); si es una sola causa compartida, corregida
+una vez y verificada en los cuatro; si son causas distintas por repo (mismo patrón ya visto en OPT-12),
+documentado así explícitamente; `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo
+registrado.
+
+**T-0032 — [RENDIMIENTO] Comprimir y servir en formato moderno las imágenes de eventos (OPT-14),
+ACTIVA:** Lighthouse (`image-delivery-insight`) marca ahorro real en Ágora y letiende.co — las
+portadas de eventos del bucket `agora-activos-<stage>` se sirven sin comprimir y sin formato moderno
+(WebP/AVIF). Corresponde al mismo bucket que T-0030 ya tocó (`CacheControl`), esta vez el formato/peso
+del archivo, no el cacheo. DoD: portadas nuevas servidas en formato moderno con tamaños responsivos
+(evaluar conversión en la subida vs. un servicio de transformación en el borde); verificado con
+`curl -I`/tamaño real contra producción; sin romper las portadas ya subidas; `docs/optimizacion-
+aplicaciones.md` §5 actualizado; esfuerzo registrado.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -162,6 +181,40 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0030** — [RENDIMIENTO] `Cache-Control` eficiente para activos estáticos (OPT-12). Completada
+  08/09/2026, dos PR fusionados: `agora-letiende#71`, `comandante#31`.
+
+  Investigado con el detalle completo de `cache-insight` de Lighthouse antes de tocar nada — la
+  evidencia original del backlog asumía un patrón único de `ResponseHeadersPolicy`/`CacheBehavior` en
+  los cuatro `serverless.yml`, pero el audit real mostró tres causas distintas, ninguna del patrón
+  asumido:
+  - **Ágora + letiende.co** (misma causa real): el bucket `agora-activos-production` (imágenes de
+    eventos, embebidas también en la portada de `letiende.co` vía el proxy) con `cacheLifetimeMs: 0`.
+    Corregido agregando `CacheControl: 'public, max-age=31536000, immutable'` al `PutObjectCommand`
+    firmado en `server/api/handlers/eventos.ts` — el encabezado forma parte de la firma de S3, así que
+    `EventosService.subirActivo()` (frontend) tuvo que enviar el mismo encabezado exacto en el `PUT`, o
+    la firma no habría validado. Cada key lleva un UUID nuevo por subida, nunca se reescribe con
+    contenido distinto, así que cachear "para siempre" es seguro. `letiende.co` no necesitó ningún
+    cambio propio — el mismo fix resuelve su parte del audit, porque comparte el mismo origen.
+  - **Comandante**: causa distinta y real — sus bundles JS/CSS (hasheados por `outputHashing: all`)
+    solo tenían 1 hora de cache, el valor por defecto de Firebase Hosting sin ninguna regla en
+    `firebase.json`. Corregido con una regla nueva (`Cache-Control` de un año para `**/*.@(js|css)`,
+    mismo formato de extglob que documenta la guía oficial de Firebase Hosting), deliberadamente sin
+    tocar imágenes ni el logo — viven en `public/` sin hash de contenido en el nombre, así que
+    cachearlos por un año habría sido inseguro (un cambio real de logo tardaría hasta un año en verse).
+  - **Babel**: sin ninguna causa fixeable en este repositorio — el 100% de su desperdicio de caché son
+    orígenes de terceros que no controla (portadas de libros escaneadas de sitios externos, el iframe
+    de autenticación de Firebase). Sus propios bundles ya cachean bien (`express.static` con
+    `maxAge: '1y'`, ya verificado durante T-0026). Documentado como aceptado, sin PR abierto.
+
+  Verificado en producción real tras la fusión, no solo con el resultado del build: `curl -I` contra
+  el bundle principal de Comandante confirma `Cache-Control: public, max-age=31536000, immutable`; en
+  Ágora, el mismo `curl` contra una imagen ya existente (subida antes de la fusión) no trae el
+  encabezado — verificado que es el comportamiento esperado, no un defecto: el encabezado es metadato
+  de S3 fijado en el momento de la subida, nunca retroactivo, así que solo las imágenes de eventos
+  subidas de ahora en adelante lo llevan. Build + pruebas en verde en ambos repos antes de cada PR
+  (incluida una prueba nueva en Ágora que verifica el encabezado real enviado a S3).
 
 - **T-0029** — [DOCS] Reescribir el `README` de Ágora al estilo bilingüe (OPT-11). Completada
   08/09/2026, PR `agora-letiende#70` fusionado.
