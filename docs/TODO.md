@@ -112,21 +112,30 @@ ciegas:** ambas son dependencias de terceros reales y necesarias — inicio de s
 (requisito de autenticación) y enriquecimiento de metadatos de ISBN — no hay ninguna cookie propia ni
 evitable que corregir. Detalle completo en el Historial de abajo.
 
-**T-0029 — [DOCS] Reescribir el `README` de Ágora al estilo bilingüe (OPT-11), ACTIVA:** hoy es un
-único `README.md` en español, con insignias sin el estilo `flat-square` que ya usan los otros tres
-repos. Necesita traducir a inglés como `README.md`, mover el contenido actual a `README.es.md`, y
-alinear las insignias con el set ya usado en `letiende.co`/Babel/Comandante (T-0018). DoD: `README.md`
-en inglés y `README.es.md` en español, ambos con contenido real (no traducción automática sin
-revisar); insignias con estilo `flat-square` consistente con los otros tres repos; esfuerzo registrado.
+**T-0029 — [DOCS] Reescribir el `README` de Ágora al estilo bilingüe (OPT-11), COMPLETA
+(08/09/2026):** PR `agora-letiende#70`, fusionado por el humano. Traducción fiel del contenido
+existente, no el formato de caso de estudio extendido de Babel/Comandante (esos números son
+específicos de esos repos). Detalle completo en el Historial de abajo.
 
-**T-0030 — [RENDIMIENTO] `Cache-Control` eficiente en CloudFront para activos estáticos en los
-cuatro repos (OPT-12), ACTIVA:** Lighthouse (`cache-insight`) marca hasta 4.737 KiB de ahorro
-potencial en Ágora, 3.834 KiB en `letiende.co` — activos estáticos sin una política de cacheo
-eficiente en las distribuciones de CloudFront de los cuatro `serverless.yml`. DoD: `ResponseHeadersPolicy`/`CacheBehavior`
-con `Cache-Control` de larga duración para activos con hash en el nombre (JS/CSS/fuentes con
-`outputHashing`), verificado con `curl -I` real contra las cuatro URL de producción; el audit
-`cache-insight` de Lighthouse mejora contra la medición base; `docs/optimizacion-aplicaciones.md` §5
-actualizado; esfuerzo registrado.
+**T-0030 — [RENDIMIENTO] `Cache-Control` eficiente para activos estáticos en los cuatro repos
+(OPT-12), ACTIVA — PR abiertos, esperando fusión humana:** investigado con el detalle completo de
+`cache-insight` de Lighthouse antes de tocar nada, no adivinado — el mismo audit señala orígenes
+distintos por repo, no un patrón único de `ResponseHeadersPolicy`/`CacheBehavior` en los cuatro
+`serverless.yml` como asumía la evidencia original del backlog. **Ágora y letiende.co** comparten la
+misma causa real: el bucket `agora-activos-production` (imágenes de eventos, embebidas también en la
+portada de `letiende.co` vía el proxy) con `cacheLifetimeMs: 0` — corregido en
+`agora-letiende#71` agregando `CacheControl` al `PutObjectCommand` firmado y al `PUT` del frontend
+(mismo encabezado exacto, forma parte de la firma de S3); `letiende.co` no necesita ningún cambio
+propio, el mismo fix resuelve su parte del audit. **Comandante** tiene una causa distinta y real: sus
+bundles JS/CSS (hasheados) solo tenían 1 hora de cache por el valor por defecto de Firebase Hosting,
+sin ninguna regla en `firebase.json` — corregido en `comandante#31` (`Cache-Control` de un año para
+`**/*.@(js|css)`, deliberadamente sin tocar imágenes/logo sin hash de contenido). **Babel no tiene
+ninguna causa fixeable en este repositorio:** el 100% de su desperdicio de caché son orígenes de
+terceros que no controla (`librerialerner.vteximg.com.br`, `tornamesa.co`, portadas de libros
+escaneadas; el iframe de autenticación de Firebase) — sus propios bundles ya cachean bien
+(`express.static` con `maxAge: '1y'`, verificado en T-0026). PR `agora-letiende#71` y `comandante#31`
+abiertos, sin fusionar todavía. Pendiente tras la fusión: `curl -I` real contra Ágora/Comandante y
+re-medición de Lighthouse; Babel queda documentado como aceptado, sin PR.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -153,6 +162,22 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0029** — [DOCS] Reescribir el `README` de Ágora al estilo bilingüe (OPT-11). Completada
+  08/09/2026, PR `agora-letiende#70` fusionado.
+
+  Antes de escribir una sola línea, se investigó el alcance real del DoD: traducir el contenido
+  existente y alinear insignias, no replicar el formato de caso de estudio extendido de Babel/Comandante
+  (Pareto humano/agente, incidente de costos propio) — ese contenido es específico de esos dos repos y
+  copiarlo a Ágora habría significado inventar cifras. Se leyó `docs/tracking.csv` real de Ágora (233
+  tareas, 105 h 09 min medidas) para confirmar que solo registra tiempo de ejecución del agente
+  (`role` siempre `AI`, sin filas de tiempo humano por separado) — por eso no se calculó ni se mostró
+  ningún reparto humano/agente, habría sido una cifra inventada. Se verificó contra `docs/MEMORY.md` de
+  Ágora que su objetivo de `< US$1/mes` es una reacción directa al incidente real de **Babel**
+  (US$94,44 en un mes), nunca un incidente propio de Ágora, antes de escribir esa frase en el README.
+
+  `README.md` (inglés, traducción fiel) y `README.es.md` (español, contenido original) con insignias
+  `flat-square` alineadas al resto de repos (`Live`, `Firebase`, cruce de idioma en ambos sentidos).
 
 - **T-0027/T-0028** — [CALIDAD/PRIVACIDAD] Panel "Issues" de Chrome DevTools (OPT-9) y cookies de
   terceros (OPT-10) en Ágora, Babel y Comandante. Completadas juntas 08/09/2026 — no hubo PR de código,
