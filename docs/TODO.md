@@ -81,15 +81,23 @@ fusión: `curl` contra `letiende.co/`, `/cartelera/` y `/libros/` confirma `widt
 el logo de la barra. Detalle completo en el Historial de abajo.
 
 **T-0026 — [RENDIMIENTO] Activar `sourceMap` en el build de producción de Babel y Comandante
-(OPT-8), ACTIVA — PR abiertos, esperando fusión humana:** Lighthouse (`valid-source-maps`) marcaba el
-bundle principal sin mapa de fuentes en ambos. Se agregó `"sourceMap": true` a la configuración
-`production` de `angular.json` en los dos (ya existía en `development`). **Evaluada la asimetría antes
-de fusionar, como pedía el DoD:** Babel empaqueta `dist/babel-letiende/**` completo dentro de su Lambda
-`ssr` — medido con `serverless package --stage staging`, el zip pasa de 1.4 MB a 5.8 MB, muy por debajo
-del límite de 50 MB de carga directa. Comandante despliega a Firebase Hosting sin Lambda propia, así
-que su crecimiento de `dist/` (2 MB → 11 MB) no cruza ningún límite real. Build + pruebas en verde en
-ambos. PR `babel-letiende#128` y `comandante#30` abiertos, sin fusionar todavía. Pendiente tras la
-fusión: volver a correr Lighthouse contra las URL reales.
+(OPT-8), ACTIVA — incidente real de producción en Babel, hotfix abierto:** Lighthouse
+(`valid-source-maps`) marcaba el bundle principal sin mapa de fuentes en ambos. `comandante#30` se
+fusionó y **quedó bien**: verificado en producción real (`curl` contra `comandante.letiende.co/main-
+*.js.map`, 200 con el JSON real de 7,5 KB, sin Lambda de por medio — Firebase Hosting).
+
+`babel-letiende#128` también se fusionó, pero **minutos después `curl` real contra
+`letiende.co/libros/main-*.js.map` devolvió 500** — no un hallazgo teórico, un incidente real. Causa
+raíz en CloudWatch (`/aws/lambda/babel-letiende-production-ssr`): `RequestEntityTooLarge — Exceeded
+maximum allowed payload size (6291556 bytes)`. El mapa del bundle principal pesa 5,9 MB; Babel sirve
+sus estáticos con `express.static` **desde dentro del propio Lambda** `ssr` (no desde S3/CloudFront,
+distinto a Comandante) — la respuesta síncrona de Lambda tiene un límite duro de 6 MB tras la
+codificación de API Gateway, y ese archivo lo cruza. El DoD original evaluó el tamaño del **zip** de
+despliegue (correcto, con margen de sobra) pero no el límite de **respuesta HTTP individual** al servir
+ese archivo a través del mismo Lambda — un límite distinto y más estricto, no cubierto por esa
+verificación. Revertido en `babel-letiende#129` (hotfix), sin fusionar todavía — habilitar `sourceMap`
+de verdad en Babel exige mover el estático a S3 + CloudFront primero, tarea de infraestructura aparte
+(no incluida aquí). Pendiente: fusión humana del hotfix + re-medición de Lighthouse en Comandante.
 
 **T-0027 — [CALIDAD] Revisar el panel "Issues" de Chrome DevTools en Ágora, Babel y Comandante
 (OPT-9), ACTIVA:** Lighthouse solo confirma que hay algo registrado en el panel "Issues" de cada uno,

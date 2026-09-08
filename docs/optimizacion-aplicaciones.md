@@ -116,6 +116,7 @@ día o más, rediseño acotado a un flujo) · **XL** (días, cambio de arquitect
 | ID | Tarea | Repos | Evidencia |
 |---|---|---|---|
 | OPT-16 | Pase completo de rendimiento en el dashboard de Comandante | Comandante | LCP 5,5s, Speed Index 5,0s en `/admin/dashboard` — no hay un solo culpable como en Babel; es la suma de varios hallazgos M de arriba aplicados juntos a esa vista. Depende de haber cerrado OPT-7/12/13/15 primero. |
+| OPT-20 | Servir los estáticos de Babel desde S3 + CloudFront, no desde el Lambda `ssr` | Babel | Surgió al ejecutar OPT-8 (T-0026, 08/09/2026): el `.js.map` del bundle principal (5,9 MB) hizo que `/libros/main-*.js.map` respondiera **500 real en producción** — `RequestEntityTooLarge`, límite de 6 MB de respuesta síncrona de Lambda (`server.ts` sirve `express.static` desde dentro del propio Lambda `ssr`). `sourceMap` quedó revertido (`babel-letiende#129`) hasta que exista esta tarea. Mismo patrón que `letiende-assets` de `letiende.co`, pero afecta también a cualquier estático futuro que crezca lo suficiente — no es exclusivo de los source maps. |
 
 ### XL
 
@@ -137,7 +138,7 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 | OPT-18 | **Completada** | T-0018 (ampliada) | letiende.co#35, agora-letiende#66, babel-letiende#122, comandante#23 | Comandante quedó con un fallo de prueba preexistente y ajeno a este cambio (`app.component.spec.ts`, error ESM de `@ionic/core`) — verificado con `git stash` que ya fallaba antes, no se tocó |
 | OPT-6 | **Completada** | T-0024 | babel-letiende#126, comandante#28, letiende.co#40 | Fórmula real de contraste WCAG, no aproximada. Babel: `text-secondary` (3.37:1) → token nuevo `secondary-accesible` (5.12:1), solo en texto pequeño. Comandante: `text-espresso/{30,35,40,45}` (2.28–3.04:1) → `/{62,64,68,70}` (5.32–7.11:1), en los 4 archivos con el patrón, no solo el dashboard auditado. Verificado en producción real con `curl` contra el CSS compilado tras la fusión. Pendiente, no bloqueante: re-medición de Lighthouse. |
 | OPT-7 | **Completada** | T-0025 | letiende.co#42, agora-letiende#69, babel-letiende#127, comandante#29 | Siempre el mismo elemento: el logo, sin `width`/`height`. Corregidas todas las instancias de cada repo (1/2/3/9), no solo la auditada — el resto de imágenes ya usa `aspect-ratio` explícito o ambas dimensiones fijas. Verificado en producción real con `curl` tras la fusión. |
-| OPT-8 | **Activa — PR abiertos, esperando fusión** | T-0026 | babel-letiende#128, comandante#30 | Babel: Lambda empaqueta `dist/**` completo, zip 1.4MB→5.8MB (medido con `serverless package`), muy por debajo del límite de 50MB. Comandante: Firebase Hosting sin Lambda, `dist/` 2MB→11MB sin límite real que cruzar. Pendiente: fusión humana + re-medición de Lighthouse. |
+| OPT-8 | **Activa — incidente real en Babel, hotfix abierto** | T-0026 | comandante#30 (fusionado, verificado en producción), babel-letiende#128 (fusionado, causó 500 real), babel-letiende#129 (hotfix, revierte) | Babel: el `.js.map` principal pesa 5,9MB y el Lambda `ssr` lo sirve desde dentro de sí mismo — cruza el límite de 6MB de respuesta síncrona de Lambda (distinto del límite de tamaño del zip, que sí se evaluó bien). Revertido; habilitarlo de verdad exige mover el estático a S3+CloudFront (tarea aparte). Comandante sin este problema (Firebase Hosting). Pendiente: fusión del hotfix + re-medición de Lighthouse en Comandante. |
 | OPT-9 | **Activa** | T-0027 | — | Investigar el panel "Issues" de Chrome DevTools con navegador real contra las 3 URL — Lighthouse solo confirma que hay algo, no dice qué. |
 | OPT-10 | Pendiente | — | — | — |
 | OPT-11 | Pendiente | — | — | — |
@@ -147,6 +148,7 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 | OPT-15 | Pendiente | — | — | — |
 | OPT-16 | Pendiente | — | — | Depende de OPT-7/12/13/15 |
 | OPT-17 | Pendiente | — | — | Relacionado con babel-letiende#121 — máxima prioridad de impacto, pero deliberadamente no seleccionada como una de las 2 activas todavía: es la más grande del roadmap y este repositorio no toca código de Babel a la ligera. |
+| OPT-20 | Pendiente | T-0026 (hallazgo) | babel-letiende#129 | Surgió del incidente real de OPT-8 en Babel — 500 en producción por el límite de respuesta de Lambda, no del tamaño del zip. |
 | OPT-19 | **Completada** | T-0022 | comandante#26 | Causa real: `@ionic/angular@8.8.8` hace *directory import* de `@ionic/core/components`, Node ESM lo rechaza. Corregido con `patch-package` — vigilar en el próximo `ng update` que toque `@ionic/angular` |
 
 ## 6. Fuentes
