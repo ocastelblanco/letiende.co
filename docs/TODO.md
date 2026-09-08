@@ -81,23 +81,15 @@ fusión: `curl` contra `letiende.co/`, `/cartelera/` y `/libros/` confirma `widt
 el logo de la barra. Detalle completo en el Historial de abajo.
 
 **T-0026 — [RENDIMIENTO] Activar `sourceMap` en el build de producción de Babel y Comandante
-(OPT-8), ACTIVA — incidente real de producción en Babel, hotfix abierto:** Lighthouse
-(`valid-source-maps`) marcaba el bundle principal sin mapa de fuentes en ambos. `comandante#30` se
-fusionó y **quedó bien**: verificado en producción real (`curl` contra `comandante.letiende.co/main-
-*.js.map`, 200 con el JSON real de 7,5 KB, sin Lambda de por medio — Firebase Hosting).
-
-`babel-letiende#128` también se fusionó, pero **minutos después `curl` real contra
-`letiende.co/libros/main-*.js.map` devolvió 500** — no un hallazgo teórico, un incidente real. Causa
-raíz en CloudWatch (`/aws/lambda/babel-letiende-production-ssr`): `RequestEntityTooLarge — Exceeded
-maximum allowed payload size (6291556 bytes)`. El mapa del bundle principal pesa 5,9 MB; Babel sirve
-sus estáticos con `express.static` **desde dentro del propio Lambda** `ssr` (no desde S3/CloudFront,
-distinto a Comandante) — la respuesta síncrona de Lambda tiene un límite duro de 6 MB tras la
-codificación de API Gateway, y ese archivo lo cruza. El DoD original evaluó el tamaño del **zip** de
-despliegue (correcto, con margen de sobra) pero no el límite de **respuesta HTTP individual** al servir
-ese archivo a través del mismo Lambda — un límite distinto y más estricto, no cubierto por esa
-verificación. Revertido en `babel-letiende#129` (hotfix), sin fusionar todavía — habilitar `sourceMap`
-de verdad en Babel exige mover el estático a S3 + CloudFront primero, tarea de infraestructura aparte
-(no incluida aquí). Pendiente: fusión humana del hotfix + re-medición de Lighthouse en Comandante.
+(OPT-8), COMPLETA (08/09/2026) — con un incidente real de producción en el camino, ya resuelto:**
+Comandante (`comandante#30`) quedó bien a la primera, verificado en producción real. Babel
+(`babel-letiende#128`) causó **500 real** en `/libros/main-*.js.map` minutos después de fusionarse —
+`RequestEntityTooLarge`, el mapa de 5,9 MB del bundle principal cruzaba el límite de 6 MB de respuesta
+síncrona de Lambda (Babel sirve estáticos desde dentro del propio Lambda `ssr`, a diferencia de
+Comandante). Revertido en `babel-letiende#129`, verificado en producción real tras el segundo
+despliegue: `main-*.js` vuelve al hash previo, sin `sourceMappingURL`, y la petición del `.map`
+inexistente cae en el 302 normal de la app (no en 500). OPT-20 queda en el backlog para el arreglo real
+(S3 + CloudFront en Babel). Detalle completo en el Historial de abajo.
 
 **T-0027 — [CALIDAD] Revisar el panel "Issues" de Chrome DevTools en Ágora, Babel y Comandante
 (OPT-9), ACTIVA:** Lighthouse solo confirma que hay algo registrado en el panel "Issues" de cada uno,
@@ -106,6 +98,14 @@ terceros) antes de decidir el arreglo, no asumir la causa. DoD: el panel "Issues
 navegador real contra las tres URL de producción; cada hallazgo real clasificado (arreglo aplicable
 aquí vs. fuera de alcance, ej. dependencia de terceros) y documentado en
 `docs/optimizacion-aplicaciones.md` §5; esfuerzo registrado.
+
+**T-0028 — [PRIVACIDAD] Auditar las cookies de terceros en Ágora, Babel y Comandante (OPT-10),
+ACTIVA:** Lighthouse reporta el mismo número exacto (53) en los tres — probablemente Firebase Auth,
+pero sin confirmar todavía contra el tráfico real. DoD: confirmada la fuente real de las 53 cookies con
+DevTools (pestaña Application/Cookies) contra las tres URL de producción; si son de Firebase
+Auth/requisito de autenticación, documentado como aceptado (no se persigue un falso positivo); si hay
+alguna cookie de verdad evitable, corregida; `docs/optimizacion-aplicaciones.md` §5 actualizado;
+esfuerzo registrado.
 
 **T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
 COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
@@ -132,6 +132,43 @@ registrado el cierre).
 ---
 
 ## Historial
+
+- **T-0026** — [RENDIMIENTO] Activar `sourceMap` en el build de producción de Babel y Comandante
+  (OPT-8). Completada 08/09/2026, tres PR fusionados: `comandante#30`, `babel-letiende#128` (causó el
+  incidente) y `babel-letiende#129` (hotfix que lo revirtió).
+
+  **Comandante, sin sobresaltos:** `"sourceMap": true` agregado a la configuración `production` de
+  `angular.json` (ya existía en `development`). Verificado antes de fusionar que este repo despliega a
+  Firebase Hosting sin Lambda propia — su `dist/` creció de ~2 MB a 11 MB sin ningún límite real que
+  cruzar. Verificado en producción real tras la fusión: `curl` contra
+  `https://comandante.letiende.co/main-*.js.map` responde 200 con el JSON real (7,5 KB).
+
+  **Babel, incidente real de producción, no un hallazgo teórico.** El mismo cambio de una línea se
+  fusionó (`babel-letiende#128`) tras verificar — correctamente — que el **zip** de despliegue de
+  Lambda pasaba de 1,4 MB a 5,8 MB, muy por debajo del límite de 50 MB de carga directa. Minutos después
+  de la fusión, `curl` real contra `https://letiende.co/libros/main-*.js.map` devolvió **500**.
+  Investigado en CloudWatch (`/aws/lambda/babel-letiende-production-ssr`, filtro `ERROR`), no adivinado:
+  `RequestEntityTooLarge — Exceeded maximum allowed payload size (6291556 bytes)`. Causa raíz real: el
+  mapa del bundle principal (`main-*.js.map`) pesa 5,9 MB — el resto de mapas son de pocos KB — y Babel
+  sirve sus estáticos con `express.static` **desde dentro del propio Lambda `ssr`**
+  (`server.ts:150-151`), a diferencia de Comandante (Firebase Hosting). La respuesta síncrona de una
+  invocación de Lambda tiene un límite duro de 6 MB **tras** la codificación que aplica API Gateway —
+  un límite completamente distinto al del tamaño del zip de despliegue, y ese archivo lo cruza. Nunca se
+  había topado este límite antes porque nunca había existido un estático de este tamaño en el paquete.
+
+  **Revertido el mismo día** (`babel-letiende#129`): se quita `"sourceMap": true` de `production` en
+  `angular.json`. Verificado en producción real tras el segundo despliegue —
+  `curl` contra `main-*.js` confirma que vuelve al hash previo al cambio (sin `sourceMappingURL`), y la
+  petición del `.map` (que ya no existe) cae en el 302 normal de la app en vez de un 500. Habilitar
+  `sourceMap` de verdad en Babel exige mover el estático fuera del Lambda (S3 + CloudFront, mismo patrón
+  que `letiende-assets` de `letiende.co`) — se agregó **OPT-20** al backlog de
+  `docs/optimizacion-aplicaciones.md` para esa tarea, de mayor esfuerzo, en vez de dejarla perdida.
+
+  **Lección para sesiones futuras, la misma que ya dejaron T-0013/T-0014 y el cutover (T-0017):** un DoD
+  que dice "evaluar el impacto en el tamaño del paquete de despliegue" puede quedar satisfecho y aun así
+  dejar un límite real sin cubrir, cuando el mismo servicio que empaqueta el archivo también lo sirve —
+  el tamaño del artefacto y el tamaño de una respuesta HTTP individual son límites distintos, y verificar
+  uno no basta para el otro.
 
 - **T-0025** — [RENDIMIENTO] `width`/`height` explícitos en imágenes en los cuatro repos (OPT-7).
   Completada 07/09/2026, cuatro PR fusionados: `letiende.co#42`, `agora-letiende#69`,
