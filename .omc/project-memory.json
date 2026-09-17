@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1776098496378,
+  "lastScanned": 1788793856688,
   "projectRoot": "/Users/ocastelblanco/Documents/LeTiende/letiende.co/letiende.co",
   "techStack": {
     "languages": [
@@ -24,13 +24,23 @@
     "frameworks": [
       {
         "name": "@angular/core",
-        "version": "21.1.3",
+        "version": "22.1.0",
         "category": "frontend"
       },
       {
         "name": "express",
         "version": "5.1.0",
         "category": "backend"
+      },
+      {
+        "name": "esbuild",
+        "version": "0.28.2",
+        "category": "build"
+      },
+      {
+        "name": "vitest",
+        "version": "4.0.8",
+        "category": "testing"
       }
     ],
     "packageManager": "npm",
@@ -39,21 +49,24 @@
   "build": {
     "buildCommand": "npm run build",
     "testCommand": "npm test",
-    "lintCommand": null,
+    "lintCommand": "npm run lint",
     "devCommand": "npm run start",
     "scripts": {
       "ng": "ng",
       "start": "ng serve",
       "build": "ng build",
+      "postbuild": "node scripts/inyectar-llaves-publicas.mjs",
+      "build:api": "tsc -p server/tsconfig.json",
+      "bundle:api": "node server/bundle-lambdas.mjs",
+      "build:infra": "npm run build && npm run build:api && npm run bundle:api",
       "watch": "ng build --watch --configuration development",
       "test": "ng test",
-      "serve:ssr:letiende.co": "node dist/letiende.co/server/server.mjs",
-      "build:ssr": "ng build --configuration production",
-      "build:ssr:dev": "ng build --configuration production --base-href /dev/",
-      "build:ssr:prod": "ng build --configuration production --base-href /",
-      "deploy:dev": "npm run build:ssr:dev && sls deploy --stage dev",
-      "deploy:prod": "npm run build:ssr:prod && sls deploy --stage prod",
-      "deploy": "npm run deploy:dev"
+      "test:api": "vitest run",
+      "serve:ssr": "node dist/letiende-co/server/server.mjs",
+      "lint": "ng lint",
+      "format": "prettier --write \"src/**/*.{ts,html,css}\"",
+      "format:check": "prettier --check \"src/**/*.{ts,html,css}\"",
+      "prepare": "husky"
     }
   },
   "conventions": {
@@ -68,6 +81,7 @@
     "mainDirectories": [
       "docs",
       "public",
+      "scripts",
       "src"
     ],
     "gitBranches": {
@@ -81,61 +95,113 @@
       "path": "dist",
       "purpose": "Distribution/build output",
       "fileCount": 0,
-      "lastAccessed": 1776098496367,
+      "lastAccessed": 1788793856680,
       "keyFiles": []
+    },
+    "dist-server": {
+      "path": "dist-server",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1788793856682,
+      "keyFiles": []
+    },
+    "dist-server-bundle": {
+      "path": "dist-server-bundle",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1788793856683,
+      "keyFiles": [
+        "contacto.js"
+      ]
     },
     "docs": {
       "path": "docs",
       "purpose": "Documentation",
-      "fileCount": 12,
-      "lastAccessed": 1776098496367,
+      "fileCount": 6,
+      "lastAccessed": 1788793856683,
       "keyFiles": [
-        "AGENTS.md",
-        "AWS_EMAIL_SYSTEM.md",
-        "esquema-contenido.json",
-        "fix-google-apps-script-origin.md",
-        "plan-servicio-email.md"
+        "DESIGN.md",
+        "MEMORY.md",
+        "PRD.md",
+        "TODO.md",
+        "runbook-cutover-t15.md"
       ]
     },
-    "external_resources": {
-      "path": "external_resources",
+    "metrics": {
+      "path": "metrics",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1776098496372,
+      "lastAccessed": 1788793856683,
       "keyFiles": [
-        "lambda-updated.zip",
-        "lambda_actual.zip"
+        "config.json",
+        "pricing.json"
       ]
     },
     "public": {
       "path": "public",
       "purpose": "Public files",
-      "fileCount": 3,
-      "lastAccessed": 1776098496373,
+      "fileCount": 9,
+      "lastAccessed": 1788793856684,
       "keyFiles": [
-        "categorias.json",
-        "eventos_backup.json",
-        "menu.json"
+        "apple-touch-icon.png",
+        "favicon-16x16.png",
+        "favicon-32x32.png",
+        "favicon.ico",
+        "icon-192.png"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 2,
+      "lastAccessed": 1788793856684,
+      "keyFiles": [
+        "inyectar-llaves-publicas.mjs",
+        "verificar-secretos.mjs"
+      ]
+    },
+    "server": {
+      "path": "server",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1788793856684,
+      "keyFiles": [
+        "bundle-lambdas.mjs",
+        "tsconfig.json"
       ]
     },
     "src": {
       "path": "src",
       "purpose": "Source code",
-      "fileCount": 7,
-      "lastAccessed": 1776098496373,
+      "fileCount": 5,
+      "lastAccessed": 1788793856685,
       "keyFiles": [
         "index.html",
         "main.server.ts",
         "main.ts",
-        "secrets.ts",
-        "server.ts"
+        "server.ts",
+        "styles.css"
       ]
+    },
+    "dist-server/api": {
+      "path": "dist-server/api",
+      "purpose": "API routes",
+      "fileCount": 0,
+      "lastAccessed": 1788793856685,
+      "keyFiles": []
+    },
+    "server/api": {
+      "path": "server/api",
+      "purpose": "API routes",
+      "fileCount": 0,
+      "lastAccessed": 1788793856686,
+      "keyFiles": []
     },
     "src/app": {
       "path": "src/app",
       "purpose": "Application code",
-      "fileCount": 8,
-      "lastAccessed": 1776098496375,
+      "fileCount": 7,
+      "lastAccessed": 1788793856686,
       "keyFiles": [
         "app.config.server.ts",
         "app.config.ts",
@@ -145,303 +211,303 @@
   },
   "hotPaths": [
     {
-      "path": "docs/respuestas/2025-10-29-InstruccionesActualizacionAPI.md",
-      "accessCount": 10,
-      "lastAccessed": 1776127873162,
+      "path": "docs/TODO.md",
+      "accessCount": 187,
+      "lastAccessed": 1788841524757,
       "type": "file"
     },
     {
-      "path": ".mcp.json",
-      "accessCount": 9,
-      "lastAccessed": 1776099891170,
+      "path": "docs/MEMORY.md",
+      "accessCount": 106,
+      "lastAccessed": 1788814310823,
       "type": "file"
     },
     {
-      "path": "MEMORY.md",
-      "accessCount": 9,
-      "lastAccessed": 1776127897160,
+      "path": "docs/tech-specs.md",
+      "accessCount": 31,
+      "lastAccessed": 1788801614558,
       "type": "file"
     },
     {
-      "path": "TODO.md",
-      "accessCount": 8,
-      "lastAccessed": 1776127846921,
+      "path": "src/app/features/contacto/contacto.ts",
+      "accessCount": 15,
+      "lastAccessed": 1788405245940,
       "type": "file"
     },
     {
-      "path": "docs/plan-servicio-email.md",
-      "accessCount": 4,
-      "lastAccessed": 1776127878677,
-      "type": "file"
-    },
-    {
-      "path": "CLAUDE.md",
-      "accessCount": 3,
-      "lastAccessed": 1776118607491,
-      "type": "file"
-    },
-    {
-      "path": "docs/prompt_02.md",
-      "accessCount": 3,
-      "lastAccessed": 1776127879786,
-      "type": "file"
-    },
-    {
-      "path": "docs/prompt_03.md",
-      "accessCount": 3,
-      "lastAccessed": 1776127880575,
-      "type": "file"
-    },
-    {
-      "path": "",
-      "accessCount": 3,
-      "lastAccessed": 1776127884869,
-      "type": "directory"
-    },
-    {
-      "path": "package.json",
-      "accessCount": 2,
-      "lastAccessed": 1776100575411,
-      "type": "file"
-    },
-    {
-      "path": "serverless.yml",
-      "accessCount": 2,
-      "lastAccessed": 1776100576142,
+      "path": "src/server.ts",
+      "accessCount": 14,
+      "lastAccessed": 1788806657682,
       "type": "file"
     },
     {
       "path": "src/app/app.routes.ts",
-      "accessCount": 2,
-      "lastAccessed": 1776100579777,
+      "accessCount": 8,
+      "lastAccessed": 1788840083799,
       "type": "file"
     },
     {
-      "path": "src/app/app.config.ts",
-      "accessCount": 2,
-      "lastAccessed": 1776100580205,
+      "path": "package.json",
+      "accessCount": 7,
+      "lastAccessed": 1788409143374,
       "type": "file"
     },
     {
-      "path": "src/app/app.config.server.ts",
-      "accessCount": 2,
-      "lastAccessed": 1776100584952,
+      "path": "src/app/shared/navegacion/pie-pagina.html",
+      "accessCount": 7,
+      "lastAccessed": 1788450410764,
       "type": "file"
     },
     {
-      "path": "PRD.md",
-      "accessCount": 2,
-      "lastAccessed": 1776120642381,
+      "path": "src/app/core/negocio/datos-negocio.ts",
+      "accessCount": 7,
+      "lastAccessed": 1788450464758,
       "type": "file"
     },
     {
-      "path": "src/app/core/servicios/admin-eventos.service.ts",
-      "accessCount": 2,
-      "lastAccessed": 1776125619644,
+      "path": "src/app/features/contacto/contacto.html",
+      "accessCount": 7,
+      "lastAccessed": 1788476456006,
       "type": "file"
     },
     {
-      "path": "src/app/compartidos/servicios/datos.ts",
-      "accessCount": 2,
-      "lastAccessed": 1776125623626,
+      "path": "src/app/core/analytics/analytics.service.ts",
+      "accessCount": 7,
+      "lastAccessed": 1788796478445,
       "type": "file"
     },
     {
-      "path": "tsconfig.json",
-      "accessCount": 1,
-      "lastAccessed": 1776100575777,
+      "path": "src/environments/environment.ts",
+      "accessCount": 5,
+      "lastAccessed": 1788405150917,
       "type": "file"
     },
     {
-      "path": "firebase.json",
-      "accessCount": 1,
-      "lastAccessed": 1776100576351,
+      "path": "src/environments/environment.production.ts",
+      "accessCount": 5,
+      "lastAccessed": 1788405156900,
       "type": "file"
     },
     {
-      "path": "docs/AGENTS.md",
-      "accessCount": 1,
-      "lastAccessed": 1776100579761,
-      "type": "file"
-    },
-    {
-      "path": "docs/servicio-email.md",
-      "accessCount": 1,
-      "lastAccessed": 1776100580383,
-      "type": "file"
-    },
-    {
-      "path": "docs/AWS_EMAIL_SYSTEM.md",
-      "accessCount": 1,
-      "lastAccessed": 1776100580463,
-      "type": "file"
-    },
-    {
-      "path": "src/app/compartidos/servicios/lt-config.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100581040,
-      "type": "file"
-    },
-    {
-      "path": "src/app/compartidos/servicios/firebase-config.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100581213,
-      "type": "file"
-    },
-    {
-      "path": "docs/redireccion-emails.md",
-      "accessCount": 1,
-      "lastAccessed": 1776100583830,
-      "type": "file"
-    },
-    {
-      "path": "docs/fix-google-apps-script-origin.md",
-      "accessCount": 1,
-      "lastAccessed": 1776100584117,
-      "type": "file"
-    },
-    {
-      "path": "docs/prompt_01.md",
-      "accessCount": 1,
-      "lastAccessed": 1776100584505,
-      "type": "file"
-    },
-    {
-      "path": "src/app/vistas/inicio/inicio.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100589159,
-      "type": "file"
-    },
-    {
-      "path": "src/app/vistas/menu/menu.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100589614,
-      "type": "file"
-    },
-    {
-      "path": "src/app/vistas/eventos/eventos.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100589778,
-      "type": "file"
-    },
-    {
-      "path": "src/app/vistas/admin/admin.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100590074,
-      "type": "file"
-    },
-    {
-      "path": "src/app/vistas/admin/eventos/admin-eventos.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100590478,
-      "type": "file"
-    },
-    {
-      "path": "src/app/vistas/admin/eventos/form-evento/form-evento.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100590579,
-      "type": "file"
-    },
-    {
-      "path": "docs/prompt_04.md",
-      "accessCount": 1,
-      "lastAccessed": 1776100591582,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/servicios/auth.service.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100593063,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/guards/auth.guard.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100593656,
-      "type": "file"
-    },
-    {
-      "path": "src/app/compartidos/servicios/cloudinary-config.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100594080,
-      "type": "file"
-    },
-    {
-      "path": "src/app/compartidos/servicios/cloudinary-api.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100594284,
-      "type": "file"
-    },
-    {
-      "path": "src/app/compartidos/servicios/meta.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100594636,
-      "type": "file"
-    },
-    {
-      "path": "src/app/compartidos/servicios/breakpoint-service.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100597178,
-      "type": "file"
-    },
-    {
-      "path": "src/app/compartidos/servicios/calendario.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100597337,
-      "type": "file"
-    },
-    {
-      "path": "src/app/compartidos/componentes/navbar/navbar.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100597793,
-      "type": "file"
-    },
-    {
-      "path": "src/app/compartidos/componentes/evento-card/evento-card.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100597986,
-      "type": "file"
-    },
-    {
-      "path": "src/app/compartidos/componentes/menu-lateral/menu-lateral.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100598424,
-      "type": "file"
-    },
-    {
-      "path": "src/app/app.routes.server.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100598618,
+      "path": "scripts/inyectar-llaves-publicas.mjs",
+      "accessCount": 5,
+      "lastAccessed": 1788409147763,
       "type": "file"
     },
     {
       "path": "src/app/app.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100601884,
+      "accessCount": 4,
+      "lastAccessed": 1788396294360,
       "type": "file"
     },
     {
-      "path": "src/app/compartidos/componentes/dialogo-login/dialogo-login.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100602503,
+      "path": "src/app/features/nosotros/nosotros.ts",
+      "accessCount": 4,
+      "lastAccessed": 1788448812261,
       "type": "file"
     },
     {
-      "path": "src/app/compartidos/modulos/primeng/primeng-module.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776100602614,
+      "path": "src/app/app.routes.server.ts",
+      "accessCount": 4,
+      "lastAccessed": 1788449068234,
       "type": "file"
     },
     {
-      "path": "tech-specs.md",
-      "accessCount": 1,
-      "lastAccessed": 1776101544786,
+      "path": "src/app/core/seo/esquemas.spec.ts",
+      "accessCount": 4,
+      "lastAccessed": 1788449097340,
       "type": "file"
     },
     {
-      "path": "docs/instrucciones-inicio.md",
+      "path": "src/app/shared/navegacion/pie-pagina.ts",
+      "accessCount": 4,
+      "lastAccessed": 1788450399883,
+      "type": "file"
+    },
+    {
+      "path": "src/app/features/nosotros/nosotros.spec.ts",
+      "accessCount": 4,
+      "lastAccessed": 1788557866434,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/ai-effort-tracking/references/schema.md",
+      "accessCount": 4,
+      "lastAccessed": 1788814948542,
+      "type": "file"
+    },
+    {
+      "path": "src/app/features/inicio/inicio.ts",
+      "accessCount": 3,
+      "lastAccessed": 1788396319706,
+      "type": "file"
+    },
+    {
+      "path": "src/app/features/contacto/contacto.spec.ts",
+      "accessCount": 3,
+      "lastAccessed": 1788405291511,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/seo/esquemas.ts",
+      "accessCount": 3,
+      "lastAccessed": 1788449061100,
+      "type": "file"
+    },
+    {
+      "path": "docs/PRD.md",
+      "accessCount": 3,
+      "lastAccessed": 1788449241966,
+      "type": "file"
+    },
+    {
+      "path": "src/app/shared/navegacion/pie-pagina.spec.ts",
+      "accessCount": 3,
+      "lastAccessed": 1788450415668,
+      "type": "file"
+    },
+    {
+      "path": "docs/DESIGN.md",
+      "accessCount": 3,
+      "lastAccessed": 1788456682534,
+      "type": "file"
+    },
+    {
+      "path": "src/app/app.config.ts",
+      "accessCount": 3,
+      "lastAccessed": 1788565453232,
+      "type": "file"
+    },
+    {
+      "path": "src/app/features/nosotros/nosotros.html",
+      "accessCount": 2,
+      "lastAccessed": 1788448812774,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/ai-effort-tracking/scripts/adapters/claude-code-transcript.mjs",
+      "accessCount": 2,
+      "lastAccessed": 1788470284639,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/ai-effort-tracking/scripts/core/cost.mjs",
+      "accessCount": 2,
+      "lastAccessed": 1788470322823,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/api/eventos-publicos.service.ts",
+      "accessCount": 2,
+      "lastAccessed": 1788565468866,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/seo/json-ld.service.ts",
+      "accessCount": 2,
+      "lastAccessed": 1788796545620,
+      "type": "file"
+    },
+    {
+      "path": "src/app/app.html",
+      "accessCount": 2,
+      "lastAccessed": 1788806473583,
+      "type": "file"
+    },
+    {
+      "path": "metrics/config.json",
+      "accessCount": 2,
+      "lastAccessed": 1788814953081,
+      "type": "file"
+    },
+    {
+      "path": "metrics/pricing.json",
+      "accessCount": 2,
+      "lastAccessed": 1788815027967,
+      "type": "file"
+    },
+    {
+      "path": "src/app/features/inicio/inicio.html",
+      "accessCount": 2,
+      "lastAccessed": 1788823386018,
+      "type": "file"
+    },
+    {
+      "path": "src/app/shared/pagina-pendiente/pagina-pendiente.ts",
       "accessCount": 1,
-      "lastAccessed": 1776122151172,
+      "lastAccessed": 1788390426268,
+      "type": "file"
+    },
+    {
+      "path": "src/app/shared/pagina-pendiente/pagina-pendiente.html",
+      "accessCount": 1,
+      "lastAccessed": 1788390426815,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/api/eventos-publicos.service.spec.ts",
+      "accessCount": 1,
+      "lastAccessed": 1788390585438,
+      "type": "file"
+    },
+    {
+      "path": "public/manifest.webmanifest",
+      "accessCount": 1,
+      "lastAccessed": 1788390617567,
+      "type": "file"
+    },
+    {
+      "path": "src/index.html",
+      "accessCount": 1,
+      "lastAccessed": 1788390621401,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/analytics/analytics.service.spec.ts",
+      "accessCount": 1,
+      "lastAccessed": 1788390651862,
+      "type": "file"
+    },
+    {
+      "path": "src/app/features/inicio/inicio.spec.ts",
+      "accessCount": 1,
+      "lastAccessed": 1788390728012,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/seo/dominio.ts",
+      "accessCount": 1,
+      "lastAccessed": 1788396190392,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/seo/json-ld.service.spec.ts",
+      "accessCount": 1,
+      "lastAccessed": 1788396231326,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/seo/meta.service.ts",
+      "accessCount": 1,
+      "lastAccessed": 1788396242987,
+      "type": "file"
+    },
+    {
+      "path": "src/app/core/seo/meta.service.spec.ts",
+      "accessCount": 1,
+      "lastAccessed": 1788396255928,
+      "type": "file"
+    },
+    {
+      "path": "src/app/features/no-encontrada/no-encontrada.ts",
+      "accessCount": 1,
+      "lastAccessed": 1788396351540,
+      "type": "file"
+    },
+    {
+      "path": "src/app/features/no-encontrada/no-encontrada.html",
+      "accessCount": 1,
+      "lastAccessed": 1788396358451,
       "type": "file"
     }
   ],
