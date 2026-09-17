@@ -16,7 +16,15 @@ const DOMINIO = 'https://letiende.co';
 // Igual que AnalyticsService (core/analytics/) — el mismo artefacto sirve a
 // staging y a producción (ver docs/MEMORY.md, ADR-015), así que solo el host
 // exacto de producción distingue uno de otro en tiempo de petición.
-const HOST_PRODUCCION = 'letiende.co';
+// `www.letiende.co` es un alias real de producción, no un host distinto: el
+// CloudFront de producción lo sirve con el mismo behavior desde el cutover
+// de T-15 (ADR-006, docs/runbook-cutover-t15.md), aunque el <link
+// rel="canonical"> (MetaService) siempre apunte a la versión sin `www`. Antes
+// de este cambio, cualquier visita — humana o de Googlebot — a
+// `www.letiende.co` recibía `Disallow: /`, lo que Search Console reportó
+// como "Bloqueada por robots.txt" y "Se ha indexado aunque un archivo
+// robots.txt la tenía bloqueada" en las URLs de ese alias.
+const HOSTS_PRODUCCION = new Set(['letiende.co', 'www.letiende.co']);
 
 // Rutas propias del contenedor, en sincronía manual con app.routes.ts
 // (tech-specs.md §4.2) — son solo cuatro, no vale la pena un descubrimiento
@@ -40,7 +48,7 @@ app.get('/robots.txt', (req, res) => {
   res.type('text/plain');
   const hostReal =
     (req.headers['x-le-tiende-host'] as string | undefined)?.split(':')[0] ?? req.hostname;
-  if (hostReal !== HOST_PRODUCCION) {
+  if (!HOSTS_PRODUCCION.has(hostReal)) {
     res.send('User-agent: *\nDisallow: /\n');
     return;
   }
