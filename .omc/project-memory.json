@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1789660665550,
+  "lastScanned": 1789768130043,
   "projectRoot": "/Users/ocastelblanco/Documents/LeTiende/letiende.co/letiende.co",
   "techStack": {
     "languages": [
@@ -95,21 +95,21 @@
       "path": "dist",
       "purpose": "Distribution/build output",
       "fileCount": 0,
-      "lastAccessed": 1789660665539,
+      "lastAccessed": 1789768130029,
       "keyFiles": []
     },
     "dist-server": {
       "path": "dist-server",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1789660665542,
+      "lastAccessed": 1789768130029,
       "keyFiles": []
     },
     "dist-server-bundle": {
       "path": "dist-server-bundle",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1789660665543,
+      "lastAccessed": 1789768130033,
       "keyFiles": [
         "contacto.js"
       ]
@@ -118,7 +118,7 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 7,
-      "lastAccessed": 1789660665544,
+      "lastAccessed": 1789768130035,
       "keyFiles": [
         "DESIGN.md",
         "MEMORY.md",
@@ -131,7 +131,7 @@
       "path": "metrics",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1789660665544,
+      "lastAccessed": 1789768130036,
       "keyFiles": [
         "config.json",
         "pricing.json"
@@ -141,7 +141,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 9,
-      "lastAccessed": 1789660665544,
+      "lastAccessed": 1789768130036,
       "keyFiles": [
         "apple-touch-icon.png",
         "favicon-16x16.png",
@@ -154,7 +154,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 2,
-      "lastAccessed": 1789660665544,
+      "lastAccessed": 1789768130037,
       "keyFiles": [
         "inyectar-llaves-publicas.mjs",
         "verificar-secretos.mjs"
@@ -164,7 +164,7 @@
       "path": "server",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1789660665545,
+      "lastAccessed": 1789768130037,
       "keyFiles": [
         "bundle-lambdas.mjs",
         "tsconfig.json"
@@ -174,7 +174,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 5,
-      "lastAccessed": 1789660665545,
+      "lastAccessed": 1789768130038,
       "keyFiles": [
         "index.html",
         "main.server.ts",
@@ -187,21 +187,21 @@
       "path": "dist-server/api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1789660665546,
+      "lastAccessed": 1789768130039,
       "keyFiles": []
     },
     "server/api": {
       "path": "server/api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1789660665549,
+      "lastAccessed": 1789768130041,
       "keyFiles": []
     },
     "src/app": {
       "path": "src/app",
       "purpose": "Application code",
       "fileCount": 7,
-      "lastAccessed": 1789660665550,
+      "lastAccessed": 1789768130041,
       "keyFiles": [
         "app.config.server.ts",
         "app.config.ts",
@@ -209,31 +209,6 @@
       ]
     }
   },
-  "hotPaths": [
-    {
-      "path": "src/server.ts",
-      "accessCount": 3,
-      "lastAccessed": 1789670768566,
-      "type": "file"
-    },
-    {
-      "path": "metrics/events/2026-09-04--dfaa1df0-dbea-4fef-8d82-61e7b708037a.jsonl",
-      "accessCount": 2,
-      "lastAccessed": 1789662348629,
-      "type": "file"
-    },
-    {
-      "path": "serverless.yml",
-      "accessCount": 1,
-      "lastAccessed": 1789670450078,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/seo/meta.service.ts",
-      "accessCount": 1,
-      "lastAccessed": 1789670648867,
-      "type": "file"
-    }
-  ],
+  "hotPaths": [],
   "userDirectives": []
 }
