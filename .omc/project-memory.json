@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1788793856688,
+  "lastScanned": 1789660665550,
   "projectRoot": "/Users/ocastelblanco/Documents/LeTiende/letiende.co/letiende.co",
   "techStack": {
     "languages": [
@@ -95,21 +95,21 @@
       "path": "dist",
       "purpose": "Distribution/build output",
       "fileCount": 0,
-      "lastAccessed": 1788793856680,
+      "lastAccessed": 1789660665539,
       "keyFiles": []
     },
     "dist-server": {
       "path": "dist-server",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1788793856682,
+      "lastAccessed": 1789660665542,
       "keyFiles": []
     },
     "dist-server-bundle": {
       "path": "dist-server-bundle",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1788793856683,
+      "lastAccessed": 1789660665543,
       "keyFiles": [
         "contacto.js"
       ]
@@ -117,21 +117,21 @@
     "docs": {
       "path": "docs",
       "purpose": "Documentation",
-      "fileCount": 6,
-      "lastAccessed": 1788793856683,
+      "fileCount": 7,
+      "lastAccessed": 1789660665544,
       "keyFiles": [
         "DESIGN.md",
         "MEMORY.md",
         "PRD.md",
         "TODO.md",
-        "runbook-cutover-t15.md"
+        "optimizacion-aplicaciones.md"
       ]
     },
     "metrics": {
       "path": "metrics",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1788793856683,
+      "lastAccessed": 1789660665544,
       "keyFiles": [
         "config.json",
         "pricing.json"
@@ -141,7 +141,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 9,
-      "lastAccessed": 1788793856684,
+      "lastAccessed": 1789660665544,
       "keyFiles": [
         "apple-touch-icon.png",
         "favicon-16x16.png",
@@ -154,7 +154,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 2,
-      "lastAccessed": 1788793856684,
+      "lastAccessed": 1789660665544,
       "keyFiles": [
         "inyectar-llaves-publicas.mjs",
         "verificar-secretos.mjs"
@@ -164,7 +164,7 @@
       "path": "server",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1788793856684,
+      "lastAccessed": 1789660665545,
       "keyFiles": [
         "bundle-lambdas.mjs",
         "tsconfig.json"
@@ -174,7 +174,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 5,
-      "lastAccessed": 1788793856685,
+      "lastAccessed": 1789660665545,
       "keyFiles": [
         "index.html",
         "main.server.ts",
@@ -187,21 +187,21 @@
       "path": "dist-server/api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1788793856685,
+      "lastAccessed": 1789660665546,
       "keyFiles": []
     },
     "server/api": {
       "path": "server/api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1788793856686,
+      "lastAccessed": 1789660665549,
       "keyFiles": []
     },
     "src/app": {
       "path": "src/app",
       "purpose": "Application code",
       "fileCount": 7,
-      "lastAccessed": 1788793856686,
+      "lastAccessed": 1789660665550,
       "keyFiles": [
         "app.config.server.ts",
         "app.config.ts",
@@ -211,303 +211,27 @@
   },
   "hotPaths": [
     {
-      "path": "docs/TODO.md",
-      "accessCount": 187,
-      "lastAccessed": 1788841524757,
-      "type": "file"
-    },
-    {
-      "path": "docs/MEMORY.md",
-      "accessCount": 106,
-      "lastAccessed": 1788814310823,
-      "type": "file"
-    },
-    {
-      "path": "docs/tech-specs.md",
-      "accessCount": 31,
-      "lastAccessed": 1788801614558,
-      "type": "file"
-    },
-    {
-      "path": "src/app/features/contacto/contacto.ts",
-      "accessCount": 15,
-      "lastAccessed": 1788405245940,
-      "type": "file"
-    },
-    {
       "path": "src/server.ts",
-      "accessCount": 14,
-      "lastAccessed": 1788806657682,
-      "type": "file"
-    },
-    {
-      "path": "src/app/app.routes.ts",
-      "accessCount": 8,
-      "lastAccessed": 1788840083799,
-      "type": "file"
-    },
-    {
-      "path": "package.json",
-      "accessCount": 7,
-      "lastAccessed": 1788409143374,
-      "type": "file"
-    },
-    {
-      "path": "src/app/shared/navegacion/pie-pagina.html",
-      "accessCount": 7,
-      "lastAccessed": 1788450410764,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/negocio/datos-negocio.ts",
-      "accessCount": 7,
-      "lastAccessed": 1788450464758,
-      "type": "file"
-    },
-    {
-      "path": "src/app/features/contacto/contacto.html",
-      "accessCount": 7,
-      "lastAccessed": 1788476456006,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/analytics/analytics.service.ts",
-      "accessCount": 7,
-      "lastAccessed": 1788796478445,
-      "type": "file"
-    },
-    {
-      "path": "src/environments/environment.ts",
-      "accessCount": 5,
-      "lastAccessed": 1788405150917,
-      "type": "file"
-    },
-    {
-      "path": "src/environments/environment.production.ts",
-      "accessCount": 5,
-      "lastAccessed": 1788405156900,
-      "type": "file"
-    },
-    {
-      "path": "scripts/inyectar-llaves-publicas.mjs",
-      "accessCount": 5,
-      "lastAccessed": 1788409147763,
-      "type": "file"
-    },
-    {
-      "path": "src/app/app.ts",
-      "accessCount": 4,
-      "lastAccessed": 1788396294360,
-      "type": "file"
-    },
-    {
-      "path": "src/app/features/nosotros/nosotros.ts",
-      "accessCount": 4,
-      "lastAccessed": 1788448812261,
-      "type": "file"
-    },
-    {
-      "path": "src/app/app.routes.server.ts",
-      "accessCount": 4,
-      "lastAccessed": 1788449068234,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/seo/esquemas.spec.ts",
-      "accessCount": 4,
-      "lastAccessed": 1788449097340,
-      "type": "file"
-    },
-    {
-      "path": "src/app/shared/navegacion/pie-pagina.ts",
-      "accessCount": 4,
-      "lastAccessed": 1788450399883,
-      "type": "file"
-    },
-    {
-      "path": "src/app/features/nosotros/nosotros.spec.ts",
-      "accessCount": 4,
-      "lastAccessed": 1788557866434,
-      "type": "file"
-    },
-    {
-      "path": ".claude/skills/ai-effort-tracking/references/schema.md",
-      "accessCount": 4,
-      "lastAccessed": 1788814948542,
-      "type": "file"
-    },
-    {
-      "path": "src/app/features/inicio/inicio.ts",
       "accessCount": 3,
-      "lastAccessed": 1788396319706,
+      "lastAccessed": 1789670768566,
       "type": "file"
     },
     {
-      "path": "src/app/features/contacto/contacto.spec.ts",
-      "accessCount": 3,
-      "lastAccessed": 1788405291511,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/seo/esquemas.ts",
-      "accessCount": 3,
-      "lastAccessed": 1788449061100,
-      "type": "file"
-    },
-    {
-      "path": "docs/PRD.md",
-      "accessCount": 3,
-      "lastAccessed": 1788449241966,
-      "type": "file"
-    },
-    {
-      "path": "src/app/shared/navegacion/pie-pagina.spec.ts",
-      "accessCount": 3,
-      "lastAccessed": 1788450415668,
-      "type": "file"
-    },
-    {
-      "path": "docs/DESIGN.md",
-      "accessCount": 3,
-      "lastAccessed": 1788456682534,
-      "type": "file"
-    },
-    {
-      "path": "src/app/app.config.ts",
-      "accessCount": 3,
-      "lastAccessed": 1788565453232,
-      "type": "file"
-    },
-    {
-      "path": "src/app/features/nosotros/nosotros.html",
+      "path": "metrics/events/2026-09-04--dfaa1df0-dbea-4fef-8d82-61e7b708037a.jsonl",
       "accessCount": 2,
-      "lastAccessed": 1788448812774,
+      "lastAccessed": 1789662348629,
       "type": "file"
     },
     {
-      "path": ".claude/skills/ai-effort-tracking/scripts/adapters/claude-code-transcript.mjs",
-      "accessCount": 2,
-      "lastAccessed": 1788470284639,
-      "type": "file"
-    },
-    {
-      "path": ".claude/skills/ai-effort-tracking/scripts/core/cost.mjs",
-      "accessCount": 2,
-      "lastAccessed": 1788470322823,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/api/eventos-publicos.service.ts",
-      "accessCount": 2,
-      "lastAccessed": 1788565468866,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/seo/json-ld.service.ts",
-      "accessCount": 2,
-      "lastAccessed": 1788796545620,
-      "type": "file"
-    },
-    {
-      "path": "src/app/app.html",
-      "accessCount": 2,
-      "lastAccessed": 1788806473583,
-      "type": "file"
-    },
-    {
-      "path": "metrics/config.json",
-      "accessCount": 2,
-      "lastAccessed": 1788814953081,
-      "type": "file"
-    },
-    {
-      "path": "metrics/pricing.json",
-      "accessCount": 2,
-      "lastAccessed": 1788815027967,
-      "type": "file"
-    },
-    {
-      "path": "src/app/features/inicio/inicio.html",
-      "accessCount": 2,
-      "lastAccessed": 1788823386018,
-      "type": "file"
-    },
-    {
-      "path": "src/app/shared/pagina-pendiente/pagina-pendiente.ts",
+      "path": "serverless.yml",
       "accessCount": 1,
-      "lastAccessed": 1788390426268,
-      "type": "file"
-    },
-    {
-      "path": "src/app/shared/pagina-pendiente/pagina-pendiente.html",
-      "accessCount": 1,
-      "lastAccessed": 1788390426815,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/api/eventos-publicos.service.spec.ts",
-      "accessCount": 1,
-      "lastAccessed": 1788390585438,
-      "type": "file"
-    },
-    {
-      "path": "public/manifest.webmanifest",
-      "accessCount": 1,
-      "lastAccessed": 1788390617567,
-      "type": "file"
-    },
-    {
-      "path": "src/index.html",
-      "accessCount": 1,
-      "lastAccessed": 1788390621401,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/analytics/analytics.service.spec.ts",
-      "accessCount": 1,
-      "lastAccessed": 1788390651862,
-      "type": "file"
-    },
-    {
-      "path": "src/app/features/inicio/inicio.spec.ts",
-      "accessCount": 1,
-      "lastAccessed": 1788390728012,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/seo/dominio.ts",
-      "accessCount": 1,
-      "lastAccessed": 1788396190392,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/seo/json-ld.service.spec.ts",
-      "accessCount": 1,
-      "lastAccessed": 1788396231326,
+      "lastAccessed": 1789670450078,
       "type": "file"
     },
     {
       "path": "src/app/core/seo/meta.service.ts",
       "accessCount": 1,
-      "lastAccessed": 1788396242987,
-      "type": "file"
-    },
-    {
-      "path": "src/app/core/seo/meta.service.spec.ts",
-      "accessCount": 1,
-      "lastAccessed": 1788396255928,
-      "type": "file"
-    },
-    {
-      "path": "src/app/features/no-encontrada/no-encontrada.ts",
-      "accessCount": 1,
-      "lastAccessed": 1788396351540,
-      "type": "file"
-    },
-    {
-      "path": "src/app/features/no-encontrada/no-encontrada.html",
-      "accessCount": 1,
-      "lastAccessed": 1788396358451,
+      "lastAccessed": 1789670648867,
       "type": "file"
     }
   ],
