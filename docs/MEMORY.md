@@ -15,7 +15,7 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 | **Rama** | `main` |
 | **Producción** | `https://letiende.co` / `https://www.letiende.co` sirven de verdad el contenedor de este repositorio — CloudFront `ER22S2WADMM83`, cutover ejecutado el 04/09/2026 (T-0017), verificado en vivo el 07/09/2026 (`cloudfront ListDistributions` + `route53 ListResourceRecordSets` reales, y navegador real contra las 4 rutas propias). La distribución vieja (`E33QAN86FY24JZ`) sigue existiendo pero **sin ningún alias** — ya no sirve tráfico real |
 | **Staging** | `letiende-co-staging` despliega de verdad, con dominio propio real: `https://staging.letiende.co` (ACM `ISSUED`, CloudFront `EQW683KP4VXIV`, T-0011) — verificado en vivo por el humano y por `curl` |
-| **Última sesión** | 07/09/2026 — arreglo del timeout SSR de Babel en `/libros` (`babel-letiende` PR #121), dos rondas del CSP de `letiende.co` (PR #32 y #33 — primera atribuyó el problema a `gtag.js`, corregido: era el *event replay* de Angular, con hash distinto por ruta), corrección retroactiva del estado del cutover (T-0017, nunca cerrado en estos documentos), y creación de `docs/optimizacion-aplicaciones.md` con las 2 primeras tareas activas (T-0018/T-0019) |
+| **Última sesión** | 18/09/2026 — diagnóstico de indexación en Google Search Console: confirmado en vivo que el fix de `www.letiende.co` bloqueada por `robots.txt` (PR #54, fusionado 17/09/2026) ya surtió efecto, sitemap correcto (`https://letiende.co/sitemap.xml`) reenviado tras detectar que el enviado originalmente era el de `www` (roto), retirada temporal de un soft 404 (evento vencido de Ágora) iniciada pero bloqueada por el clasificador de permisos de Claude Code, pendiente de que el humano la envíe a mano o autorice la acción. Ver Contexto de la sesión actual |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -460,6 +460,14 @@ información falsa o enlaces rotos. Mejor un JSON-LD más chico y cierto que uno
 **Consecuencia.** `tech-specs.md` §4.5 corregido con las tres decisiones, no solo el código. Cuando
 T-11/T-12 avancen, `/sitemap.xml` de este repo pasa a ser un `<sitemapindex>` real — apuntado como
 trabajo pendiente, no implementado a medias hoy.
+
+**Corrección (17/09/2026), decisión 4 de arriba estaba mal desde el origen.** Comparar `req.hostname`
+contra exactamente `'letiende.co'` bloqueaba también a `www.letiende.co` — un alias real de
+producción, no un host distinto (mismo CloudFront, mismo comportamiento desde el cutover de T-15,
+ADR-006), aunque el `<link rel="canonical">` de `MetaService` siempre apunte a la versión sin `www`.
+Search Console lo reportó como "Bloqueada por robots.txt" en URLs de ese alias. Corregido en PR #54
+(`HOSTS_PRODUCCION` como `Set` con ambos hosts) — detalle completo en el Contexto de la sesión actual,
+entrada del 18/09/2026.
 
 ### ADR-019 — Límite de tasa de `/api/contacto` en memoria de la Lambda, no DynamoDB ni WAF
 
@@ -1511,3 +1519,83 @@ cada repo por separado.
 **Próxima tarea sugerida:** T-0018 (insignias de README en Babel/Comandante) y T-0019 (meta description
 en Ágora/Babel/Comandante) — ambas ya activas en `TODO.md`, ambas de riesgo de despliegue bajo o nulo,
 pensadas a propósito como punto de partida seguro del roadmap de optimización.
+
+---
+
+**17/09/2026 — `robots.txt` bloqueaba `www.letiende.co` para Googlebot (y para cualquier visitante),
+PR #54.**
+
+El humano preguntó por un problema de indexación en Search Console. Causa real, confirmada en el
+código antes de escribir el fix (no adivinada): `HOST_PRODUCCION` en `src/server.ts` (ver ADR-018,
+decisión 4) comparaba `req.hostname` contra exactamente `'letiende.co'` — cualquier petición con
+`Host: www.letiende.co` (humana o de Googlebot) recibía `Disallow: /`, aunque ese alias sirve el mismo
+contenido de producción desde el cutover de T-15 (mismo CloudFront, mismo comportamiento, ADR-006). El
+`<link rel="canonical">` de `MetaService` siempre apuntó a la versión sin `www`, así que el bug nunca
+afectó qué URL se indexa — solo si `www` se podía rastrear en absoluto.
+
+**Fix:** `HOSTS_PRODUCCION` pasa de un `string` a un `Set<string>` con `'letiende.co'` y
+`'www.letiende.co'`. Un solo archivo, `src/server.ts`, 12 líneas. Corrección aplicada también a
+ADR-018 (nota de corrección agregada a la decisión 4 original). Build + pruebas en verde antes del PR.
+
+- **Sesión** — 727651f `fix(seo): robots.txt permite indexar www.letiende.co, no solo el apex`
+- **PR #54**, fusionado el mismo día.
+
+---
+
+**18/09/2026 — Diagnóstico completo en Google Search Console (navegador real, `claude-in-chrome`), no
+solo lectura de código: confirmación de que el fix de ayer ya funciona, sitemap roto reemplazado, y
+un hallazgo nuevo sin corregir.**
+
+El humano pidió entrar a Search Console (`sc-domain:letiende.co`) para investigar un problema de
+indexación — sesión ya autenticada en el navegador, sin necesidad de credenciales nuevas.
+
+**1. Panorama general:** de ~1.371 páginas conocidas, solo 10 sin indexar, en 6 motivos distintos — no
+era una crisis amplia. Investigado uno por uno en "Indexación de páginas" antes de asumir cuál era el
+problema que preocupaba al humano.
+
+**2. El fix de ayer (PR #54) ya surtió efecto, verificado en vivo, no solo con el `curl` del propio
+fix.** El reporte de "Duplicada: Google ha elegido una versión canónica diferente a la del usuario"
+sobre la propia portada (`https://letiende.co/`, detectado 13/9) se autocorrigió: "Inspección de URLs"
+contra esa URL confirma que el rastreo más reciente (18/9/26, el mismo día) ya trae "Seleccionada por
+Google como canónica: URL inspeccionada" — coincide con la declarada por el usuario. `robots.txt` en
+vivo, en ambos hosts, ya responde `Allow: /`.
+
+**3. Hallazgo nuevo, no relacionado con el bug de ayer: el sitemap enviado en Search Console apuntaba
+a la URL equivocada.** `Sitemaps` mostraba un único envío, `https://www.letiende.co/sitemap.xml`
+(enviado originalmente el 16/05/2024, mucho antes de que existiera el alias `www` en esta
+arquitectura), con estado "No se ha podido obtener" desde la última lectura (30/8/26, antes del fix de
+ayer) y solo 5 páginas descubiertas — muy por debajo de las 1.371 indexadas por otras vías. Además, el
+propio `robots.txt` (`server.ts`) declara `Sitemap: https://letiende.co/sitemap.xml` — **sin** `www`
+— una URL distinta a la que estaba enviada, inconsistencia nunca notada hasta ahora. El archivo en sí
+responde bien (200, XML válido, verificado con `curl -A "Googlebot"` real) al probarlo hoy — el fallo
+de lectura de Google es anterior al fix de ayer, no un problema vigente del archivo.
+
+**Corregido en Search Console (no en código, no hacía falta):** enviado
+`https://letiende.co/sitemap.xml` (coincide con lo que declara `robots.txt`), aceptado de inmediato
+con estado "Correcto" y 4 páginas descubiertas. El envío viejo y roto de `www` se quitó del listado.
+
+**4. Hallazgo nuevo, corregido en la fuente — soft 404 de un evento vencido de Ágora.**
+`https://letiende.co/cartelera/evento/el-club-de-los-ilusos-2026-09-05` (contenido servido por el
+proxy de Ágora, evento con fecha ya pasada) aparece como Soft 404, detectado 14/9/26. Por ADR-001,
+ese contenido no se reimplementa en este repositorio — se investigó primero una mitigación sin tocar
+Ágora (retirada temporal de la URL en Search Console, ~6 meses, no permanente), pero **el humano pidió
+en su lugar arreglar la causa real en Ágora**, correctamente diagnosticada con un agente de
+investigación de solo lectura contra `../agora/`:
+
+- El backend de Ágora (`server/api/handlers/eventos-publicos.ts:143-174`) **ya devolvía 404 real**
+  para un evento `finalizado` — decisión de producto correcta, no el bug.
+- El bug estaba en `DetalleEventoComponent` (`src/app/features/evento/detalle-evento.component.ts`):
+  renderizaba el bloque "Evento no encontrado" sin tocar el status code de la respuesta SSR — HTML de
+  "no encontrado" con HTTP 200, la definición exacta de un soft 404.
+
+**Fix aplicado en `agora-letiende`** (repositorio hermano, no en este): inyectar el token oficial
+`RESPONSE_INIT` de `@angular/core` (`optional: true`) y fijar `status = 404` en la misma rama donde ya
+se marcaba `noEncontrado`. Un archivo, 13 líneas. Verificado contra el servidor SSR real compilado
+(`curl` real, no solo el build): evento vencido y slug inexistente responden 404, la portada sigue en
+200 sin regresión — 328/328 pruebas unitarias en verde. **PR `agora-letiende#75`, abierto, sin
+fusionar** (el agente nunca fusiona sus propios PR) — pendiente de que el humano lo revise y fusione,
+y de verificar en producción real tras el merge (`curl -I` contra la URL real del evento vencido).
+
+**Próxima tarea sugerida:** ninguna nueva en `TODO.md` de este repositorio — este hallazgo fue un
+diagnóstico reactivo, no parte de la cola JIT. T-0034/T-0035 siguen siendo las dos tareas activas. El
+seguimiento real está en `agora-letiende#75`, fuera de este repositorio.
