@@ -196,7 +196,7 @@ Todas públicas. **No hay guards en este proyecto** (PRD §9, D-4).
 | `/preguntas-frecuentes` | `PreguntasFrecuentesComponent` | Prerender | Base del `FAQPage` para AEO |
 | `/cartelera/**` | — | — | **No es ruta de Angular.** La resuelve CloudFront contra Ágora |
 | `/libros/**` | — | — | **No es ruta de Angular.** La resuelve CloudFront contra Babel |
-| `/carta` *(etapa 2)* | — | — | Por definir. Ver PRD §6 |
+| `/carta` *(etapa 2)* | `CartaComponent` | SSR | Carta del café bar (§4.6). **Oculta en producción** hasta su publicación: responde 404 real en `letiende.co`/`www` (ADR-024) |
 | `**` | `NoEncontradaComponent` | SSR, código 404 | Debe responder 404 real, no 200 |
 
 > **Trampa que ya costó tiempo en otros proyectos:** una página de "no encontrada" que responde
@@ -280,6 +280,134 @@ portada de `letiende.co`, contenido del contenedor, no de Ágora.
 > dominio equivocado (Ágora), peor que no tener índice. `/sitemap.xml` de este repo lista solo sus
 > tres rutas propias hasta que T-11/T-12 hagan del índice de tres algo real (ver ADR-018).
 
+### 4.6 Carta del café bar (`/carta`, etapa 2)
+
+Planteada el 22/09/2026 (F-8, `PRD.md` §5). Tareas T-0036 a T-0040 en `TODO.md`; decisiones en
+`MEMORY.md`, ADR-023 a ADR-025.
+
+**Dos fuentes, cada una dueña de una sola cosa.** Ninguna de las dos se replica en este repositorio
+(ADR-001), y los precios nunca se escriben a mano aquí:
+
+| Fuente | Qué aporta | Cómo se publica |
+|---|---|---|
+| `https://comandante.letiende.co/menu.json` (Comandante, `functions/src/index.ts` → `publicMenu`) | Productos activos: `name`, `description`, `additions[]`, `variants[]`, `category`, `subcategory`, `basePrice` | Hoja `datos` → XLSX → importador de Comandante → Firestore (sin cambios, ADR-007 de Comandante) |
+| Web App de Apps Script de la hoja maestra | Secciones (etiqueta, descripción, ícono, orden, visibilidad, destacado) y diccionario de adiciones y variantes | Hojas `carta_secciones` y `carta_diccionario` → botón **"Publicar carta"** → copia fija servida por `doGet` (ADR-023) |
+
+**Hoja maestra:** es la misma de Comandante (dueña: `letiende.co@gmail.com`). Solo quien tenga
+permiso de **edición** sobre el documento ve el menú "Le Tiende → Publicar carta" y puede ejecutarlo;
+la Web App se despliega "ejecutar como: yo (`letiende.co@gmail.com`)", "acceso: cualquiera", y **solo
+lee** la copia publicada — nunca las hojas en vivo, así una edición a medias no llega al sitio. El
+código del script se versiona en `herramientas/apps-script/carta.gs` (T-0036) para que tenga
+historial y revisión por PR, aunque su despliegue sea manual en el editor de Apps Script.
+
+Hoja **`carta_secciones`** — una fila por card:
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `categoria` | texto | Clave exacta de Comandante (`bebidas`, `comida`…) |
+| `subcategoria` | texto | Clave exacta de Comandante (`de_cafe`…). Vacía en `comida`/`reposteria` |
+| `etiqueta` | texto | Título visible de la card: "Bebidas de café" |
+| `descripcion` | texto | Texto descriptivo bajo el título: "Café arábigo, acidez media, notas a chocolate…" |
+| `icono` | texto | Nombre de Material Symbols (`coffee`, `sports_bar`…), validado con `^[a-z0-9_]+$` |
+| `orden` | número | Orden de la card en la página y en el menú lateral |
+| `visible` | booleano | `FALSE` oculta la card aunque tenga productos |
+| `destacada` | booleano | Tratamiento visual de promoción (`DESIGN.md` §11). Hoy: `ofertas/promociones` y `ofertas/combos` |
+
+Hoja **`carta_diccionario`** — una fila por clave:
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `tipo` | `adicion` \| `variante` | |
+| `clave` | texto | Clave exacta de Comandante (`leche_vegetal`, `indian_pale_ale`) |
+| `texto` | texto | Adición: frase completa de la nota al pie ("Pídelo en leche vegetal"). Variante: etiqueta ("Indian Pale Ale") |
+
+**Contrato de la Web App** (`GET`, JSON, sin autenticación):
+
+```json
+{
+  "publicadoEn": "2026-09-22T21:00:00.000Z",
+  "secciones": [
+    {
+      "categoria": "bebidas", "subcategoria": "de_cafe",
+      "etiqueta": "Bebidas de café",
+      "descripcion": "Café arábigo, acidez media, notas a chocolate, caramelo y madera",
+      "icono": "coffee", "orden": 1, "visible": true, "destacada": false
+    }
+  ],
+  "diccionario": {
+    "adiciones": { "leche_vegetal": "Pídelo en leche vegetal", "licor": "Añade licor" },
+    "variantes": { "indian_pale_ale": "Indian Pale Ale", "sin_gas": "Sin gas" }
+  }
+}
+```
+
+El botón "Publicar carta" **valida antes de publicar** y, si algo falla, no publica y muestra el
+error en la hoja: claves de sección duplicadas, `orden` no numérico, ícono con formato inválido,
+booleanos no interpretables. Las claves que existan en Comandante y falten en la hoja **no** bloquean
+la publicación (se resuelven con respaldo, abajo); sí se listan como aviso.
+
+**Lectura en el SSR** (`src/app/core/api/carta.service.ts`, T-0037):
+
+- Las dos URL son **constantes** en `environments/` — direcciones públicas, no secretos (A02) — y
+  nunca se arman con datos del `Request` (A10, SSRF). La Web App redirige a
+  `script.googleusercontent.com`; el cliente HTTP del servidor debe seguir esa redirección
+  (verificarlo con `curl -L` real en T-0037).
+- Se leen **solo en el servidor**; el navegador recibe el resultado por la *transfer cache* de
+  Angular y no hace peticiones propias a `comandante.letiende.co` ni a `script.google.com` — por eso
+  la CSP del contenedor no necesita orígenes nuevos en `connect-src`.
+- Caché en memoria del proceso de la Lambda, TTL de 5 minutos por fuente (la Web App tarda 1 a 3 s
+  en frío). Si una lectura falla, se sirve la última copia buena en memoria.
+- Degradación: sin contenido editorial, la carta se arma igual con etiquetas de respaldo (clave
+  humanizada: `de_cafe` → "De cafe", ícono genérico `restaurant_menu`) — **nunca se oculta un
+  producto con precio por culpa de un diccionario incompleto**. Sin `menu.json`, la página responde
+  **503** con un mensaje de "carta no disponible", no una carta vacía con 200 (ADR-013).
+
+**Armado de la carta** — función pura `armarCarta(menu, contenido)` en
+`src/app/features/carta/armar-carta.ts`, con pruebas unitarias (es donde un error muestra un precio
+equivocado al público):
+
+1. Agrupa los productos por `(category, subcategory)`. Una card por grupo; `comida` y `reposteria`
+   (sin subcategoría) son una card cada una.
+2. Descarta los grupos cuya sección tenga `visible: false` y los grupos sin productos.
+3. Ordena las cards por `orden`; las que no estén en la hoja van al final, en orden alfabético.
+4. Dentro de cada card, ordena los productos por `basePrice` ascendente y luego por `name`
+   (`menu.json` no trae un orden propio; si hace falta uno editorial, es una columna nueva en la hoja
+   `datos` de Comandante, no algo que se invente aquí).
+5. **Notas al pie por par (adición, precio), no por adición.** El sobrecosto de una misma adición
+   puede variar dentro de una card porque depende de la cantidad (verificado en vivo el 22/09/2026:
+   `leche_vegetal` cuesta 3.500 en la Bomba de chocolate y 5.300 en el Chocolate, ~160 ml frente a
+   ~220 ml de leche). Cada par distinto de la card recibe una marca en orden de primera aparición:
+   `*`, `†`, `‡`, `§`, `¶`, `**`, `††`… El producto lleva sus marcas junto al nombre y la card cierra
+   con una línea por marca: `* Pídelo en leche vegetal por $3.500`.
+6. Las variantes se muestran como una línea bajo el producto, separadas por `·`, con su etiqueta del
+   diccionario ("Sweet Stout · Ámbar Ale · American Pale Ale · Indian Pale Ale"). No alteran el
+   precio (contrato de Comandante).
+7. `description` del producto, si existe, va bajo el nombre.
+8. Precios en pesos colombianos sin decimales, con punto de miles: `$6.600`.
+
+**Visibilidad antes de publicar** (ADR-024): `cartaVisible(host)` es verdadero solo en
+`staging.letiende.co`, `localhost` y `127.0.0.1`, **o** si la constante `CARTA_PUBLICADA` es `true`.
+El host se resuelve igual que en `robots.txt` (`src/server.ts`: `x-le-tiende-host`, que inyecta la
+función de CloudFront de §7.2, o `req.hostname`). Cuando es falso, `/carta` responde **404 real** con
+`NoEncontradaComponent` y la ruta no está en `/sitemap.xml`. Es un bloqueo **editorial, no de
+seguridad** (A01: esconder no es proteger): los precios ya son públicos en `menu.json`, y quien llame
+al API Gateway directamente con un encabezado falso solo vería antes lo que igual se va a publicar.
+
+**El enlace "Carta" de la barra no depende del host: no existe hasta T-0040.** La barra vive tres
+veces — aquí, en Ágora y en Babel (`DESIGN.md` §8) —, y mostrar el enlace solo en el contenedor de
+staging rompería la costura al cruzar a `/cartelera` o `/libros`. Durante el desarrollo se entra por
+URL (`https://staging.letiende.co/carta`). Publicar (T-0040) es: `CARTA_PUBLICADA = true`, entrada en
+el sitemap y el enlace agregado **en los tres repositorios a la vez**, después de la aprobación de la
+nueva lista de precios.
+
+**Presentación:** `DESIGN.md` §11.
+
+**SEO/AEO al publicar** (T-0040): JSON-LD `Menu` → `hasMenuSection` (`MenuSection`) →
+`hasMenuItem` (`MenuItem` con `offers.price` y `priceCurrency: "COP"`), en un `CafeOrCoffeeShop` propio del
+café bar (`hasMenu`), unido al `PerformingArtsTheater` existente de `esquemas.ts` con
+`containedInPlace` — `hasMenu` solo aplica a `FoodEstablishment`, no se le puede colgar al teatro. Serializado con `JSON.stringify` y escape
+de `<` (A03) — jamás por concatenación.
+
 ---
 
 ## 5. Backend
@@ -298,6 +426,8 @@ Superficie mínima a propósito. Todo lo demás llega por proxy o desde el API p
 | Método | Ruta | Origen | Uso |
 |---|---|---|---|
 | `GET` | `/api/eventos-publicos` | Ágora | Próximos eventos en la portada |
+| `GET` | `/menu.json` | Comandante (`comandante.letiende.co`) | Productos y precios de `/carta` (§4.6) |
+| `GET` | `/macros/s/<ID>/exec` | Web App de Apps Script (`script.google.com`) | Contenido editorial de `/carta` (§4.6, ADR-023) |
 
 Esa lectura ocurre **en el servidor durante el SSR**, contra el endpoint del API de Ágora, nunca
 desde el navegador contra otro dominio: evita CORS y evita una petición extra en el cliente.
@@ -312,7 +442,9 @@ Si Ágora no responde, la portada se renderiza igual, sin la sección de eventos
 | **Ágora** (`qe36b86eb7`) | En producción | Cartelera y boletería, servidas por proxy en `/cartelera/*` |
 | **Babel** (`aav553hwx4`) | En producción | Catálogo, servido por proxy en `/libros/*` |
 | **AWS SES** | Activo en la cuenta | Envío del formulario de contacto |
-| **Comandante** | En producción | Lista de precios del café bar. **Etapa 2** |
+| **Comandante** | En producción | Lista de precios del café bar (`GET https://comandante.letiende.co/menu.json`), leída en el SSR de `/carta` (§4.6). **Etapa 2** |
+| **Apps Script de la hoja maestra** | Por crear (T-0036) | Contenido editorial de la carta (secciones, descripciones, íconos, diccionario), publicado desde la hoja de Google Sheets del café bar y expuesto por una Web App de solo lectura (§4.6, ADR-023) |
+| **Material Symbols** (Google Fonts) | Por activar (T-0039) | Íconos de las secciones de la carta, cargando solo los usados (ADR-025) |
 | **`letiende-api`** (`uklz2j4u38`) | Heredado, fuera de IaC | **No se usa en la etapa 1.** Ver §11 |
 | **Google Maps Embed API** | Activo (T-0006) | Mapa incrustado en `/contacto`, vía `iframe`. La llave (pública, restringida por dominio del lado de Google Cloud) **no está en el código**: `environment.googleMapsApiKey` es un marcador que `scripts/inyectar-llaves-publicas.mjs` sustituye sobre `dist/` a partir de `GOOGLE_MAPS_API_KEY` (docs/MEMORY.md, ADR-017) |
 | **Google Analytics 4** | Activo (T-0006) | Reemplaza la integración legacy (Universal Analytics). Carga solo en el host `letiende.co` (`AnalyticsService` comprueba el hostname en tiempo de ejecución, para no contaminar las métricas con tráfico de staging, que despliega el mismo artefacto). El Measurement ID tampoco está en el código — mismo mecanismo de marcador que Maps, variable `GOOGLE_ANALYTICS_ID` |
@@ -576,7 +708,7 @@ disponible, y es del humano decidirla, no de un agente.
 | T-13 | Distribuciones de CloudFront (staging y producción) con los cuatro behaviors, más certificados ACM y registro de `staging.letiende.co` | `serverless.yml` o consola | T-9 |
 | T-14 | Redirecciones 301 de los subdominios antiguos | Ágora y Babel | T-13 |
 | T-15 | Cutover: verificación completa del proxy en `staging.letiende.co` y cambio del registro de producción en Route 53 | Route 53 | T-13, T-14 |
-| T-16 | *Etapa 2:* publicación de la carta del café bar | Por definir | T-15 |
+| T-16 | *Etapa 2:* publicación de la carta del café bar — desglosada en T-0036 a T-0040 (§4.6, `TODO.md`) | Hoja maestra + `src/app/features/carta/` | T-15 |
 | T-17 | *Etapa 2:* actualización de `letiende-api` (runtime, IaC, revisión de seguridad) | repo por definir | — |
 
 **Sobre T-17.** `letiende-api` es una función Lambda con `nodejs22.x`, 128 MB, desplegada a mano, con

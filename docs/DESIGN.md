@@ -230,3 +230,86 @@ No es una sección de cortesía: parte del público llega por búsqueda por voz 
 - Foco visible en todo elemento interactivo (§5).
 - Toda imagen con `alt` real; `alt=""` solo si es decorativa.
 - Objetivos táctiles de 44×44 px como mínimo en celular.
+
+---
+
+## 11. Carta del café bar (`/carta`)
+
+Especificación de datos y reglas de armado en `tech-specs.md` §4.6. Esta sección manda solo sobre la
+presentación. Contenedor de página: `max-w-3xl` (es una lista para leer, no una rejilla), con un margen
+izquierdo reservado para el menú lateral en pantallas medianas en adelante.
+
+### 11.1 Menú lateral flotante
+
+- `position: fixed`, a la izquierda, centrado en vertical, **debajo** de la barra superior (que es
+  `sticky top-0 z-50` y mide `h-16`): el menú lateral usa `z-40` y nunca la tapa.
+- Fondo `bg-primary`, íconos en `text-neutral`, esquinas `rounded-2xl`, la misma sombra de marca de §4.
+- **Colapsado por defecto: solo íconos**, un botón por card, en el mismo orden de la página. Cada botón
+  es un `<a href="#seccion-…">` con `aria-label` igual a la etiqueta de la sección — el ícono es
+  decorativo (`aria-hidden="true"`).
+- **Botón de expandir** al pie del menú (ícono `chevron_right` / `chevron_left`), con
+  `aria-expanded` y `aria-controls`. Expandido, cada entrada muestra ícono + etiqueta
+  (`text-sm font-semibold`), y el menú se superpone al contenido, sin empujarlo.
+- **Sección activa** (la card visible en pantalla, detectada con `IntersectionObserver` solo en el
+  navegador): fondo `bg-secondary` en su botón y `aria-current="true"`.
+- Al elegir una sección: desplazamiento suave hasta la card (`scroll-behavior: smooth`, respetando
+  `prefers-reduced-motion: reduce`) y, si el menú estaba expandido en celular, se colapsa. Cada card
+  lleva `scroll-margin-top` suficiente (`scroll-mt-20`) para que la barra superior no tape su título.
+- **Celular:** el mismo menú, más angosto (íconos de 44×44 px, §10), pegado al borde izquierdo; el
+  contenido reserva ese ancho a la izquierda para que ningún precio quede debajo del menú.
+- Las secciones `destacada` también se distinguen en el menú: un punto `bg-secondary` junto al ícono.
+
+### 11.2 Cards de sección
+
+Una card por sección, con el patrón de §4 (`rounded-2xl bg-white p-4` + sombra de marca) y
+`id="seccion-<categoria>[-<subcategoria>]"`.
+
+```
+┌──────────────────────────────────────────────┐
+│  ☕  BEBIDAS DE CAFÉ                          │  ← <h2>, text-xl font-semibold
+│  Café arábigo, acidez media, notas a         │  ← descripción, text-sm text-primary/70
+│  chocolate, caramelo y madera                │
+│                                              │
+│  Espresso ·························· $6.600  │
+│  Cappuccino* †                       $9.900  │
+│  Latte* †                            $8.400  │
+│  Macchiato sencillo*                 $6.600  │
+│                                              │
+│  * Pídelo en leche vegetal por $3.500        │  ← notas al pie, text-xs text-primary/70
+│  † Añade licor por $8.700                    │
+└──────────────────────────────────────────────┘
+```
+
+- **Producto:** nombre a la izquierda (`text-base font-medium`), precio a la derecha
+  (`font-semibold tabular-nums`, alineado a la derecha). Los precios van en `text-primary`, **no** en
+  `secondary`: `secondary` sobre blanco no cumple contraste para texto de este tamaño (§10).
+- Las **marcas** de nota al pie (`*`, `†`, `‡`…) van pegadas al nombre, en `text-secondary`
+  `font-semibold`, dentro de un `<sup>`; cada marca lleva un `aria-describedby` a su nota, para que
+  el lector de pantalla lea la nota junto al producto.
+- **Descripción del producto** (cocteles, sobre todo): debajo del nombre, `text-sm text-primary/70`.
+- **Variantes:** una línea debajo del nombre, `text-xs text-primary/60`, separadas por ` · `.
+- **Notas al pie:** al final de la card, tras un separador `border-t border-primary/10`, una línea
+  por marca, en el orden de las marcas.
+- La lista de productos es una `<ul>`; cada producto, un `<li>`. Nada de tablas para maquetar.
+
+### 11.3 Cards destacadas (promociones)
+
+Las secciones con `destacada: true` en la hoja (hoy `ofertas/promociones` y `ofertas/combos`) son
+promociones que se quieren empujar, y se ven distintas **sin salirse de la paleta**:
+
+- Fondo `bg-primary` y texto `text-neutral` (la inversa de una card normal, contraste de sobra); los
+  precios en `text-neutral`, las marcas y el ícono en `text-secondary`.
+- Borde `border-2 border-secondary` y una etiqueta pequeña **"Promoción"** sobre el título
+  (`h-6 rounded-full bg-secondary px-2 text-xs font-semibold uppercase text-white`), con
+  `text-white` sobre `secondary` en texto grande y en negrita solamente.
+- Si su `orden` en la hoja las pone primero, además quedan en la parte de arriba de la página; la
+  posición la deciden los socios en la hoja, no el código.
+
+### 11.4 Íconos de Material Symbols
+
+Excepción acotada a §9 y a ADR-004 (ADR-025): los íconos de las secciones usan **Material Symbols
+Outlined** desde Google Fonts (`fonts.googleapis.com`, ya permitido en la CSP), pidiendo solo los
+íconos que usa la carta publicada con el parámetro `icon_names` (lista ordenada alfabéticamente),
+más los fijos de la interfaz (`chevron_left`, `chevron_right`, `restaurant_menu`). El enlace a la
+hoja de estilos lo arma el SSR a partir de los datos publicados, y solo en `/carta` — el resto del
+sitio no descarga esa fuente. Siempre con `aria-hidden="true"`: el significado lo lleva la etiqueta.

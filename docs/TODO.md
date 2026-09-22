@@ -9,221 +9,64 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-**Corrección encontrada hoy (07/09/2026), no un anuncio nuevo: el cutover de T-15 ya está hecho.**
-Este archivo llevaba tres días diciendo "sigue sin ejecutarse" — el motor JIT nunca llegó a
-recalcularse después de la ejecución real. Verificado contra la cuenta real de AWS antes de corregir
-nada aquí: `ER22S2WADMM83` (producción) tiene los alias `letiende.co`/`www.letiende.co`, Route 53 ya
-apunta ambos registros `A` a esa distribución, y la distribución vieja (`E33QAN86FY24JZ`) no tiene
-ningún alias. Detalle completo, con la línea de tiempo reconstruida desde el propio historial de git
-(el trabajo sí se hizo y sí se documentó en commits — solo faltó la entrada de cierre en este
-archivo), en la nueva entrada **T-0017** del Historial de abajo.
+**22/09/2026 — Arranca la etapa 2: carta del café bar (F-8, `PRD.md` §5).** A pedido del humano, el
+motor JIT toma sus dos activas de la carta. Las dos que estaban activas del roadmap de optimización
+entre repositorios, **T-0034** (OPT-20, estáticos de Babel en S3 + CloudFront) y **T-0035** (OPT-16,
+rendimiento del dashboard de Comandante), quedan **en pausa**. No se pierden: su definición de
+terminado completa sigue en `docs/optimizacion-aplicaciones.md` §4 y §5, y vuelven a la cola de
+abajo. Las notas de cierre que traía esta zona (T-0015 a T-0033) ya estaban completas en el Historial
+y se retiraron de aquí.
 
-Con el objetivo de etapa 1 (OBJ-5, `PRD.md` §6) cerrado del todo, la "Cola priorizada" que traía este
-archivo (T-14 → T-15) queda agotada — ver esa sección al final, actualizada. El motor JIT tomó las
-siguientes dos tareas de la única cola con trabajo real pendiente: `docs/optimizacion-aplicaciones.md`,
-el roadmap de deuda técnica **entre los cuatro repositorios de Le Tiende** (creado 07/09/2026, a partir
-de reportes reales de Lighthouse contra producción y comparación de los cuatro `README`). Ese documento
-es el nivel de detalle completo — evidencia, esfuerzo estimado, y las 17 tareas completas ordenadas de
-menor a mayor esfuerzo; acá solo se referencian las 2 activas.
+Contexto completo de la carta: `tech-specs.md` §4.6 (datos, contrato, reglas de armado), `DESIGN.md`
+§11 (presentación) y `MEMORY.md`, ADR-023 a ADR-025. **La carta no se ve en `letiende.co` hasta
+T-0040**, que depende de la aprobación de la nueva lista de precios. Esa decisión es del humano.
 
-**T-0018 — [DOCS] Insignias de README + relicenciar a Apache 2.0 (OPT-4/OPT-18), COMPLETA
-(07/09/2026):** los cuatro PR fusionados por el humano — `letiende.co#35`, `agora-letiende#66`,
-`babel-letiende#122`, `comandante#23`. Detalle completo (hallazgo de Comandante sin `LICENSE`, el
-badge de autoría verificado por repo, la corrección de la inconsistencia histórica de Ágora) en el
-Historial de abajo.
+**T-0036 — [CARTA] Hojas `carta_secciones` y `carta_diccionario` + Apps Script "Publicar carta",
+ACTIVA.** En la hoja maestra del café bar (dueña: `letiende.co@gmail.com`).
 
-**T-0020 — [ACCESIBILIDAD] Landmark `<main>` en Ágora (OPT-5), COMPLETA (07/09/2026):** PR
-`agora-letiende#68`, fusionado por el humano. No existía ningún `<main>` en toda la app — se envolvió
-el `router-outlet`. Detalle en el Historial de abajo.
+- Crear las dos pestañas con las columnas de `tech-specs.md` §4.6, precargadas con **todas** las
+  claves reales del `menu.json` vigente (14 secciones, 3 adiciones, 29 variantes). Proponer las
+  etiquetas y los íconos; las descripciones las escriben los socios. `ofertas/*` con `destacada`
+  en `TRUE`.
+- Escribir `herramientas/apps-script/carta.gs` en este repositorio:
+  - `onOpen` agrega el menú "Le Tiende → Publicar carta".
+  - `publicarCarta()` valida y guarda la copia fija. Si algo falla, no publica y muestra el error
+    en la hoja.
+  - `doGet()` sirve la copia y nada más, con el contrato JSON de §4.6.
+- Desplegar la Web App con el humano (necesita su sesión en `letiende.co@gmail.com`).
 
-**T-0022 — [CALIDAD] Fallo de prueba ESM de `@ionic/core` en Comandante (OPT-19), COMPLETA
-(07/09/2026):** PR `comandante#26`, fusionado por el humano. Causa raíz real: `@ionic/angular@8.8.8`
-importa `@ionic/core/components` como *directory import* sin `/index.js`, que Node ESM nativo rechaza
-en el entorno de pruebas. Corregido con `patch-package` sobre la dependencia instalada — detalle
-completo, incluidos dos hallazgos que destapó el fix (falta de `provideRouter` para `IonRouterOutlet`,
-un test de scaffold obsoleto), en el Historial de abajo. **Nota de coordinación:** el humano fusionó
-`comandante#27` (T-0023) antes que este PR por error, lo que produjo un conflicto real de `git merge`
-en el `TODO.md` de Comandante (dos tareas insertadas en el mismo punto) — resuelto conservando ambas
-entradas, verificado con build + pruebas reales después del merge antes de confirmar que el PR podía
-fusionarse.
+**Definición de terminado:**
 
-**T-0019 — [SEO] Meta description en Ágora, Babel y Comandante (OPT-1), COMPLETA (07/09/2026):** los
-tres PR fusionados por el humano — `agora-letiende#67`, `babel-letiende#123`, `comandante#24`. Los
-tres repos ya tenían servicio de SEO/`Meta` propio, solo faltaba llamarlo en la ruta pública auditada
-— salvo Comandante, sin SSR y con todas las rutas protegidas por `authGuard` (Lighthouse audita sin
-sesión), donde se optó por un `<meta>` estático en `index.html` en vez de construir un servicio
-dinámico que nunca se ejecutaría para ese caso. Detalle completo en el Historial de abajo.
+- Probado con el botón real: una publicación válida y una inválida (la inválida no cambia la copia).
+- `curl -L` contra la URL `/exec` devuelve el contrato exacto.
+- Verificado que una cuenta sin permiso de edición no puede publicar.
+- La URL `/exec` queda anotada en `tech-specs.md` §4.6 y `MEMORY.md` §5.
+- PR con el script y la documentación; esfuerzo registrado.
 
-**T-0021 — [SEO] `robots.txt` inválido en Babel y Comandante (OPT-2), COMPLETA (07/09/2026):** PRs
-`babel-letiende#124` y `comandante#25`, fusionados por el humano. Causa real en ambos: no existía
-ningún `robots.txt` en absoluto — Babel caía en el catch-all SSR de Angular, Comandante servía el
-`index.html` completo vía el rewrite `**` de Firebase Hosting (cada línea de ese HTML contaba como
-directiva inválida, explica los "16 errores" exactos que reportaba Lighthouse). Detalle completo en
-el Historial de abajo.
+**T-0037 — [CARTA] Capa de datos: `CartaService` + `armarCarta()` con pruebas, ACTIVA.** Puede
+avanzar en paralelo con T-0036: trabaja contra el contrato de §4.6, con datos de prueba sacados del
+`menu.json` real.
 
-**T-0023 — [SEO/AEO] `llms.txt` en Babel y Comandante (OPT-3), COMPLETA (07/09/2026):** PRs
-`babel-letiende#125` y `comandante#27`, fusionados por el humano. Contenido basado en la convención
-real de `llmstxt.org`, verificado contra el código fuente exacto de la auditoría de Lighthouse — Babel
-enlaza contenido público real (catálogo), Comandante (sin rutas públicas) lo dice explícitamente en
-vez de inventar enlaces falsos. Detalle en el Historial de abajo.
+- Tipos de las dos fuentes y de la carta armada.
+- Función pura `armarCarta(menu, contenido)` en `src/app/features/carta/armar-carta.ts`, que aplica
+  los pasos 1 a 8 de §4.6.
+- `src/app/core/api/carta.service.ts`: lectura solo en SSR con URL constantes en `environments/`,
+  caché en memoria de 5 min, última copia buena como respaldo, y 503 si falta `menu.json`.
+- Todavía sin ruta ni interfaz.
 
-**T-0024 — [ACCESIBILIDAD] Contraste de color (WCAG) en Babel y Comandante (OPT-6), COMPLETA
-(07/09/2026):** los tres PR fusionados por el humano — `babel-letiende#126`, `comandante#28`,
-`letiende.co#40`. Verificado en producción real tras la fusión: `curl` contra el CSS compilado de
-`https://letiende.co/libros/` y `https://comandante.letiende.co/` confirma que `text-secondary-
-accesible` y `text-espresso/{62,64,68,70}` resuelven a los colores esperados. Detalle completo en el
-Historial de abajo.
+**Definición de terminado:**
 
-**T-0025 — [RENDIMIENTO] `width`/`height` explícitos en imágenes en los cuatro repos (OPT-7),
-COMPLETA (07/09/2026):** los cuatro PR fusionados por el humano — `letiende.co#42`,
-`agora-letiende#69`, `babel-letiende#127`, `comandante#29`. Verificado en producción real tras la
-fusión: `curl` contra `letiende.co/`, `/cartelera/` y `/libros/` confirma `width="73" height="32"` en
-el logo de la barra. Detalle completo en el Historial de abajo.
-
-**T-0026 — [RENDIMIENTO] Activar `sourceMap` en el build de producción de Babel y Comandante
-(OPT-8), COMPLETA (08/09/2026) — con un incidente real de producción en el camino, ya resuelto:**
-Comandante (`comandante#30`) quedó bien a la primera, verificado en producción real. Babel
-(`babel-letiende#128`) causó **500 real** en `/libros/main-*.js.map` minutos después de fusionarse —
-`RequestEntityTooLarge`, el mapa de 5,9 MB del bundle principal cruzaba el límite de 6 MB de respuesta
-síncrona de Lambda (Babel sirve estáticos desde dentro del propio Lambda `ssr`, a diferencia de
-Comandante). Revertido en `babel-letiende#129`, verificado en producción real tras el segundo
-despliegue: `main-*.js` vuelve al hash previo, sin `sourceMappingURL`, y la petición del `.map`
-inexistente cae en el 302 normal de la app (no en 500). OPT-20 queda en el backlog para el arreglo real
-(S3 + CloudFront en Babel). Detalle completo en el Historial de abajo.
-
-**T-0027 — [CALIDAD] Revisar el panel "Issues" de Chrome DevTools en Ágora, Babel y Comandante
-(OPT-9), COMPLETA (08/09/2026) — resuelta junto con T-0028, misma causa raíz real:** investigado con
-navegador real (`claude-in-chrome`) contra las tres URL de producción, sin adivinar. El JSON completo
-de Lighthouse (audit `inspector-issues`) ya traía la respuesta exacta, sin necesidad de abrir DevTools
-a mano: el único `issueType` registrado en los tres es `Cookie`, apuntando siempre a
-`apis.google.com/js/api.js` (Ágora, Comandante) o a `books.google.com` (Babel, además del anterior).
-Verificado en vivo: sin errores de consola, sin peticiones fallidas, `document.compatMode` en modo
-estándar (`CSS1Compat`, sin *quirks*) en las tres. Verificado en el código, no solo inferido:
-`GoogleAuthProvider` de Firebase Auth en `servicio-auth.ts`/`auth.service.ts` de los tres repos — el
-inicio de sesión con Google es lo que carga `apis.google.com/js/api.js`. Detalle completo en el
-Historial de abajo.
-
-**T-0028 — [PRIVACIDAD] Auditar las cookies de terceros en Ágora, Babel y Comandante (OPT-10),
-COMPLETA (08/09/2026):** el audit `third-party-cookies` de Lighthouse confirma que las 53 cookies de
-cada repo vienen de esa misma única fuente — `apis.google.com/js/api.js` en Ágora y Comandante,
-`books.google.com` (API de Google Books, integración real de metadatos de libros, documentada en
-`docs/PRD.md` de Babel) en Babel. **Documentado como aceptado, no un falso positivo perseguido a
-ciegas:** ambas son dependencias de terceros reales y necesarias — inicio de sesión con Google
-(requisito de autenticación) y enriquecimiento de metadatos de ISBN — no hay ninguna cookie propia ni
-evitable que corregir. Detalle completo en el Historial de abajo.
-
-**T-0029 — [DOCS] Reescribir el `README` de Ágora al estilo bilingüe (OPT-11), COMPLETA
-(08/09/2026):** PR `agora-letiende#70`, fusionado por el humano. Traducción fiel del contenido
-existente, no el formato de caso de estudio extendido de Babel/Comandante (esos números son
-específicos de esos repos). Detalle completo en el Historial de abajo.
-
-**T-0030 — [RENDIMIENTO] `Cache-Control` eficiente para activos estáticos en los cuatro repos
-(OPT-12), COMPLETA (08/09/2026):** los dos PR fusionados por el humano — `agora-letiende#71`,
-`comandante#31`. Investigado con el detalle completo de `cache-insight` de Lighthouse antes de tocar
-nada, no adivinado — el mismo audit señala orígenes distintos por repo, no un patrón único de
-`ResponseHeadersPolicy`/`CacheBehavior` en los cuatro `serverless.yml` como asumía la evidencia
-original del backlog. **Ágora y letiende.co** comparten la misma causa real: el bucket
-`agora-activos-production` (imágenes de eventos, embebidas también en la portada de `letiende.co` vía
-el proxy) con `cacheLifetimeMs: 0` — corregido agregando `CacheControl` al `PutObjectCommand` firmado
-y al `PUT` del frontend (mismo encabezado exacto, forma parte de la firma de S3); `letiende.co` no
-necesitó ningún cambio propio, el mismo fix resuelve su parte del audit. **Comandante** tenía una
-causa distinta y real: sus bundles JS/CSS (hasheados) solo tenían 1 hora de cache por el valor por
-defecto de Firebase Hosting, sin ninguna regla en `firebase.json` — corregido con `Cache-Control` de
-un año para `**/*.@(js|css)`, deliberadamente sin tocar imágenes/logo sin hash de contenido. **Babel
-no tiene ninguna causa fixeable en este repositorio:** el 100% de su desperdicio de caché son orígenes
-de terceros que no controla — documentado como aceptado, sin PR. Verificado en producción real tras
-la fusión: `curl -I` contra el bundle de Comandante confirma `Cache-Control: public, max-age=31536000,
-immutable`; en Ágora el mismo `curl` contra una imagen ya existente (subida antes del fix) no lo trae
-— esperado, no un defecto: el encabezado es metadato de S3 fijado al momento de subir, no retroactivo,
-así que solo las imágenes de eventos subidas de ahora en adelante lo llevan. Detalle completo en el
-Historial de abajo.
-
-**T-0031 — [RENDIMIENTO] Investigar el origen de los 309 KiB de JS sin minificar en los cuatro
-repos (OPT-13), COMPLETA (08/09/2026) — falso positivo del entorno de auditoría, sin ningún cambio de
-código:** el audit `unminified-javascript` completo de los cuatro reportes trae 11 elementos
-idénticos, byte a byte, en los cuatro — y los 11 son `chrome-extension://...`, no una sola URL de
-`letiende.co`, Ágora, Babel ni Comandante. Identificados por su ID de extensión:
-`nngceckbapebfimnlniiiahkandclblb` es **Bitwarden** (gestor de contraseñas —
-`bootstrap-autofill-overlay-notifications.js`, `fido2-*`), `gighmmpiobklfepjocnamgkkbiglidom` es
-**AdBlock** (`adblock-functions.js`, `@eyeo/webext-ad-filtering-solution` — eyeo es la empresa detrás
-de Adblock Plus/AdBlock). Suma exacta: 316.691 bytes = 309,27 KiB — coincide byte a byte con el
-"309 KiB" que traía la evidencia original del backlog. Las cuatro apps nunca tuvieron este problema:
-Lighthouse corrió en un Chrome con extensiones normales instaladas (no incógnito/perfil limpio), y
-esas extensiones inyectan sus propios scripts en cada pestaña — Lighthouse los cuenta igual que
-cualquier recurso de la página. **Lección para la próxima ronda de reportes base:** correr Lighthouse
-en una ventana de incógnito o un perfil sin extensiones para no repetir este falso positivo.
-`docs/optimizacion-aplicaciones.md` §5 actualizado.
-
-**T-0032 — [RENDIMIENTO] Comprimir y servir en formato moderno las imágenes de eventos (OPT-14),
-COMPLETA (08/09/2026):** PR `agora-letiende#72`, fusionado por el humano. `convertirImagenAWebp()`
-(canvas, máximo 1600px, calidad 0.82) integrada en el flujo de subida de portadas/logotipos — sin
-servicio de transformación en el borde, sin tocar imágenes ya subidas. `letiende.co` no necesitó
-ningún cambio, comparte el mismo bucket. Verificación real contra producción pendiente de forma
-natural: el fix solo afecta subidas *nuevas*, y no hubo ninguna en el momento del cierre — se
-verificó en su lugar con las pruebas unitarias (conversión real simulada con `canvas`/
-`createImageBitmap` mockeados) y build de producción limpio. Detalle completo en el Historial de
-abajo.
-
-**T-0033 — [RENDIMIENTO] *Lazy-load* de rutas para reducir JS sin usar en los cuatro repos
-(OPT-15), COMPLETA (08/09/2026):** `babel-letiende#130` fusionado por el humano; `letiende.co#52`
-(este mismo PR) lo completa. Investigado el detalle real del audit `unused-javascript` de cada repo
-antes de asumir que ya todo estaba lazy-loaded. **Ágora y Comandante ya usaban `loadComponent` en el
-100% de sus rutas** — el desperdicio que les queda no es un problema de enrutamiento, es código sin
-usar *dentro* de un chunk ya lazy, que exige análisis de contenido del bundle (no de rutas) y queda
-fuera del alcance de esta tarea; no se tocó código en esos dos repos. **`letiende.co` y Babel tenían el
-100% de sus rutas con `component:` (importación estática)** — corregido convirtiendo las 5 y las 11
-rutas respectivas a `loadComponent`. El hallazgo más grande de todo el roadmap de optimización estaba
-aquí: el `main.js` de Babel pasó de **1,18 MB a 15,49 kB** (695 KiB de eso eran, literalmente, todo el
-árbol de administración cargándose para cualquier visitante anónimo del catálogo). **Verificado en
-producción real, no solo con el build local:** `curl` contra `https://letiende.co/libros/main-
-OP5QUEGP.js` descarga exactamente 15.490 bytes — idéntico byte a byte al artefacto local. Pendiente,
-no bloqueante: volver a correr Lighthouse contra las URL reales para cerrar el ciclo con una medición
-nueva. Detalle completo en el Historial de abajo.
-
-**T-0034 — [INFRA] Servir los estáticos de Babel desde S3 + CloudFront, no desde el Lambda `ssr`
-(OPT-20), ACTIVA:** hallazgo real del incidente de T-0026 (08/09/2026) — habilitar `sourceMap` en
-Babel causó un 500 real en producción porque el Lambda `ssr` sirve sus propios estáticos con
-`express.static`, y la respuesta síncrona de Lambda tiene un límite duro de 6 MB tras la codificación
-de API Gateway. No es exclusivo de los source maps: cualquier estático futuro que crezca lo suficiente
-tropieza con el mismo límite. Mismo patrón que `letiende-assets` de `letiende.co` (S3 + CloudFront,
-`docs/tech-specs.md` §7.2 de ese repo). DoD: los estáticos de `dist/babel-letiende/browser/**` servidos
-desde un bucket S3 propio detrás de CloudFront, con el Lambda `ssr` limitado a renderizar HTML; sin
-romper `--base-href`/las rutas ya proxied desde `letiende.co`; verificado con `curl` real contra
-producción; oportunidad de reactivar `sourceMap` en Babel una vez esto exista (no en el alcance de
-esta tarea); `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
-
-**T-0035 — [RENDIMIENTO] Pase completo de rendimiento en el dashboard de Comandante (OPT-16),
-ACTIVA:** ya no bloqueada — dependía de cerrar OPT-7/12/13/15, las cuatro completas. LCP 5,5s, Speed
-Index 5,0s en `/admin/dashboard` — a diferencia de Babel, no hay un solo culpable: es la suma de varios
-hallazgos menores ya identificados en rondas anteriores de este mismo roadmap, aplicados juntos a esa
-vista específica. DoD: correr Lighthouse real contra `/admin/dashboard` de nuevo primero (no asumir
-que los hallazgos de las rondas anteriores siguen siendo los mismos, algunos ya se corrigieron);
-identificar qué queda real y específico de esa vista; corregido lo que aplique; verificado con una
-medición nueva de Lighthouse contra producción; `docs/optimizacion-aplicaciones.md` §5 actualizado;
-esfuerzo registrado. OPT-17 (la de mayor esfuerzo e impacto de todo el roadmap) sigue deliberadamente
-diferida — no se toca código de Babel a la ligera.
-
-**T-0015 — [INFRA] Encabezados de seguridad de CloudFront, único bloqueo real antes de T-15 (roadmap),
-COMPLETA (04/09/2026):** el hallazgo de los encabezados de seguridad ausentes (ver el Historial,
-entrada T-0013/T-0014, hallazgo 8) quedó cerrado — dos `ResponseHeadersPolicy` de CloudFront,
-verificadas en vivo contra `staging.letiende.co` (CSP completo en las páginas propias del contenedor,
-los otros 4 encabezados sin CSP en `/cartelera/*`/`/libros/*`/`/assets/*`, decisión explícita del
-humano para no arriesgar el checkout real de Ágora). Detalle completo en el Historial de abajo,
-`tech-specs.md` §7.2 y `CLAUDE.md` §5. PR **#25, fusionado**. Con esto, **nada** bloquea técnicamente
-el cutover.
-
-**T-0016 — [INFRA] Preparación del cutover (T-15), COMPLETA (04/09/2026):** dejado listo para que el
-humano solo tenga que ejecutar, no investigar, cuando decida el momento. Ver
-`docs/runbook-cutover-t15.md` para la secuencia exacta y el estado verificado en vivo (certificado
-ACM, ambas distribuciones, registros de Route 53). Hallazgo real durante la preparación: la
-distribución de producción (`ER22S2WADMM83`) todavía no tenía `Aliases`/`ViewerCertificate` propios en
-`serverless.yml` (quedaba en `AWS::NoValue`, sin que el roadmap lo mencionara como pendiente aparte) —
-agregado en PR **`infra/prepara-cutover-t15`**, con el certificado ya `ISSUED` de la distribución
-vieja (`ca9cd231-…`, cubre `letiende.co` y `www.letiende.co`). **Ese PR no se fusiona solo**: fusionarlo
-antes de quitar el alias de la distribución vieja hace fallar el deploy (`CNAMEAlreadyExists`) — el
-runbook cubre el orden correcto. El cutover en sí se ejecutó el mismo día, horas después de esta
-preparación — ver **T-0017**, entrada nueva del Historial (corrección del 07/09/2026: nunca se había
-registrado el cierre).
+- Pruebas unitarias de `armarCarta()` que cubran como mínimo:
+  - la misma adición con dos precios en una card (`leche_vegetal` 3.500 y 5.300 → `*` y `†`);
+  - la secuencia de marcas más allá de 5;
+  - una sección con `visible: false`;
+  - una categoría ausente de la hoja (respaldo humanizado, sin perder productos);
+  - las cards sin subcategoría (`comida`, `reposteria`);
+  - el orden de cards y productos;
+  - el formato `$6.600`.
+- Verificado con `curl -L` real que la redirección de la Web App a `script.googleusercontent.com` se
+  sigue desde Node (si T-0036 aún no tiene la URL, queda como parte del DoD de T-0038).
+- Build, pruebas y lint en verde; PR; esfuerzo registrado.
 
 ---
 
@@ -1044,6 +887,25 @@ registrado el cierre).
 ---
 
 ## Cola priorizada (no son tareas activas — referencia para calcular la siguiente)
+
+**Cola 1 — Carta del café bar (etapa 2, F-8), en este orden.** Detalle en `tech-specs.md` §4.6 y
+`DESIGN.md` §11.
+
+| ID | Tarea | Depende de |
+|---|---|---|
+| T-0038 | **[CARTA] Ruta `/carta` + bloqueo de visibilidad (ADR-024).** `cartaVisible(host)` y constante `CARTA_PUBLICADA = false`, ruta `RenderMode.Server`, 404 real fuera de staging/local, fuera del sitemap. Página mínima que ya muestre los datos de T-0037, sin el diseño final. DoD: `curl` real contra staging (200) y producción (404) tras el despliegue | T-0037 |
+| T-0039 | **[CARTA] Interfaz completa (`DESIGN.md` §11).** Cards, notas al pie, variantes, cards destacadas, menú lateral de íconos con botón de expandir, desplazamiento a la card, sección activa, Material Symbols con `icon_names` (ADR-025), accesibilidad (§10). DoD: revisión visual del humano en `staging.letiende.co/carta`, en celular y en escritorio | T-0036, T-0038 |
+| T-0040 | **[CARTA] Publicación.** Solo cuando el humano confirme que la nueva lista de precios está aprobada y cargada en Comandante. `CARTA_PUBLICADA = true`, entrada en `/sitemap.xml`, JSON-LD `Menu` (§4.6) y el enlace "Carta" en la barra **de los tres repositorios a la vez** (`DESIGN.md` §8). DoD: `curl` real contra `letiende.co/carta` (200), sin salto visual de la barra al cruzar a `/cartelera` y `/libros` | T-0039 + aprobación del humano |
+| — | *(Aplazada, repo Comandante, sin ID)* El botón de la hoja también carga los precios en Comandante, con validación en el servidor (ADR-023) | Decisión del humano |
+
+**Cola 2 — Roadmap de optimización entre repositorios, en pausa desde el 22/09/2026.** Retoma con
+**T-0034** (OPT-20) y **T-0035** (OPT-16), en ese orden. Su definición de terminado completa está en
+`docs/optimizacion-aplicaciones.md` §4, y el seguimiento en §5 de ese documento.
+
+---
+
+### Referencia histórica
+
 
 El roadmap original de `tech-specs.md` §11 (T-1 a T-15) está **completo** — OBJ-5 (`PRD.md` §6) cerrado
 con T-0017. Las 2 tareas activas de hoy (T-0018/T-0019) salen de una cola distinta, la de

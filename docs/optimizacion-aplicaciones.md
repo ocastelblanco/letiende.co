@@ -146,9 +146,9 @@ Se actualiza en cada sesión que toque una tarea de este roadmap — no solo al 
 | OPT-13 | **Completada — falso positivo, sin PR** | T-0031 | — | Los 11 elementos del audit son `chrome-extension://` (Bitwarden, AdBlock) — 309 KiB exactos, ninguno es código de las 4 apps. Lección: correr Lighthouse en incógnito la próxima vez. |
 | OPT-14 | **Completada** | T-0032 | agora-letiende#72 | Conversión a WEBP en el cliente (canvas), sin servicio en el borde. Sin tocar imágenes ya subidas. `letiende.co` sin cambio propio, comparte el bucket. |
 | OPT-15 | **Completada** | T-0033 | letiende.co#52, babel-letiende#130 | Ágora/Comandante ya al 100% `loadComponent` — nada que arreglar en rutas ahí. `letiende.co`/Babel al 100% eager — corregidos. Babel: `main.js` 1,18MB→15,49kB, verificado en producción real. |
-| OPT-16 | **Activa** | T-0035 | — | Ya no bloqueada (OPT-7/12/13/15 completas). Volver a medir Lighthouse antes de asumir qué hallazgos siguen vigentes. |
+| OPT-16 | **En pausa (22/09/2026)** — cedió su lugar en el motor JIT a la carta del café bar (`TODO.md`) | T-0035 | — | Ya no bloqueada (OPT-7/12/13/15 completas). Volver a medir Lighthouse antes de asumir qué hallazgos siguen vigentes. |
 | OPT-17 | Pendiente | — | — | Relacionado con babel-letiende#121 — máxima prioridad de impacto, pero deliberadamente no seleccionada como una de las 2 activas todavía: es la más grande del roadmap y este repositorio no toca código de Babel a la ligera. |
-| OPT-20 | **Activa** | T-0034 | babel-letiende#129 (revert) | Surgió del incidente real de OPT-8 en Babel — 500 en producción por el límite de respuesta de Lambda, no del tamaño del zip. |
+| OPT-20 | **En pausa (22/09/2026)** — cedió su lugar en el motor JIT a la carta del café bar (`TODO.md`) | T-0034 | babel-letiende#129 (revert) | Surgió del incidente real de OPT-8 en Babel — 500 en producción por el límite de respuesta de Lambda, no del tamaño del zip. |
 | OPT-19 | **Completada** | T-0022 | comandante#26 | Causa real: `@ionic/angular@8.8.8` hace *directory import* de `@ionic/core/components`, Node ESM lo rechaza. Corregido con `patch-package` — vigilar en el próximo `ng update` que toque `@ionic/angular` |
 
 ## 6. Fuentes
