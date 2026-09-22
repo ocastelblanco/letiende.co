@@ -113,6 +113,19 @@ test('ejemplo real de Sonnet 5 con escritura de caché de 1h', () => {
   assert.equal(r.usd, 0.225682);
 });
 
+test('multiplicador de caché por modelo se fusiona sobre el del proveedor (Opus 5.5)', () => {
+  const pricing = { providers: { anthropic: {
+    cost_model: 'anthropic', status: 'ok', as_of: '2026-09-22',
+    models: { 'claude-opus-5-5': { input: 4.00, output: 20.00, cache_multipliers: { read: 0.05 } } },
+    cache_multipliers: { read: 0.1, write_short: 1.25, write_long: 2.0 },
+  } } };
+  const tokens = { input_uncached: 1_000_000, cache_read: 1_000_000, cache_write_short: 1_000_000,
+    cache_write_long: 1_000_000, output: 1_000_000 };
+  const r = computeCost({ provider: 'anthropic', model: 'claude-opus-5-5', tokens, pricing });
+  // 4 + 0.20 (lectura 0.05x) + 5 (escritura 5m) + 8 (escritura 1h) + 20
+  assert.equal(r.usd, 37.2);
+});
+
 test('precio sin verificar devuelve null, nunca una estimación', () => {
   const pricing = { providers: { openai: { cost_model: 'openai', status: 'unverified', models: {} } } };
   const r = computeCost({ provider: 'openai', model: 'x', tokens: normaliseUsage('openai', NATIVE.openai), pricing });

@@ -92,7 +92,7 @@ El sitio **no tiene área privada**: el personal de Le Tiende sigue trabajando d
 
 | # | Funcionalidad | Origen del contenido |
 |---|---|---|
-| F-8 | **Carta del café bar** con precios vigentes | Café bar (Comandante) |
+| F-8 | **Carta del café bar** con precios vigentes, en `/carta`: una card por sección con su texto descriptivo, menú lateral de navegación, notas al pie para las adiciones con sobrecosto y promociones destacadas | Precios: Comandante (`menu.json`). Textos, íconos y diccionario: hoja maestra del café bar, editable por los socios |
 | F-9 | Actualización de seguridad y estilo de la interfaz de datos heredada | Propio |
 
 ### Flujo principal — el visitante que llega a comprar
@@ -146,9 +146,19 @@ El visitante entra a Le Tiende y se queda en Le Tiende, aunque por debajo esté 
 | **Baja** | Boletín de correo y suscripción desde la portada | 3 |
 | **Baja** | Versión en inglés del sitio | 3 |
 
-**Pregunta abierta de la etapa 2:** la lista de precios del café bar vive hoy en un sistema con una
-tecnología distinta a la de los otros dos servicios. Antes de empezar F-8 hay que decidir cómo se
-publica esa lista hacia afuera. Se documenta al abordar la etapa 2, no antes.
+**Pregunta de la etapa 2, resuelta el 22/09/2026:** la lista de precios ya se publica hacia afuera —
+Comandante expone `https://comandante.letiende.co/menu.json`, alimentado desde la hoja maestra de
+Google Sheets. Lo que faltaba (los textos descriptivos de cada sección y los nombres legibles de
+categorías, adiciones y variantes) vive en esa misma hoja, en dos pestañas nuevas que los socios con
+permiso de edición publican con un botón. Detalle en `tech-specs.md` §4.6 y `MEMORY.md`, ADR-023.
+
+**Condición de publicación de F-8:** la carta se desarrolla y se prueba en staging, pero **no es
+visible en `letiende.co` hasta que se apruebe la nueva lista de precios** con la que se alimenta
+Comandante (ADR-024). Publicarla es una decisión del humano, no un paso automático del desarrollo.
+
+**Fuera del alcance de F-8, aplazado:** que el botón de la hoja también cargue los precios en
+Comandante (hoy se exporta un XLSX y se importa a mano). Es trabajo del repositorio de Comandante y
+no bloquea la carta.
 
 ---
 

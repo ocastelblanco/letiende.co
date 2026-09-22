@@ -14,7 +14,7 @@ const PER_MILLION = 1e6;
 export const COST_MODELS = {
   /** Separate cache read/write pricing, expressed as multipliers over input. */
   anthropic(tokens, rates, cacheMultipliers) {
-    const m = cacheMultipliers ?? { read: 0.1, write_short: 1.25, write_long: 2.0 };
+    const m = { read: 0.1, write_short: 1.25, write_long: 2.0, ...cacheMultipliers };
     return (
       tokens.input_uncached * rates.input +
       tokens.cache_read * rates.input * m.read +
@@ -101,7 +101,9 @@ export function computeCost({ provider, model, tokens, pricing, extra }) {
   const t = normaliseTokens(tokens);
   if (!t) return { usd: null, reason: 'tokens incomplete', cost_model: p.cost_model };
 
-  const usd = fn(t, rates, p.cache_multipliers, extra) / PER_MILLION;
+  // A model may override individual provider multipliers (e.g. a cheaper cache read).
+  const cacheMultipliers = { ...p.cache_multipliers, ...rates.cache_multipliers };
+  const usd = fn(t, rates, cacheMultipliers, extra) / PER_MILLION;
   return {
     usd: round6(usd),
     cost_model: p.cost_model,

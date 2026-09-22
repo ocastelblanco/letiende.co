@@ -10,12 +10,12 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 | | |
 |---|---|
 | **Versión** | 1.0.0 — roadmap completo de etapa 1 (T-1 a T-15, `tech-specs.md` §11) cerrado y **en producción real desde el 04/09/2026**: contenedor completo, proxy a Ágora/Babel, cutover ejecutado. Hoy arranca el roadmap de mantenimiento (`docs/optimizacion-aplicaciones.md`) |
-| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. Activas: T-0018/T-0019, del roadmap de optimización del ecosistema |
+| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. **Etapa 2 arrancada el 22/09/2026 con la carta del café bar (F-8)**: activas T-0036/T-0037. El roadmap de optimización (T-0034/T-0035) queda en pausa, sin perderse |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
 | **Rama** | `main` |
 | **Producción** | `https://letiende.co` / `https://www.letiende.co` sirven de verdad el contenedor de este repositorio — CloudFront `ER22S2WADMM83`, cutover ejecutado el 04/09/2026 (T-0017), verificado en vivo el 07/09/2026 (`cloudfront ListDistributions` + `route53 ListResourceRecordSets` reales, y navegador real contra las 4 rutas propias). La distribución vieja (`E33QAN86FY24JZ`) sigue existiendo pero **sin ningún alias** — ya no sirve tráfico real |
 | **Staging** | `letiende-co-staging` despliega de verdad, con dominio propio real: `https://staging.letiende.co` (ACM `ISSUED`, CloudFront `EQW683KP4VXIV`, T-0011) — verificado en vivo por el humano y por `curl` |
-| **Última sesión** | 18/09/2026 — diagnóstico de indexación en Google Search Console: confirmado en vivo que el fix de `www.letiende.co` bloqueada por `robots.txt` (PR #54, fusionado 17/09/2026) ya surtió efecto, sitemap correcto (`https://letiende.co/sitemap.xml`) reenviado tras detectar que el enviado originalmente era el de `www` (roto), retirada temporal de un soft 404 (evento vencido de Ágora) iniciada pero bloqueada por el clasificador de permisos de Claude Code, pendiente de que el humano la envíe a mano o autorice la acción. Ver Contexto de la sesión actual |
+| **Última sesión** | 22/09/2026 — planeación de la carta del café bar (`/carta`, F-8): análisis del `menu.json` real de Comandante, ADR-023 a ADR-025, `tech-specs.md` §4.6, `DESIGN.md` §11 y tareas T-0036 a T-0040. Ver Contexto de la sesión actual |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -51,9 +51,11 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
       (T-0011): verificado en vivo, incluido el fix del prefijo `/assets` no anticipado en la planeación
 
 ### Pendientes
-- [ ] Cambios en Ágora y en Babel (base href, barra común, mapas del sitio, 301) — T-0013/T-0014
-- [ ] Cutover de `letiende.co` (T-14/T-15: mover el alias de la distribución vieja a la nueva)
-- [ ] *Etapa 2:* carta del café bar
+- [x] Cambios en Ágora y en Babel (base href, barra común, mapas del sitio, 301) — T-0013/T-0014
+- [x] Cutover de `letiende.co` (T-14/T-15), ejecutado el 04/09/2026 — T-0017
+- [ ] *Etapa 2:* carta del café bar (F-8) — planeada el 22/09/2026, T-0036 a T-0040 (`tech-specs.md` §4.6).
+      Oculta en producción hasta la aprobación de la nueva lista de precios (ADR-024)
+- [ ] *Etapa 2, aplazada:* botón de la hoja maestra que también carga los precios en Comandante (ADR-023)
 - [ ] *Etapa 2:* actualización de `letiende-api`
 
 ---
@@ -632,6 +634,92 @@ sus reglas. Cuando una tarea de ese roadmap empieza a ejecutarse en un repo herm
 gana su propia entrada en su propio `TODO.md`, con una referencia de vuelta a
 `optimizacion-aplicaciones.md` — el documento de este repositorio es la fuente de verdad de "qué está
 pendiente entre los cuatro", no un sustituto del roadmap propio de cada uno.
+
+### ADR-023 — Contenido editorial de la carta: hoja maestra + Apps Script de solo lectura, sin escritura hacia AWS
+
+**Fecha:** 22/09/2026 · **Estado:** aceptada
+
+**Contexto.** La carta (`/carta`, F-8) necesita dos cosas que `menu.json` de Comandante no trae: el
+texto descriptivo de cada sección y los nombres legibles de categorías, subcategorías, adiciones y
+variantes (`de_cafe` → "Bebidas de café", `indian_pale_ale` → "Indian Pale Ale",
+`leche_vegetal` → "Pídelo en leche vegetal"). No pueden quedar escritos en este repositorio: los
+socios de Le Tiende deben poder editarlos. La hoja de Google Sheets que ya alimenta a Comandante
+(ADR-007 de Comandante) es la candidata natural. El humano propuso además un botón de "publicación"
+en la hoja que, con un solo clic, alimentara **a la vez** a Comandante (Firebase) y a este proyecto
+(AWS).
+
+**Decisión.**
+
+1. Dos pestañas nuevas en la hoja maestra: `carta_secciones` y `carta_diccionario` (columnas en
+   `tech-specs.md` §4.6).
+2. Un Apps Script ligado a la hoja agrega el menú "Le Tiende → Publicar carta". Valida, y si todo está
+   bien guarda una **copia fija** del contenido. Solo quien tiene permiso de edición del documento
+   (dueño: `letiende.co@gmail.com`) puede ejecutarlo.
+3. Una Web App del mismo script (`doGet`, "ejecutar como yo", acceso "cualquiera") expone **solo esa
+   copia** como JSON. El SSR de `/carta` la lee, con caché en memoria y la última copia buena como
+   respaldo.
+4. Los precios **no** pasan por este camino: siguen saliendo de `menu.json` de Comandante.
+5. El envío de precios desde la hoja a Comandante queda **aplazado** como trabajo aparte del
+   repositorio de Comandante (sin número de tarea todavía, cola de `TODO.md`).
+
+**Razón.** Escribir en dos sistemas a la vez no es atómico: si uno acepta y el otro falla, quedan
+desincronizados, y quien oprimió el botón no tiene cómo saberlo ni cómo arreglarlo. Cargar precios
+en Comandante desde fuera obliga a reimplementar en el servidor la validación que hoy corre en el
+navegador (`import-parsers.ts`), porque el Admin SDK se salta `firestore.rules`, y a crear un endpoint
+autenticado con un secreto guardado en Apps Script. Es un cambio grande sobre un punto de venta en
+producción, y la carta no lo necesita. Del lado de AWS, un endpoint de escritura con su secreto y su
+bucket contradice el principio de que este contenedor "no guarda nada". Con `doGet` no se crea
+ninguna superficie de escritura, y el botón conserva la semántica de publicar: editar la hoja no cambia
+el sitio hasta que alguien oprime el botón.
+
+**Consecuencias.** La Web App de Google tarda 1 a 3 s en frío. Se compensa con la caché de 5 min y
+el respaldo de §4.6: la carta nunca se cae por culpa de Google, y un diccionario incompleto nunca
+oculta un producto con precio. El código del script se versiona en
+`herramientas/apps-script/carta.gs`, aunque se despliega a mano desde el editor de Apps Script.
+Cambiar el script exige volver a desplegar la Web App **con la misma implementación**, para no
+cambiar la URL `/exec` que el SSR tiene como constante.
+
+### ADR-024 — `/carta` oculta en producción por host hasta su publicación, con 404 real
+
+**Fecha:** 22/09/2026 · **Estado:** aceptada
+
+**Contexto.** La carta se desarrolla ya, pero no puede ser visible en `letiende.co` hasta que se
+apruebe la nueva lista de precios. Staging y producción despliegan **el mismo artefacto**
+(`environment.production.ts`), así que un flag de build no distingue entre los dos.
+
+**Decisión.** `cartaVisible(host)` es verdadero solo en `staging.letiende.co`, `localhost` y
+`127.0.0.1`, o si la constante `CARTA_PUBLICADA` es `true` (por defecto se niega). En cualquier otro
+host, `/carta` responde **404 real** y la ruta no está en el sitemap. El host se resuelve igual que en
+`robots.txt` (`x-le-tiende-host` o `req.hostname`, `src/server.ts`). El enlace "Carta" de la barra no
+depende del host: se agrega en T-0040, en los tres repositorios a la vez (`DESIGN.md` §8). Publicar es
+un PR que cambia la constante: queda rastro en git y no hay que tocar infraestructura ni secretos.
+
+**Razón.** Es el mismo patrón ya probado de ADR-015 (GA4 por host). Un 404 real, y no una página
+"próximamente" con 200, cumple la regla de la ruta comodín (A05). Una variable de entorno por stage
+obligaría a pasar el valor del SSR al navegador sin ganar nada frente a una constante en un PR.
+
+**Consecuencias.** Es un bloqueo **editorial, no de seguridad** (A01): quien llame al API Gateway con
+un encabezado `x-le-tiende-host` falso vería antes una carta con precios que ya son públicos en
+`menu.json`. Es aceptable, y no debe presentarse nunca como control de acceso.
+
+### ADR-025 — Material Symbols para los íconos de la carta, cargando solo los usados
+
+**Fecha:** 22/09/2026 · **Estado:** aceptada
+
+**Contexto.** El menú lateral de la carta es de íconos. El proyecto no tiene librería de íconos
+(ADR-004), y los socios deben poder elegir el ícono de cada sección desde la hoja, sin un PR.
+
+**Decisión.** Material Symbols Outlined desde Google Fonts, **solo en `/carta`**, pidiendo solo los
+íconos usados con el parámetro `icon_names` (el SSR arma el enlace a partir del contenido publicado).
+Elegido por el humano frente a un set propio de SVG en línea.
+
+**Razón.** Es una fuente de íconos, no una librería de componentes: no choca con el espíritu de
+ADR-004. Google Fonts ya está permitido en la CSP del contenedor, así que no se agrega ningún origen
+nuevo. Con `icon_names`, el peso se limita a los ~15 íconos reales, no a los miles de la familia.
+
+**Consecuencias.** Un nombre de ícono inexistente se ve como texto de la ligadura. El script de
+publicación valida el formato del nombre, pero no puede comprobar que exista: la revisión en staging
+es la red de seguridad. Si algún día hace falta un ícono de marca propio, esto se replantea.
 
 ---
 
@@ -1599,3 +1687,53 @@ y de verificar en producción real tras el merge (`curl -I` contra la URL real d
 **Próxima tarea sugerida:** ninguna nueva en `TODO.md` de este repositorio — este hallazgo fue un
 diagnóstico reactivo, no parte de la cola JIT. T-0034/T-0035 siguen siendo las dos tareas activas. El
 seguimiento real está en `agora-letiende#75`, fuera de este repositorio.
+
+---
+
+**22/09/2026 — Planeación de la carta del café bar (`/carta`, F-8). Arranca la etapa 2.**
+
+Solo documentación: no se tocó código. Rama `docs/plan-carta-cafe-bar`.
+
+Qué se hizo:
+
+- Se leyó Comandante (`functions/src/index.ts` → `publicMenu`, `category-tree.ts`, estructura de la
+  hoja `datos`) y se analizó el `menu.json` real en producción: 107 productos, 14 grupos
+  categoría/subcategoría, 33 con descripción, 3 adiciones y 29 variantes.
+- **Hallazgo que cambió el diseño:** el humano planteó un sobrecosto único por card para cada adición,
+  pero `leche_vegetal` cuesta 3.500 y 5.300 **dentro de la misma card** (`bebidas/calientes` y
+  `bebidas/frias`). El humano lo confirmó: no es un error, depende de la cantidad de leche de cada
+  bebida (~160 ml en un capuchino, ~220 ml en un chocolate). Por eso las notas al pie van **por par
+  (adición, precio)**, no por adición (`tech-specs.md` §4.6, paso 5).
+- **Segundo hallazgo:** el ejemplo `indian_pale_ale` es una **variante** (cerveza Diosa), no una
+  subcategoría. El diccionario cubre adiciones y variantes, y la etiqueta de la sección vive en
+  `carta_secciones`.
+- **Tercer hallazgo:** la barra de navegación existe tres veces (`DESIGN.md` §8). Un enlace "Carta"
+  solo en el staging del contenedor rompería la costura, así que el enlace se agrega en T-0040, en los
+  tres repos a la vez.
+- Opinión pedida por el humano sobre el botón que alimenta a Comandante y a AWS a la vez: se
+  recomendó separarlo, y el humano estuvo de acuerdo (ADR-023).
+
+Respuestas del humano a las preguntas de la planeación:
+
+1. Adición de leche vegetal: siempre "Pídelo en leche vegetal"; el precio cambia según la cantidad.
+2. Variantes: sí se muestran, en una línea bajo el producto.
+3. Contenido editorial: Web App `doGet` con copia fija y caché (ADR-023).
+4. Envío de precios a Comandante: aplazado.
+5. Íconos: Material Symbols (ADR-025).
+6. Ruta: `/carta`.
+7. `ofertas/promociones` sí entra, **con relevancia visual**: son promociones que se quieren destacar
+   (columna `destacada`, `DESIGN.md` §11.3).
+8. Dueño de la hoja: `letiende.co@gmail.com`. Publica solo quien tenga permiso de edición.
+9. Visibilidad por host hasta que un PR la active (ADR-024).
+
+Documentación actualizada: `PRD.md` (F-8 y la pregunta de etapa 2, resuelta), `tech-specs.md` (§4.2,
+§4.6 nueva, §5, §6 y §11), `DESIGN.md` (§11 nueva), este archivo (ADR-023 a ADR-025) y `TODO.md`
+(T-0036 a T-0040; T-0034/T-0035 en pausa).
+
+**Decisión de prioridad:** el humano pidió empezar la carta al fusionar este PR. El motor JIT solo
+admite 2 activas, así que T-0034 (OPT-20, Babel) y T-0035 (OPT-16, Comandante) vuelven a la cola de
+`docs/optimizacion-aplicaciones.md` como **en pausa**, con su definición de terminado intacta.
+
+**Próxima tarea sugerida:** T-0036 (hojas + Apps Script, necesita al humano para crear las pestañas
+con su cuenta y desplegar la Web App). T-0037 (capa de datos) puede avanzar en paralelo contra el
+contrato de §4.6, con datos de prueba.
