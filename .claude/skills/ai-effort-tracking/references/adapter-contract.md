@@ -108,7 +108,7 @@ output:            620 × $4.00/1M = $0.002480
 
 | `cost_model` | Fórmula (por millón de tokens) |
 |---|---|
-| `anthropic` | `input_uncached×in + cache_read×in×0.1 + cache_write_short×in×1.25 + cache_write_long×in×2 + output×out` |
+| `anthropic` | `input_uncached×in + cache_read×in×0.1 + cache_write_short×in×1.25 + cache_write_long×in×2 + output×out`<br>Multiplicadores por defecto; un modelo puede sobrescribirlos en su fila (`cache_multipliers`), p. ej. Opus 5.5 lee caché a 0.05× |
 | `openai` | `input_uncached×in + cache_read×cached_in + output×out` |
 | `deepseek` | `input_uncached×in_miss + cache_read×in_hit + output×out` |
 | `google` | `input_uncached×in + cache_read×cached_in + output×out + almacenamiento×horas` |
