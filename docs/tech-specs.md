@@ -293,10 +293,12 @@ Planteada el 22/09/2026 (F-8, `PRD.md` §5). Tareas T-0036 a T-0040 en `TODO.md`
 | `https://comandante.letiende.co/menu.json` (Comandante, `functions/src/index.ts` → `publicMenu`) | Productos activos: `name`, `description`, `additions[]`, `variants[]`, `category`, `subcategory`, `basePrice` | Hoja `datos` → XLSX → importador de Comandante → Firestore (sin cambios, ADR-007 de Comandante) |
 | Web App de Apps Script de la hoja maestra | Secciones (etiqueta, descripción, ícono, orden, visibilidad, destacado) y diccionario de adiciones y variantes | Hojas `carta_secciones` y `carta_diccionario` → botón **"Publicar carta"** → copia fija servida por `doGet` (ADR-023) |
 
-**Hoja maestra:** es la misma de Comandante (dueña: `letiende.co@gmail.com`). Solo quien tenga
-permiso de **edición** sobre el documento ve el menú "Le Tiende → Publicar carta" y puede ejecutarlo;
-la Web App se despliega "ejecutar como: yo (`letiende.co@gmail.com`)", "acceso: cualquiera", y **solo
-lee** la copia publicada — nunca las hojas en vivo, así una edición a medias no llega al sitio. El
+**Hoja maestra:** es la misma de Comandante (dueña: `ocastelblanco@gmail.com`; `letiende.co@gmail.com`
+es editora — corrección de ADR-023 del 22/09/2026). Solo quien tenga permiso de **edición** sobre el
+documento ve el menú "Le Tiende → Publicar carta" y puede ejecutarlo; la Web App se despliega
+"ejecutar como: yo (`ocastelblanco@gmail.com`, dueño del documento y del proyecto de Apps Script)",
+"acceso: cualquiera", y **solo lee** la copia publicada — nunca las hojas en vivo, así una edición a
+medias no llega al sitio. El
 código del script se versiona en `herramientas/apps-script/carta.gs` (T-0036) para que tenga
 historial y revisión por PR, aunque su despliegue sea manual en el editor de Apps Script.
 

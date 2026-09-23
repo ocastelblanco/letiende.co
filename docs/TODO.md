@@ -22,7 +22,8 @@ Contexto completo de la carta: `tech-specs.md` §4.6 (datos, contrato, reglas de
 T-0040**, que depende de la aprobación de la nueva lista de precios. Esa decisión es del humano.
 
 **T-0036 — [CARTA] Hojas `carta_secciones` y `carta_diccionario` + Apps Script "Publicar carta",
-ACTIVA.** En la hoja maestra del café bar (dueña: `letiende.co@gmail.com`).
+ACTIVA.** En la hoja maestra del café bar (dueña: `ocastelblanco@gmail.com`; `letiende.co@gmail.com`
+es editora — corrección de ADR-023 del 22/09/2026, antes decía lo contrario).
 
 - Crear las dos pestañas con las columnas de `tech-specs.md` §4.6, precargadas con **todas** las
   claves reales del `menu.json` vigente (14 secciones, 3 adiciones, 29 variantes). Proponer las
@@ -33,7 +34,8 @@ ACTIVA.** En la hoja maestra del café bar (dueña: `letiende.co@gmail.com`).
   - `publicarCarta()` valida y guarda la copia fija. Si algo falla, no publica y muestra el error
     en la hoja.
   - `doGet()` sirve la copia y nada más, con el contrato JSON de §4.6.
-- Desplegar la Web App con el humano (necesita su sesión en `letiende.co@gmail.com`).
+- Desplegar la Web App con el humano (necesita su sesión en `ocastelblanco@gmail.com`, dueño del
+  documento — no `letiende.co@gmail.com`).
 
 **Definición de terminado:**
 

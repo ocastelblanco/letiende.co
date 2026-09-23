@@ -653,11 +653,13 @@ en la hoja que, con un solo clic, alimentara **a la vez** a Comandante (Firebase
 1. Dos pestañas nuevas en la hoja maestra: `carta_secciones` y `carta_diccionario` (columnas en
    `tech-specs.md` §4.6).
 2. Un Apps Script ligado a la hoja agrega el menú "Le Tiende → Publicar carta". Valida, y si todo está
-   bien guarda una **copia fija** del contenido. Solo quien tiene permiso de edición del documento
-   (dueño: `letiende.co@gmail.com`) puede ejecutarlo.
+   bien guarda una **copia fija** del contenido. Cualquiera con permiso de edición del documento
+   puede ejecutarlo — hoy eso incluye a `ocastelblanco@gmail.com` (dueño) y a `letiende.co@gmail.com`
+   (editora).
 3. Una Web App del mismo script (`doGet`, "ejecutar como yo", acceso "cualquiera") expone **solo esa
    copia** como JSON. El SSR de `/carta` la lee, con caché en memoria y la última copia buena como
-   respaldo.
+   respaldo. **"Yo" es `ocastelblanco@gmail.com`**, no `letiende.co@gmail.com` — ver la corrección de
+   ownership más abajo.
 4. Los precios **no** pasan por este camino: siguen saliendo de `menu.json` de Comandante.
 5. El envío de precios desde la hoja a Comandante queda **aplazado** como trabajo aparte del
    repositorio de Comandante (sin número de tarea todavía, cola de `TODO.md`).
@@ -678,6 +680,15 @@ oculta un producto con precio. El código del script se versiona en
 `herramientas/apps-script/carta.gs`, aunque se despliega a mano desde el editor de Apps Script.
 Cambiar el script exige volver a desplegar la Web App **con la misma implementación**, para no
 cambiar la URL `/exec` que el SSR tiene como constante.
+
+**Corrección de ownership (22/09/2026, misma sesión).** El planteamiento original decía "dueño de la
+hoja: `letiende.co@gmail.com`". El humano lo corrigió antes de ejecutar T-0036: el documento ya es
+propiedad de su cuenta personal, `ocastelblanco@gmail.com`, y **debe seguir siéndolo** — tanto el
+Google Sheet como el proyecto de Apps Script y la Web App que de él salga. `letiende.co@gmail.com`
+se queda como **editora** del documento, que es el permiso que necesita para poder ejecutar
+"Publicar carta"; no necesita ser dueña de nada para eso. Ningún otro punto de este ADR cambia: sigue
+siendo *doGet* de solo lectura, sigue sin escribir hacia AWS, sigue versionado en
+`herramientas/apps-script/carta.gs`.
 
 ### ADR-024 — `/carta` oculta en producción por host hasta su publicación, con 404 real
 
@@ -1737,3 +1748,19 @@ admite 2 activas, así que T-0034 (OPT-20, Babel) y T-0035 (OPT-16, Comandante) 
 **Próxima tarea sugerida:** T-0036 (hojas + Apps Script, necesita al humano para crear las pestañas
 con su cuenta y desplegar la Web App). T-0037 (capa de datos) puede avanzar en paralelo contra el
 contrato de §4.6, con datos de prueba.
+
+---
+
+**22/09/2026 (continuación) — Corrección de ownership antes de ejecutar T-0036, y arranque de la
+implementación.**
+
+Al iniciar T-0036, el humano corrigió ADR-023: el documento y los scripts/Web App de Apps Script
+quedan bajo `ocastelblanco@gmail.com` (su cuenta personal, ya dueña del documento hoy), no bajo
+`letiende.co@gmail.com`. Esta última se queda como editora, permiso suficiente para poder ejecutar
+"Publicar carta". Corregido en `tech-specs.md` §4.6, `TODO.md` (T-0036) y `MEMORY.md` (ADR-023).
+
+El humano compartió la hoja real
+(`https://docs.google.com/spreadsheets/d/1-AxCok6FScWLeF74zOVAFWe_ANgNbTPo2Jdc_KWFfs8/edit`) y
+autorizó operarla por navegador (`claude-in-chrome`), con la sesión de Chrome que resultara estar
+abierta (se esperaba `ocastelblanco@gmail.com`). El humano se ausentó de su computador durante esta
+tarea — coordinación por Control remoto desde su celular.
