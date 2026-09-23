@@ -1,0 +1,62 @@
+<nav
+  aria-label="Secciones de la carta"
+  class="fixed top-[calc(50%+2rem)] left-1 z-40 max-w-[calc(100vw-0.5rem)] -translate-y-1/2 sm:left-3"
+>
+  <div
+    class="flex max-h-[calc(100dvh-6rem)] flex-col rounded-2xl bg-primary p-1 shadow-[0_4px_16px_rgba(35,12,0,0.08)]"
+  >
+    <ul id="carta-menu-lista" class="flex min-h-0 flex-col gap-1 overflow-y-auto">
+      @for (entrada of entradas(); track entrada.id) {
+        <li>
+          <a
+            [href]="'/carta#' + entrada.id"
+            [attr.aria-label]="entrada.etiqueta"
+            [attr.aria-current]="activaId() === entrada.id ? 'true' : null"
+            (click)="elegir($event, entrada.id)"
+            class="relative flex h-11 items-center rounded-xl text-neutral hover:bg-neutral/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+            [class.size-11]="!expandido()"
+            [class.justify-center]="!expandido()"
+            [class.w-56]="expandido()"
+            [class.gap-3]="expandido()"
+            [class.px-2.5]="expandido()"
+            [class.bg-secondary]="activaId() === entrada.id"
+            [class.text-primary]="activaId() === entrada.id"
+            [class.hover:bg-secondary]="activaId() === entrada.id"
+          >
+            <span class="icono-material" aria-hidden="true">{{ entrada.icono }}</span>
+            @if (expandido()) {
+              <span class="truncate text-sm font-semibold">{{ entrada.etiqueta }}</span>
+            }
+            @if (entrada.destacada) {
+              <span
+                class="absolute top-1 right-1 size-2 rounded-full bg-secondary ring-1 ring-neutral"
+                aria-hidden="true"
+              ></span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+    <button
+      type="button"
+      class="mt-1 flex h-11 items-center rounded-xl border-t border-neutral/20 text-neutral hover:bg-neutral/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+      [class.w-11]="!expandido()"
+      [class.justify-center]="!expandido()"
+      [class.gap-3]="expandido()"
+      [class.px-2.5]="expandido()"
+      [attr.aria-expanded]="expandido()"
+      aria-controls="carta-menu-lista"
+      [attr.aria-label]="
+        expandido() ? 'Contraer el menú de secciones' : 'Expandir el menú de secciones'
+      "
+      (click)="alternar()"
+    >
+      <span class="icono-material" aria-hidden="true">{{
+        expandido() ? 'chevron_left' : 'chevron_right'
+      }}</span>
+      @if (expandido()) {
+        <span class="text-sm font-semibold">Contraer</span>
+      }
+    </button>
+  </div>
+</nav>
