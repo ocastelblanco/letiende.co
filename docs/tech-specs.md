@@ -361,9 +361,13 @@ la publicación (se resuelven con respaldo, abajo); sí se listan como aviso.
   nunca se arman con datos del `Request` (A10, SSRF). La Web App redirige a
   `script.googleusercontent.com`; el `fetch()` nativo de Node la sigue por defecto — verificado con
   `curl -L` real contra la URL de arriba, no solo asumido de la documentación de `fetch()`.
-- Se leen **solo en el servidor**; el navegador recibe el resultado por la *transfer cache* de
-  Angular y no hace peticiones propias a `comandante.letiende.co` ni a `script.google.com` — por eso
-  la CSP del contenedor no necesita orígenes nuevos en `connect-src`.
+- Se leen **solo en el servidor**; el navegador recibe la carta ya armada por `TransferState`
+  explícito (`CLAVE_CARTA_ARMADA`, `makeStateKey<CartaArmada>('carta-armada')`, en `carta.service.ts`)
+  y no hace peticiones propias a `comandante.letiende.co` ni a `script.google.com` — por eso la CSP
+  del contenedor no necesita orígenes nuevos en `connect-src`. Es explícito porque `resource()` **no**
+  usa la transfer cache HTTP (solo `httpResource`/`HttpClient` la usan): sin `TransferState`, el
+  *loader* devuelve `null` en el navegador y la hidratación reemplaza la carta del SSR por el mensaje
+  de "carta no disponible" (defecto real de T-0038 en staging). Con 503 el servidor no guarda nada.
 - Caché en memoria del proceso de la Lambda, TTL de 5 minutos por fuente (la Web App tarda 1 a 3 s
   en frío). Si una lectura falla, se sirve la última copia buena en memoria.
 - Degradación: sin contenido editorial, la carta se arma igual con etiquetas de respaldo (clave
@@ -396,8 +400,11 @@ equivocado al público):
 
 **Visibilidad antes de publicar** (ADR-024): `cartaVisible(host)` es verdadero solo en
 `staging.letiende.co`, `localhost` y `127.0.0.1`, **o** si la constante `CARTA_PUBLICADA` es `true`.
-El host se resuelve igual que en `robots.txt` (`src/server.ts`: `x-le-tiende-host`, que inyecta la
-función de CloudFront de §7.2, o `req.hostname`). Cuando es falso, `/carta` responde **404 real** con
+El host lo resuelve `resolverHostCarta(request)` (`src/app/core/carta-visibilidad.ts`) igual que
+`robots.txt` (`src/server.ts`: `x-le-tiende-host`, que inyecta la función de CloudFront de §7.2, o
+el host de la petición); en el navegador usa `location.hostname`, porque la hidratación re-ejecuta
+el constructor. `CartaService` solo se obtiene (`Injector.get()`) si la carta es visible: `resource()`
+es *eager* y de otro modo se leería Comandante para responder un 404. Cuando es falso, `/carta` responde **404 real** con
 `NoEncontradaComponent` y la ruta no está en `/sitemap.xml`. Es un bloqueo **editorial, no de
 seguridad** (A01: esconder no es proteger): los precios ya son públicos en `menu.json`, y quien llame
 al API Gateway directamente con un encabezado falso solo vería antes lo que igual se va a publicar.
