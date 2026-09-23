@@ -13,8 +13,8 @@ export const environment = {
   // pública, desplegada el 23/09/2026 (T-0036), verificada en vivo con
   // `curl -L` (sigue la redirección a `script.googleusercontent.com` sin
   // intervención). Real en staging y en producción — no filtra nada:
-  // `/carta` sigue sin ruta (T-0038) y, cuando la tenga, ADR-024 la mantiene
-  // en 404 fuera de staging hasta la publicación real (T-0040).
+  // `/carta` ya tiene ruta (T-0038), pero ADR-024 la mantiene en 404 fuera
+  // de staging hasta la publicación real (T-0040).
   urlMenuComandante: 'https://comandante.letiende.co/menu.json',
   urlContenidoCartaWebApp:
     'https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec',

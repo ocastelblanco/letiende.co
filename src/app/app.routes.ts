@@ -26,6 +26,10 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'carta',
+    loadComponent: () => import('./features/carta/carta').then((m) => m.CartaComponent),
+  },
+  {
     path: '**',
     loadComponent: () =>
       import('./features/no-encontrada/no-encontrada').then((m) => m.NoEncontradaComponent),
