@@ -293,10 +293,12 @@ Planteada el 22/09/2026 (F-8, `PRD.md` §5). Tareas T-0036 a T-0040 en `TODO.md`
 | `https://comandante.letiende.co/menu.json` (Comandante, `functions/src/index.ts` → `publicMenu`) | Productos activos: `name`, `description`, `additions[]`, `variants[]`, `category`, `subcategory`, `basePrice` | Hoja `datos` → XLSX → importador de Comandante → Firestore (sin cambios, ADR-007 de Comandante) |
 | Web App de Apps Script de la hoja maestra | Secciones (etiqueta, descripción, ícono, orden, visibilidad, destacado) y diccionario de adiciones y variantes | Hojas `carta_secciones` y `carta_diccionario` → botón **"Publicar carta"** → copia fija servida por `doGet` (ADR-023) |
 
-**Hoja maestra:** es la misma de Comandante (dueña: `letiende.co@gmail.com`). Solo quien tenga
-permiso de **edición** sobre el documento ve el menú "Le Tiende → Publicar carta" y puede ejecutarlo;
-la Web App se despliega "ejecutar como: yo (`letiende.co@gmail.com`)", "acceso: cualquiera", y **solo
-lee** la copia publicada — nunca las hojas en vivo, así una edición a medias no llega al sitio. El
+**Hoja maestra:** es la misma de Comandante (dueña: `ocastelblanco@gmail.com`; `letiende.co@gmail.com`
+es editora — corrección de ADR-023 del 22/09/2026). Solo quien tenga permiso de **edición** sobre el
+documento ve el menú "Le Tiende → Publicar carta" y puede ejecutarlo; la Web App se despliega
+"ejecutar como: yo (`ocastelblanco@gmail.com`, dueño del documento y del proyecto de Apps Script)",
+"acceso: cualquiera", y **solo lee** la copia publicada — nunca las hojas en vivo, así una edición a
+medias no llega al sitio. El
 código del script se versiona en `herramientas/apps-script/carta.gs` (T-0036) para que tenga
 historial y revisión por PR, aunque su despliegue sea manual en el editor de Apps Script.
 
@@ -320,6 +322,13 @@ Hoja **`carta_diccionario`** — una fila por clave:
 | `tipo` | `adicion` \| `variante` | |
 | `clave` | texto | Clave exacta de Comandante (`leche_vegetal`, `indian_pale_ale`) |
 | `texto` | texto | Adición: frase completa de la nota al pie ("Pídelo en leche vegetal"). Variante: etiqueta ("Indian Pale Ale") |
+
+**URL real, desplegada el 23/09/2026:**
+`https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec`
+— verificada en vivo con `curl -L` (sigue la redirección a `script.googleusercontent.com` sin
+intervención) y con una publicación real desde la hoja: responde `HTTP 200` con las 14 secciones y
+las 32 claves del diccionario, exactamente con el contrato de abajo. Es la que va como
+`urlContenidoCartaWebApp` en `environments/` (T-0037).
 
 **Contrato de la Web App** (`GET`, JSON, sin autenticación):
 
@@ -350,8 +359,8 @@ la publicación (se resuelven con respaldo, abajo); sí se listan como aviso.
 
 - Las dos URL son **constantes** en `environments/` — direcciones públicas, no secretos (A02) — y
   nunca se arman con datos del `Request` (A10, SSRF). La Web App redirige a
-  `script.googleusercontent.com`; el cliente HTTP del servidor debe seguir esa redirección
-  (verificarlo con `curl -L` real en T-0037).
+  `script.googleusercontent.com`; el `fetch()` nativo de Node la sigue por defecto — verificado con
+  `curl -L` real contra la URL de arriba, no solo asumido de la documentación de `fetch()`.
 - Se leen **solo en el servidor**; el navegador recibe el resultado por la *transfer cache* de
   Angular y no hace peticiones propias a `comandante.letiende.co` ni a `script.google.com` — por eso
   la CSP del contenedor no necesita orígenes nuevos en `connect-src`.

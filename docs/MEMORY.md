@@ -10,12 +10,12 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 | | |
 |---|---|
 | **Versión** | 1.0.0 — roadmap completo de etapa 1 (T-1 a T-15, `tech-specs.md` §11) cerrado y **en producción real desde el 04/09/2026**: contenedor completo, proxy a Ágora/Babel, cutover ejecutado. Hoy arranca el roadmap de mantenimiento (`docs/optimizacion-aplicaciones.md`) |
-| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. **Etapa 2 arrancada el 22/09/2026 con la carta del café bar (F-8)**: T-0037 completa; activas T-0036 (parcial, bloqueada en un paso manual del humano) y T-0038. El roadmap de optimización (T-0034/T-0035) queda en pausa, sin perderse |
+| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. **Etapa 2 arrancada el 22/09/2026 con la carta del café bar (F-8)**: T-0036 y T-0037 completas (23/09/2026); T-0038 activa. El roadmap de optimización (T-0034/T-0035) queda en pausa, sin perderse |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
 | **Rama** | `main` |
 | **Producción** | `https://letiende.co` / `https://www.letiende.co` sirven de verdad el contenedor de este repositorio — CloudFront `ER22S2WADMM83`, cutover ejecutado el 04/09/2026 (T-0017), verificado en vivo el 07/09/2026 (`cloudfront ListDistributions` + `route53 ListResourceRecordSets` reales, y navegador real contra las 4 rutas propias). La distribución vieja (`E33QAN86FY24JZ`) sigue existiendo pero **sin ningún alias** — ya no sirve tráfico real |
 | **Staging** | `letiende-co-staging` despliega de verdad, con dominio propio real: `https://staging.letiende.co` (ACM `ISSUED`, CloudFront `EQW683KP4VXIV`, T-0011) — verificado en vivo por el humano y por `curl` |
-| **Última sesión** | 22/09/2026 — planeación de la carta del café bar (`/carta`, F-8) y arranque de su implementación: T-0037 completa (capa de datos, con pruebas), T-0036 parcial (script y hoja reales, bloqueado en un paso manual del humano). Ver Contexto de la sesión actual |
+| **Última sesión** | 22–23/09/2026 — planeación e implementación de la carta del café bar (`/carta`, F-8): T-0036 y T-0037 completas, T-0038 activa. Ver Contexto de la sesión actual |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -653,11 +653,13 @@ en la hoja que, con un solo clic, alimentara **a la vez** a Comandante (Firebase
 1. Dos pestañas nuevas en la hoja maestra: `carta_secciones` y `carta_diccionario` (columnas en
    `tech-specs.md` §4.6).
 2. Un Apps Script ligado a la hoja agrega el menú "Le Tiende → Publicar carta". Valida, y si todo está
-   bien guarda una **copia fija** del contenido. Solo quien tiene permiso de edición del documento
-   (dueño: `letiende.co@gmail.com`) puede ejecutarlo.
+   bien guarda una **copia fija** del contenido. Cualquiera con permiso de edición del documento
+   puede ejecutarlo — hoy eso incluye a `ocastelblanco@gmail.com` (dueño) y a `letiende.co@gmail.com`
+   (editora).
 3. Una Web App del mismo script (`doGet`, "ejecutar como yo", acceso "cualquiera") expone **solo esa
    copia** como JSON. El SSR de `/carta` la lee, con caché en memoria y la última copia buena como
-   respaldo.
+   respaldo. **"Yo" es `ocastelblanco@gmail.com`**, no `letiende.co@gmail.com` — ver la corrección de
+   ownership más abajo.
 4. Los precios **no** pasan por este camino: siguen saliendo de `menu.json` de Comandante.
 5. El envío de precios desde la hoja a Comandante queda **aplazado** como trabajo aparte del
    repositorio de Comandante (sin número de tarea todavía, cola de `TODO.md`).
@@ -678,6 +680,15 @@ oculta un producto con precio. El código del script se versiona en
 `herramientas/apps-script/carta.gs`, aunque se despliega a mano desde el editor de Apps Script.
 Cambiar el script exige volver a desplegar la Web App **con la misma implementación**, para no
 cambiar la URL `/exec` que el SSR tiene como constante.
+
+**Corrección de ownership (22/09/2026, misma sesión).** El planteamiento original decía "dueño de la
+hoja: `letiende.co@gmail.com`". El humano lo corrigió antes de ejecutar T-0036: el documento ya es
+propiedad de su cuenta personal, `ocastelblanco@gmail.com`, y **debe seguir siéndolo** — tanto el
+Google Sheet como el proyecto de Apps Script y la Web App que de él salga. `letiende.co@gmail.com`
+se queda como **editora** del documento, que es el permiso que necesita para poder ejecutar
+"Publicar carta"; no necesita ser dueña de nada para eso. Ningún otro punto de este ADR cambia: sigue
+siendo *doGet* de solo lectura, sigue sin escribir hacia AWS, sigue versionado en
+`herramientas/apps-script/carta.gs`.
 
 ### ADR-024 — `/carta` oculta en producción por host hasta su publicación, con 404 real
 
@@ -1738,6 +1749,23 @@ admite 2 activas, así que T-0034 (OPT-20, Babel) y T-0035 (OPT-16, Comandante) 
 con su cuenta y desplegar la Web App). T-0037 (capa de datos) puede avanzar en paralelo contra el
 contrato de §4.6, con datos de prueba.
 
+
+---
+
+**22/09/2026 (continuación) — Corrección de ownership antes de ejecutar T-0036, y arranque de la
+implementación.**
+
+Al iniciar T-0036, el humano corrigió ADR-023: el documento y los scripts/Web App de Apps Script
+quedan bajo `ocastelblanco@gmail.com` (su cuenta personal, ya dueña del documento hoy), no bajo
+`letiende.co@gmail.com`. Esta última se queda como editora, permiso suficiente para poder ejecutar
+"Publicar carta". Corregido en `tech-specs.md` §4.6, `TODO.md` (T-0036) y `MEMORY.md` (ADR-023).
+
+El humano compartió la hoja real
+(`https://docs.google.com/spreadsheets/d/1-AxCok6FScWLeF74zOVAFWe_ANgNbTPo2Jdc_KWFfs8/edit`) y
+autorizó operarla por navegador (`claude-in-chrome`), con la sesión de Chrome que resultara estar
+abierta (se esperaba `ocastelblanco@gmail.com`). El humano se ausentó de su computador durante esta
+tarea — coordinación por Control remoto desde su celular.
+
 ---
 
 **22/09/2026 (continuación) — Implementación: T-0037 completa; T-0036 avanzado hasta un bloqueo
@@ -1767,24 +1795,13 @@ real de la automatización de navegador.**
   `letiende.co@gmail.com` como editora. Corregido en `tech-specs.md`, `TODO.md` y este archivo
   (commit `a3d3e40`, PR #58).
 
-**Bloqueo real, no resuelto en esta sesión — límite genuino de la herramienta, no un error de
+**Bloqueo real, no resuelto en esa sesión — límite genuino de la herramienta, no un error de
 uso:** la primera ejecución de `publicarCarta()` dispara la pantalla de autorización OAuth real de
 Google ("Elegir cuenta" → "Permitir"), que Google abre en **una ventana de navegador nueva, fuera del
 grupo de pestañas que `claude-in-chrome` puede alcanzar** (`tabs_context_mcp` nunca la lista, ni con
 `createIfEmpty: true`). Intentado dos veces, por dos caminos distintos (desde el editor de Apps
 Script con "Revisar permisos", y desde el menú real de la hoja con "Aceptar") — mismo resultado en
 los dos. Sin forma de completarla por este medio.
-
-Falta, con `ocastelblanco@gmail.com`, en persona:
-
-1. Abrir la hoja → menú "Le Tiende" → "Publicar carta" → completar el diálogo de autorización
-   (puede que ya esté esperando en una ventana abierta).
-2. Confirmar el diálogo de éxito ("Publicado: 14 secciones, 3 adiciones, 29 variantes").
-3. Extensiones → Apps Script → Implementar → Nueva implementación → "Aplicación web" → ejecutar como
-   "Yo" → acceso "Cualquier usuario" → Implementar.
-4. Pasar la URL `.../exec` resultante para anotarla en `tech-specs.md` §4.6 y `MEMORY.md`, y
-   agregarla como constante real en `environments/` (hoy `urlContenidoCartaWebApp` está vacía a
-   propósito).
 
 **T-0037 (rama `feature/carta-capa-de-datos`), completa, sin depender del bloqueo anterior:**
 
@@ -1797,30 +1814,48 @@ en verde. `RESPONSE_INIT` se verificó contra el `.d.ts` instalado de `@angular/
 no se asumió de memoria (`declare const RESPONSE_INIT: InjectionToken<ResponseInit | null>`,
 `@publicApi`).
 
-**Motor JIT recalculado:** T-0037 pasa a Historial. T-0038 (ruta `/carta` + bloqueo de visibilidad)
-entra como activa junto a T-0036 — puede empezar ya, porque `CartaService` ya degrada correctamente
-sin la URL real de la Web App.
-
-**Próxima tarea sugerida:** T-0038, sin esperar a que el humano termine T-0036 (no lo bloquea). Y,
-en cuanto el humano tenga un momento frente a su computador: los cuatro pasos manuales de T-0036 de
-arriba.
+**Motor JIT recalculado en ese momento:** T-0037 pasa a Historial. T-0038 (ruta `/carta` + bloqueo de
+visibilidad) entra como activa junto a T-0036 — puede empezar ya, porque `CartaService` ya degrada
+correctamente sin la URL real de la Web App.
 
 ---
 
-**23/09/2026 — URL real de la Web App conectada a `environments/`.**
+**23/09/2026 — T-0036 completa: el humano terminó la autorización y el despliegue.**
 
-El humano completó el paso manual de T-0036 (autorización OAuth + despliegue) y entregó la URL real:
+El humano autorizó el script en persona (el paso que quedó bloqueado la sesión anterior, fuera del
+alcance de la automatización de navegador) y desplegó la Web App. URL real:
 
 ```
 https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec
 ```
 
-`urlContenidoCartaWebApp` en `environment.ts` y `environment.production.ts` pasó de `''` a esta URL
-real — en las dos, no solo en producción: el mismo artefacto sirve a staging y a producción
-(`CLAUDE.md` §3), y no hay filtración porque `/carta` todavía no tiene ruta (T-0038) y, cuando la
-tenga, ADR-024 la mantiene en 404 fuera de staging hasta T-0040.
+Verificado con `curl -L` real (no asumido): `HTTP 200`, contrato exacto — 14 secciones, 32 claves de
+diccionario, `publicadoEn` con timestamp real de la primera publicación del humano.
+
+Con la autorización ya hecha, se pudo completar el resto del DoD de T-0036 por navegador sin
+tropezar con el bloqueo de la sesión anterior: se introdujo un ícono inválido (`"Coffee!"`) en
+`carta_secciones`, se ejecutó "Publicar carta" desde el menú real, y el diálogo de error identificó
+la fila y la causa exactas — verificado además que `publicadoEn` no cambió (la copia publicada quedó
+intacta). Restaurada la celda a su valor correcto (`coffee`) antes de terminar, sin dejar la hoja en
+un estado distinto al que el humano espera.
+
+Detalle completo de T-0036 en `docs/TODO.md`, Historial.
+
+---
+
+**23/09/2026 — URL real de la Web App conectada a `environments/`.**
+
+Con la URL real ya en mano (la misma de arriba), se conectó en la rama de T-0037
+(`feature/carta-capa-de-datos`): `urlContenidoCartaWebApp` en `environment.ts` y
+`environment.production.ts` pasó de `''` a esta URL real — en las dos, no solo en producción: el
+mismo artefacto sirve a staging y a producción (`CLAUDE.md` §3), y no hay filtración porque `/carta`
+todavía no tiene ruta (T-0038) y, cuando la tenga, ADR-024 la mantiene en 404 fuera de staging hasta
+T-0040.
 
 Verificado: 75/75 pruebas siguen en verde con la URL real puesta (nada dependía del valor vacío
 específicamente), build de producción y lint sin hallazgos.
 
-**Próxima tarea sugerida:** T-0038 — ya no depende de nada pendiente de T-0036.
+**Motor JIT, estado final de la sesión:** T-0036 y T-0037 completas. T-0038 activa.
+
+**Próxima tarea sugerida:** T-0038 (ruta `/carta` + bloqueo de visibilidad) — ya no depende de nada
+pendiente de T-0036 ni de T-0037.
