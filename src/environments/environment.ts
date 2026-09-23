@@ -12,6 +12,16 @@
 // romper nada (GA4 además solo carga en el host letiende.co, nunca aquí).
 export const environment = {
   urlBaseApiAgora: 'https://agora.letiende.co',
+  // Carta del café bar (tech-specs.md §4.6, F-8). Precios: Comandante.
+  // `urlContenidoCartaWebApp` NO es un marcador de llave pública (no pasa
+  // por scripts/inyectar-llaves-publicas.mjs: no es un secreto, es una URL
+  // pública sin terminar de desplegar, T-0036). Vacía a propósito hasta que
+  // esa tarea entregue la URL real de la Web App: `CartaService` trata la
+  // cadena vacía como "sin contenido editorial publicado todavía", el mismo
+  // camino de degradación que una lectura fallida (§4.6) — no como una URL
+  // a la que intentar llamar.
+  urlMenuComandante: 'https://comandante.letiende.co/menu.json',
+  urlContenidoCartaWebApp: '',
   googleAnalyticsId: '__GOOGLE_ANALYTICS_ID__',
   googleMapsApiKey: '__GOOGLE_MAPS_API_KEY__',
   // Site key de reCAPTCHA v3 (pública por diseño, pero de todas formas sin

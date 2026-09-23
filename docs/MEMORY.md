@@ -10,12 +10,12 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 | | |
 |---|---|
 | **Versión** | 1.0.0 — roadmap completo de etapa 1 (T-1 a T-15, `tech-specs.md` §11) cerrado y **en producción real desde el 04/09/2026**: contenedor completo, proxy a Ágora/Babel, cutover ejecutado. Hoy arranca el roadmap de mantenimiento (`docs/optimizacion-aplicaciones.md`) |
-| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. **Etapa 2 arrancada el 22/09/2026 con la carta del café bar (F-8)**: activas T-0036/T-0037. El roadmap de optimización (T-0034/T-0035) queda en pausa, sin perderse |
+| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. **Etapa 2 arrancada el 22/09/2026 con la carta del café bar (F-8)**: T-0037 completa; activas T-0036 (parcial, bloqueada en un paso manual del humano) y T-0038. El roadmap de optimización (T-0034/T-0035) queda en pausa, sin perderse |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
 | **Rama** | `main` |
 | **Producción** | `https://letiende.co` / `https://www.letiende.co` sirven de verdad el contenedor de este repositorio — CloudFront `ER22S2WADMM83`, cutover ejecutado el 04/09/2026 (T-0017), verificado en vivo el 07/09/2026 (`cloudfront ListDistributions` + `route53 ListResourceRecordSets` reales, y navegador real contra las 4 rutas propias). La distribución vieja (`E33QAN86FY24JZ`) sigue existiendo pero **sin ningún alias** — ya no sirve tráfico real |
 | **Staging** | `letiende-co-staging` despliega de verdad, con dominio propio real: `https://staging.letiende.co` (ACM `ISSUED`, CloudFront `EQW683KP4VXIV`, T-0011) — verificado en vivo por el humano y por `curl` |
-| **Última sesión** | 22/09/2026 — planeación de la carta del café bar (`/carta`, F-8): análisis del `menu.json` real de Comandante, ADR-023 a ADR-025, `tech-specs.md` §4.6, `DESIGN.md` §11 y tareas T-0036 a T-0040. Ver Contexto de la sesión actual |
+| **Última sesión** | 22/09/2026 — planeación de la carta del café bar (`/carta`, F-8) y arranque de su implementación: T-0037 completa (capa de datos, con pruebas), T-0036 parcial (script y hoja reales, bloqueado en un paso manual del humano). Ver Contexto de la sesión actual |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -1737,3 +1737,70 @@ admite 2 activas, así que T-0034 (OPT-20, Babel) y T-0035 (OPT-16, Comandante) 
 **Próxima tarea sugerida:** T-0036 (hojas + Apps Script, necesita al humano para crear las pestañas
 con su cuenta y desplegar la Web App). T-0037 (capa de datos) puede avanzar en paralelo contra el
 contrato de §4.6, con datos de prueba.
+
+---
+
+**22/09/2026 (continuación) — Implementación: T-0037 completa; T-0036 avanzado hasta un bloqueo
+real de la automatización de navegador.**
+
+**T-0036 (rama `feature/carta-hoja-apps-script`, PR #58 sin fusionar), lo que sí se completó:**
+
+- Las dos pestañas reales creadas en la hoja compartida
+  (`docs.google.com/spreadsheets/d/1-AxCok6FScWLeF74zOVAFWe_ANgNbTPo2Jdc_KWFfs8`), precargadas con
+  las 14 secciones y las 32 claves reales del `menu.json` vigente (encabezados en negrita, fila
+  congelada), operando por navegador (`claude-in-chrome`) con la sesión real
+  (`ocastelblanco@gmail.com`, confirmada en pantalla antes de tocar nada).
+- `herramientas/apps-script/carta.gs` escrito, probado con un arnés de Node (`vm` + stubs de
+  `SpreadsheetApp`/`PropertiesService`/`UrlFetchApp`/`ContentService`) **antes** de pegarlo en el
+  editor real — cada regla de validación, el camino feliz completo, y que un error nunca toca la
+  copia anterior.
+- Pegado en el proyecto real de Apps Script ("Carta del café bar - Le Tiende") mediante un evento
+  `paste` sintético sobre el `textarea.inputarea` de Monaco (`dispatchEvent(new ClipboardEvent(...))`)
+  — la Clipboard API real (`navigator.clipboard.writeText/readText`) se quedó colgada de forma
+  consistente en esa pestaña (`script.google.com`), sin error ni éxito, hasta el timeout de 45 s;
+  funcionó sin problema en la pestaña de Sheets. Contenido verificado línea por línea contra el
+  archivo original tras el pegado (320 líneas, coincide exacto).
+- `onOpen()` ya corre como *simple trigger*: el menú "Le Tiende → Publicar carta" es visible al abrir
+  la hoja.
+- **Corrección de ownership antes de ejecutar**: el humano cambió la decisión de ADR-023 — el
+  documento y el proyecto de Apps Script quedan bajo `ocastelblanco@gmail.com` (dueño),
+  `letiende.co@gmail.com` como editora. Corregido en `tech-specs.md`, `TODO.md` y este archivo
+  (commit `a3d3e40`, PR #58).
+
+**Bloqueo real, no resuelto en esta sesión — límite genuino de la herramienta, no un error de
+uso:** la primera ejecución de `publicarCarta()` dispara la pantalla de autorización OAuth real de
+Google ("Elegir cuenta" → "Permitir"), que Google abre en **una ventana de navegador nueva, fuera del
+grupo de pestañas que `claude-in-chrome` puede alcanzar** (`tabs_context_mcp` nunca la lista, ni con
+`createIfEmpty: true`). Intentado dos veces, por dos caminos distintos (desde el editor de Apps
+Script con "Revisar permisos", y desde el menú real de la hoja con "Aceptar") — mismo resultado en
+los dos. Sin forma de completarla por este medio.
+
+Falta, con `ocastelblanco@gmail.com`, en persona:
+
+1. Abrir la hoja → menú "Le Tiende" → "Publicar carta" → completar el diálogo de autorización
+   (puede que ya esté esperando en una ventana abierta).
+2. Confirmar el diálogo de éxito ("Publicado: 14 secciones, 3 adiciones, 29 variantes").
+3. Extensiones → Apps Script → Implementar → Nueva implementación → "Aplicación web" → ejecutar como
+   "Yo" → acceso "Cualquier usuario" → Implementar.
+4. Pasar la URL `.../exec` resultante para anotarla en `tech-specs.md` §4.6 y `MEMORY.md`, y
+   agregarla como constante real en `environments/` (hoy `urlContenidoCartaWebApp` está vacía a
+   propósito).
+
+**T-0037 (rama `feature/carta-capa-de-datos`), completa, sin depender del bloqueo anterior:**
+
+Detalle técnico completo en `docs/TODO.md`, Historial. En resumen: `armarCarta()` (función pura,
+`src/app/features/carta/armar-carta.ts`) con 21 pruebas, `carta-cache.ts` (caché de módulo con TTL y
+respaldo) con 6 pruebas, `CartaService` (`resource()` + `fetch()` nativo, no `httpResource()` — la
+razón exacta está comentada en el propio archivo) con 6 pruebas, incluida la degradación sin
+contenido editorial y el `503` real vía `RESPONSE_INIT` sin `menu.json`. 75/75 pruebas, build y lint
+en verde. `RESPONSE_INIT` se verificó contra el `.d.ts` instalado de `@angular/core` antes de usarlo,
+no se asumió de memoria (`declare const RESPONSE_INIT: InjectionToken<ResponseInit | null>`,
+`@publicApi`).
+
+**Motor JIT recalculado:** T-0037 pasa a Historial. T-0038 (ruta `/carta` + bloqueo de visibilidad)
+entra como activa junto a T-0036 — puede empezar ya, porque `CartaService` ya degrada correctamente
+sin la URL real de la Web App.
+
+**Próxima tarea sugerida:** T-0038, sin esperar a que el humano termine T-0036 (no lo bloquea). Y,
+en cuanto el humano tenga un momento frente a su computador: los cuatro pasos manuales de T-0036 de
+arriba.
