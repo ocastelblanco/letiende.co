@@ -13,15 +13,15 @@
 export const environment = {
   urlBaseApiAgora: 'https://agora.letiende.co',
   // Carta del café bar (tech-specs.md §4.6, F-8). Precios: Comandante.
-  // `urlContenidoCartaWebApp` NO es un marcador de llave pública (no pasa
-  // por scripts/inyectar-llaves-publicas.mjs: no es un secreto, es una URL
-  // pública sin terminar de desplegar, T-0036). Vacía a propósito hasta que
-  // esa tarea entregue la URL real de la Web App: `CartaService` trata la
-  // cadena vacía como "sin contenido editorial publicado todavía", el mismo
-  // camino de degradación que una lectura fallida (§4.6) — no como una URL
-  // a la que intentar llamar.
+  // `urlContenidoCartaWebApp` NO es un marcador de llave pública: no pasa
+  // por scripts/inyectar-llaves-publicas.mjs porque no es un secreto — es
+  // una URL pública, desplegada el 23/09/2026 (T-0036), verificada en vivo
+  // con `curl -L` (sigue la redirección a `script.googleusercontent.com`
+  // sin intervención). Cambiar de implementación en Apps Script cambia esta
+  // URL — no editar a mano sin coordinar con quien administre la hoja.
   urlMenuComandante: 'https://comandante.letiende.co/menu.json',
-  urlContenidoCartaWebApp: '',
+  urlContenidoCartaWebApp:
+    'https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec',
   googleAnalyticsId: '__GOOGLE_ANALYTICS_ID__',
   googleMapsApiKey: '__GOOGLE_MAPS_API_KEY__',
   // Site key de reCAPTCHA v3 (pública por diseño, pero de todas formas sin

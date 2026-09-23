@@ -1804,3 +1804,23 @@ sin la URL real de la Web App.
 **Próxima tarea sugerida:** T-0038, sin esperar a que el humano termine T-0036 (no lo bloquea). Y,
 en cuanto el humano tenga un momento frente a su computador: los cuatro pasos manuales de T-0036 de
 arriba.
+
+---
+
+**23/09/2026 — URL real de la Web App conectada a `environments/`.**
+
+El humano completó el paso manual de T-0036 (autorización OAuth + despliegue) y entregó la URL real:
+
+```
+https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec
+```
+
+`urlContenidoCartaWebApp` en `environment.ts` y `environment.production.ts` pasó de `''` a esta URL
+real — en las dos, no solo en producción: el mismo artefacto sirve a staging y a producción
+(`CLAUDE.md` §3), y no hay filtración porque `/carta` todavía no tiene ruta (T-0038) y, cuando la
+tenga, ADR-024 la mantiene en 404 fuera de staging hasta T-0040.
+
+Verificado: 75/75 pruebas siguen en verde con la URL real puesta (nada dependía del valor vacío
+específicamente), build de producción y lint sin hallazgos.
+
+**Próxima tarea sugerida:** T-0038 — ya no depende de nada pendiente de T-0036.
