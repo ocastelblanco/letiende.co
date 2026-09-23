@@ -7,6 +7,17 @@
 // docs/MEMORY.md, ADR-012.
 export const environment = {
   urlBaseApiAgora: 'https://agora.letiende.co',
+  // Carta del café bar (tech-specs.md §4.6, F-8). `urlContenidoCartaWebApp`
+  // no es un marcador de llave pública — no pasa por
+  // inyectar-llaves-publicas.mjs, porque no es un secreto: es una URL
+  // pública, desplegada el 23/09/2026 (T-0036), verificada en vivo con
+  // `curl -L` (sigue la redirección a `script.googleusercontent.com` sin
+  // intervención). Real en staging y en producción — no filtra nada:
+  // `/carta` sigue sin ruta (T-0038) y, cuando la tenga, ADR-024 la mantiene
+  // en 404 fuera de staging hasta la publicación real (T-0040).
+  urlMenuComandante: 'https://comandante.letiende.co/menu.json',
+  urlContenidoCartaWebApp:
+    'https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec',
   // Marcadores, no las llaves reales — CLAUDE.md §5, A02 prohíbe cualquier
   // llave en environments/, incluso una pública restringida por dominio como
   // esta. scripts/inyectar-llaves-publicas.mjs los sustituye sobre el

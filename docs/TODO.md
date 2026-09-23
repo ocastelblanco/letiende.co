@@ -25,7 +25,7 @@ T-0040**, que depende de la aprobación de la nueva lista de precios. Esa decisi
 COMPLETA (23/09/2026).** En la hoja maestra del café bar (dueña: `ocastelblanco@gmail.com`;
 `letiende.co@gmail.com` es editora — corrección de ADR-023 del 22/09/2026, antes decía lo
 contrario). Detalle completo en el Historial de abajo. PR `feature/carta-hoja-apps-script` (#58),
-sin fusionar.
+fusionado.
 
 **Definición de terminado — verificado en producción real, no en un entorno de prueba:**
 
@@ -43,29 +43,34 @@ sin fusionar.
   secundaria, no algo que bloquee cerrar esta tarea.
 - PR con el script y la documentación; esfuerzo registrado.
 
-**T-0037 — [CARTA] Capa de datos: `CartaService` + `armarCarta()` con pruebas, ACTIVA.** Puede
-avanzar en paralelo con T-0036: trabaja contra el contrato de §4.6, con datos de prueba sacados del
-`menu.json` real.
+**T-0037 — [CARTA] Capa de datos: `CartaService` + `armarCarta()` con pruebas, COMPLETA
+(22/09/2026).** Avanzó en paralelo con T-0036, contra el contrato de §4.6, con datos de prueba
+sacados del `menu.json` real. Detalle completo en el Historial de abajo. PR
+`feature/carta-capa-de-datos`, sin fusionar.
 
-- Tipos de las dos fuentes y de la carta armada.
-- Función pura `armarCarta(menu, contenido)` en `src/app/features/carta/armar-carta.ts`, que aplica
-  los pasos 1 a 8 de §4.6.
-- `src/app/core/api/carta.service.ts`: lectura solo en SSR con URL constantes en `environments/`,
-  caché en memoria de 5 min, última copia buena como respaldo, y 503 si falta `menu.json`.
-- Todavía sin ruta ni interfaz.
+**T-0038 — [CARTA] Ruta `/carta` + bloqueo de visibilidad (ADR-024), ACTIVA.** Puede empezar ya:
+`CartaService` (T-0037) ya degrada correctamente sin la URL real de la Web App (T-0036) — una card
+por sección con etiquetas de respaldo es suficiente para probar la ruta y el bloqueo. Cuando T-0036
+entregue la URL real, se agrega como constante en `environments/` en un commit aparte, sin que eso
+bloquee esta tarea.
+
+- `cartaVisible(host)` en `src/app/core/` (mismo patrón que `AnalyticsService`, ADR-015): verdadero
+  solo en `staging.letiende.co`, `localhost`, `127.0.0.1`, o si la constante `CARTA_PUBLICADA` es
+  `true` (por defecto `false`). Host resuelto igual que en `robots.txt` (`x-le-tiende-host` o
+  `req.hostname`).
+- Ruta `/carta` en `app.routes.ts` y `app.routes.server.ts` (`RenderMode.Server`, como la portada —
+  depende de datos en vivo, T-0005). Fuera de los hosts permitidos, responde 404 real
+  (`NoEncontradaComponent`) — el `RESPONSE_INIT` que `CartaService` ya usa para el 503 sirve de
+  referencia directa para fijar el 404 aquí.
+- No agrega la ruta a `/sitemap.xml` todavía (eso es de T-0040, cuando se publique de verdad).
+- Página mínima (sin el diseño completo de `DESIGN.md` §11 todavía — eso es T-0039): que renderice
+  `CartaService.carta()` como una lista simple, suficiente para probar que los datos llegan.
 
 **Definición de terminado:**
 
-- Pruebas unitarias de `armarCarta()` que cubran como mínimo:
-  - la misma adición con dos precios en una card (`leche_vegetal` 3.500 y 5.300 → `*` y `†`);
-  - la secuencia de marcas más allá de 5;
-  - una sección con `visible: false`;
-  - una categoría ausente de la hoja (respaldo humanizado, sin perder productos);
-  - las cards sin subcategoría (`comida`, `reposteria`);
-  - el orden de cards y productos;
-  - el formato `$6.600`.
-- Verificado con `curl -L` real que la redirección de la Web App a `script.googleusercontent.com` se
-  sigue desde Node (si T-0036 aún no tiene la URL, queda como parte del DoD de T-0038).
+- `curl` real contra `staging.letiende.co/carta` responde 200 con contenido; contra
+  `letiende.co/carta` (o cualquier otro host) responde 404 real.
+- Prueba unitaria de `cartaVisible()` con los casos de host de `AnalyticsService` como referencia.
 - Build, pruebas y lint en verde; PR; esfuerzo registrado.
 
 ---
@@ -73,7 +78,7 @@ avanzar en paralelo con T-0036: trabaja contra el contrato de §4.6, con datos d
 ## Historial
 
 - **T-0036** — [CARTA] Hojas `carta_secciones` y `carta_diccionario` + Apps Script "Publicar carta".
-  Completada 23/09/2026. PR `feature/carta-hoja-apps-script` (#58), sin fusionar.
+  Completada 23/09/2026. PR `feature/carta-hoja-apps-script` (#58), fusionado.
 
   Las dos pestañas reales creadas en la hoja compartida (dueña `ocastelblanco@gmail.com`),
   precargadas con las 14 secciones y las 32 claves reales del `menu.json` vigente (encabezados en
@@ -107,6 +112,50 @@ avanzar en paralelo con T-0036: trabaja contra el contrato de §4.6, con datos d
 
   URL real de la Web App, anotada en `tech-specs.md` §4.6:
   `https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec`
+
+- **T-0037** — [CARTA] Capa de datos: `CartaService` + `armarCarta()` con pruebas. Completada
+  22/09/2026, en paralelo con T-0036 (ese sigue activo, pendiente de un paso manual del humano).
+  PR `feature/carta-capa-de-datos`, sin fusionar.
+
+  Tipos de las dos fuentes (`MenuComandante`, `ContenidoCarta`) y de la carta armada (`CartaArmada`,
+  `CardCarta`, `ProductoCartaArmado`) en `src/app/features/carta/armar-carta.ts`. `armarCarta()` es
+  una función pura: agrupa por `(category, subcategory)`, descarta secciones `visible: false`,
+  ordena cards por `orden` (las que faltan en la hoja, al final, alfabéticamente por su etiqueta de
+  respaldo), ordena productos por precio y nombre, asigna notas al pie por par (adición, precio) en
+  orden de primera aparición dentro de la card (`generarMarca()`, secuencia `*, †, ‡, §, ¶, **,
+  ††…`), resuelve variantes contra el diccionario y formatea precios en pesos colombianos
+  (`formatoPrecio()`). 21 pruebas unitarias, incluido el caso real que motivó el diseño de las notas
+  al pie por par: `leche_vegetal` cuesta 3.500 en una card y 5.300 en otra.
+
+  `src/app/core/api/carta-cache.ts`: caché en memoria a nivel de módulo con TTL y respaldo a la
+  última copia buena si la lectura falla — mismo patrón que `peticionesPorIp` de
+  `server/api/handlers/contacto.ts`, deliberadamente ajeno a Angular para poder probarlo sin
+  `TestBed` (6 pruebas).
+
+  `src/app/core/api/carta.service.ts` (`CartaService`): a diferencia de `EventosPublicosService`, no
+  usa `httpResource()` — necesita la caché con TTL entre peticiones de la Lambda, algo ajeno al
+  ciclo de vida de una petición SSR individual. Usa el `resource()` genérico de Angular con `fetch()`
+  nativo (sigue redirecciones por defecto, necesario para la Web App de Apps Script). Solo lee en el
+  servidor (`isPlatformServer`); en el navegador no hace ninguna petición, verificado con una prueba
+  que confirma que `fetch` nunca se llama. Sin `menu.json` y sin copia buena en caché, fija `503` vía
+  `RESPONSE_INIT` (token público de `@angular/core`, verificado contra
+  `node_modules/@angular/core/types/core.d.ts` antes de usarlo, no asumido de memoria). Sin
+  contenido editorial (`urlContenidoCartaWebApp` vacía, o su lectura falla), la carta se arma igual
+  con los respaldos de `armarCarta()` — nunca bloquea. 6 pruebas con `TestBed`, mockeando `fetch`
+  global y forzando `PLATFORM_ID`.
+
+  `environments/environment.ts` y `environment.production.ts`: `urlMenuComandante` (real, ya en
+  producción en Comandante) y `urlContenidoCartaWebApp` (vacía a propósito hasta que T-0036 entregue
+  la URL real — no es un marcador de llave pública como `googleMapsApiKey`/`googleAnalyticsId`,
+  porque no es un secreto que sustituir en CI, es una URL pública sin terminar de desplegar).
+
+  Verificado: 75/75 pruebas unitarias en verde, 17 archivos (los 14 que ya existían más
+  `armar-carta.spec.ts`, `carta-cache.spec.ts` y `carta.service.spec.ts`, nuevos),
+  `npm run build -- --configuration=production` sin errores de tipos, `npm run build:api` sin
+  errores, `npm run lint` sin hallazgos. Deliberadamente
+  sin ruta ni interfaz todavía (T-0038) — el DoD original pedía verificar con `curl -L` la
+  redirección real de la Web App, pero eso no tiene sentido sin la URL real de T-0036: queda como
+  parte del DoD de T-0038.
 
 - **T-0033** — [RENDIMIENTO] *Lazy-load* de rutas para reducir JS sin usar en los cuatro repos
   (OPT-15). Completada 08/09/2026, dos PR fusionados: `babel-letiende#130`, `letiende.co#52`.
@@ -929,7 +978,6 @@ avanzar en paralelo con T-0036: trabaja contra el contrato de §4.6, con datos d
 
 | ID | Tarea | Depende de |
 |---|---|---|
-| T-0038 | **[CARTA] Ruta `/carta` + bloqueo de visibilidad (ADR-024).** `cartaVisible(host)` y constante `CARTA_PUBLICADA = false`, ruta `RenderMode.Server`, 404 real fuera de staging/local, fuera del sitemap. Página mínima que ya muestre los datos de T-0037, sin el diseño final. DoD: `curl` real contra staging (200) y producción (404) tras el despliegue | T-0037 |
 | T-0039 | **[CARTA] Interfaz completa (`DESIGN.md` §11).** Cards, notas al pie, variantes, cards destacadas, menú lateral de íconos con botón de expandir, desplazamiento a la card, sección activa, Material Symbols con `icon_names` (ADR-025), accesibilidad (§10). DoD: revisión visual del humano en `staging.letiende.co/carta`, en celular y en escritorio | T-0036, T-0038 |
 | T-0040 | **[CARTA] Publicación.** Solo cuando el humano confirme que la nueva lista de precios está aprobada y cargada en Comandante. `CARTA_PUBLICADA = true`, entrada en `/sitemap.xml`, JSON-LD `Menu` (§4.6) y el enlace "Carta" en la barra **de los tres repositorios a la vez** (`DESIGN.md` §8). DoD: `curl` real contra `letiende.co/carta` (200), sin salto visual de la barra al cruzar a `/cartelera` y `/libros` | T-0039 + aprobación del humano |
 | — | *(Aplazada, repo Comandante, sin ID)* El botón de la hoja también carga los precios en Comandante, con validación en el servidor (ADR-023) | Decisión del humano |

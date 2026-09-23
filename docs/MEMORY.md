@@ -1749,6 +1749,7 @@ admite 2 activas, así que T-0034 (OPT-20, Babel) y T-0035 (OPT-16, Comandante) 
 con su cuenta y desplegar la Web App). T-0037 (capa de datos) puede avanzar en paralelo contra el
 contrato de §4.6, con datos de prueba.
 
+
 ---
 
 **22/09/2026 (continuación) — Corrección de ownership antes de ejecutar T-0036, y arranque de la
@@ -1764,6 +1765,58 @@ El humano compartió la hoja real
 autorizó operarla por navegador (`claude-in-chrome`), con la sesión de Chrome que resultara estar
 abierta (se esperaba `ocastelblanco@gmail.com`). El humano se ausentó de su computador durante esta
 tarea — coordinación por Control remoto desde su celular.
+
+---
+
+**22/09/2026 (continuación) — Implementación: T-0037 completa; T-0036 avanzado hasta un bloqueo
+real de la automatización de navegador.**
+
+**T-0036 (rama `feature/carta-hoja-apps-script`, PR #58 sin fusionar), lo que sí se completó:**
+
+- Las dos pestañas reales creadas en la hoja compartida
+  (`docs.google.com/spreadsheets/d/1-AxCok6FScWLeF74zOVAFWe_ANgNbTPo2Jdc_KWFfs8`), precargadas con
+  las 14 secciones y las 32 claves reales del `menu.json` vigente (encabezados en negrita, fila
+  congelada), operando por navegador (`claude-in-chrome`) con la sesión real
+  (`ocastelblanco@gmail.com`, confirmada en pantalla antes de tocar nada).
+- `herramientas/apps-script/carta.gs` escrito, probado con un arnés de Node (`vm` + stubs de
+  `SpreadsheetApp`/`PropertiesService`/`UrlFetchApp`/`ContentService`) **antes** de pegarlo en el
+  editor real — cada regla de validación, el camino feliz completo, y que un error nunca toca la
+  copia anterior.
+- Pegado en el proyecto real de Apps Script ("Carta del café bar - Le Tiende") mediante un evento
+  `paste` sintético sobre el `textarea.inputarea` de Monaco (`dispatchEvent(new ClipboardEvent(...))`)
+  — la Clipboard API real (`navigator.clipboard.writeText/readText`) se quedó colgada de forma
+  consistente en esa pestaña (`script.google.com`), sin error ni éxito, hasta el timeout de 45 s;
+  funcionó sin problema en la pestaña de Sheets. Contenido verificado línea por línea contra el
+  archivo original tras el pegado (320 líneas, coincide exacto).
+- `onOpen()` ya corre como *simple trigger*: el menú "Le Tiende → Publicar carta" es visible al abrir
+  la hoja.
+- **Corrección de ownership antes de ejecutar**: el humano cambió la decisión de ADR-023 — el
+  documento y el proyecto de Apps Script quedan bajo `ocastelblanco@gmail.com` (dueño),
+  `letiende.co@gmail.com` como editora. Corregido en `tech-specs.md`, `TODO.md` y este archivo
+  (commit `a3d3e40`, PR #58).
+
+**Bloqueo real, no resuelto en esa sesión — límite genuino de la herramienta, no un error de
+uso:** la primera ejecución de `publicarCarta()` dispara la pantalla de autorización OAuth real de
+Google ("Elegir cuenta" → "Permitir"), que Google abre en **una ventana de navegador nueva, fuera del
+grupo de pestañas que `claude-in-chrome` puede alcanzar** (`tabs_context_mcp` nunca la lista, ni con
+`createIfEmpty: true`). Intentado dos veces, por dos caminos distintos (desde el editor de Apps
+Script con "Revisar permisos", y desde el menú real de la hoja con "Aceptar") — mismo resultado en
+los dos. Sin forma de completarla por este medio.
+
+**T-0037 (rama `feature/carta-capa-de-datos`), completa, sin depender del bloqueo anterior:**
+
+Detalle técnico completo en `docs/TODO.md`, Historial. En resumen: `armarCarta()` (función pura,
+`src/app/features/carta/armar-carta.ts`) con 21 pruebas, `carta-cache.ts` (caché de módulo con TTL y
+respaldo) con 6 pruebas, `CartaService` (`resource()` + `fetch()` nativo, no `httpResource()` — la
+razón exacta está comentada en el propio archivo) con 6 pruebas, incluida la degradación sin
+contenido editorial y el `503` real vía `RESPONSE_INIT` sin `menu.json`. 75/75 pruebas, build y lint
+en verde. `RESPONSE_INIT` se verificó contra el `.d.ts` instalado de `@angular/core` antes de usarlo,
+no se asumió de memoria (`declare const RESPONSE_INIT: InjectionToken<ResponseInit | null>`,
+`@publicApi`).
+
+**Motor JIT recalculado en ese momento:** T-0037 pasa a Historial. T-0038 (ruta `/carta` + bloqueo de
+visibilidad) entra como activa junto a T-0036 — puede empezar ya, porque `CartaService` ya degrada
+correctamente sin la URL real de la Web App.
 
 ---
 
@@ -1788,7 +1841,21 @@ un estado distinto al que el humano espera.
 
 Detalle completo de T-0036 en `docs/TODO.md`, Historial.
 
-**Próxima tarea sugerida:** T-0038 (ruta `/carta` + bloqueo de visibilidad), ya activa. Cuando se
-fusionen los PR #58 (T-0036) y #59 (T-0037), `environments/urlContenidoCartaWebApp` debe pasar de
-`''` a la URL real de arriba — pendiente, ningún PR abierto la tiene todavía escrita en
-`environments/`, solo documentada aquí y en `tech-specs.md` §4.6.
+---
+
+**23/09/2026 — URL real de la Web App conectada a `environments/`.**
+
+Con la URL real ya en mano (la misma de arriba), se conectó en la rama de T-0037
+(`feature/carta-capa-de-datos`): `urlContenidoCartaWebApp` en `environment.ts` y
+`environment.production.ts` pasó de `''` a esta URL real — en las dos, no solo en producción: el
+mismo artefacto sirve a staging y a producción (`CLAUDE.md` §3), y no hay filtración porque `/carta`
+todavía no tiene ruta (T-0038) y, cuando la tenga, ADR-024 la mantiene en 404 fuera de staging hasta
+T-0040.
+
+Verificado: 75/75 pruebas siguen en verde con la URL real puesta (nada dependía del valor vacío
+específicamente), build de producción y lint sin hallazgos.
+
+**Motor JIT, estado final de la sesión:** T-0036 y T-0037 completas. T-0038 activa.
+
+**Próxima tarea sugerida:** T-0038 (ruta `/carta` + bloqueo de visibilidad) — ya no depende de nada
+pendiente de T-0036 ni de T-0037.
