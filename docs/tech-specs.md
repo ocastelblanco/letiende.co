@@ -323,6 +323,13 @@ Hoja **`carta_diccionario`** — una fila por clave:
 | `clave` | texto | Clave exacta de Comandante (`leche_vegetal`, `indian_pale_ale`) |
 | `texto` | texto | Adición: frase completa de la nota al pie ("Pídelo en leche vegetal"). Variante: etiqueta ("Indian Pale Ale") |
 
+**URL real, desplegada el 23/09/2026:**
+`https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec`
+— verificada en vivo con `curl -L` (sigue la redirección a `script.googleusercontent.com` sin
+intervención) y con una publicación real desde la hoja: responde `HTTP 200` con las 14 secciones y
+las 32 claves del diccionario, exactamente con el contrato de abajo. Es la que va como
+`urlContenidoCartaWebApp` en `environments/` (T-0037).
+
 **Contrato de la Web App** (`GET`, JSON, sin autenticación):
 
 ```json
@@ -352,8 +359,8 @@ la publicación (se resuelven con respaldo, abajo); sí se listan como aviso.
 
 - Las dos URL son **constantes** en `environments/` — direcciones públicas, no secretos (A02) — y
   nunca se arman con datos del `Request` (A10, SSRF). La Web App redirige a
-  `script.googleusercontent.com`; el cliente HTTP del servidor debe seguir esa redirección
-  (verificarlo con `curl -L` real en T-0037).
+  `script.googleusercontent.com`; el `fetch()` nativo de Node la sigue por defecto — verificado con
+  `curl -L` real contra la URL de arriba, no solo asumido de la documentación de `fetch()`.
 - Se leen **solo en el servidor**; el navegador recibe el resultado por la *transfer cache* de
   Angular y no hace peticiones propias a `comandante.letiende.co` ni a `script.google.com` — por eso
   la CSP del contenedor no necesita orígenes nuevos en `connect-src`.

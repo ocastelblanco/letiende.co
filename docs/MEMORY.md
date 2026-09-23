@@ -10,12 +10,12 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 | | |
 |---|---|
 | **Versión** | 1.0.0 — roadmap completo de etapa 1 (T-1 a T-15, `tech-specs.md` §11) cerrado y **en producción real desde el 04/09/2026**: contenedor completo, proxy a Ágora/Babel, cutover ejecutado. Hoy arranca el roadmap de mantenimiento (`docs/optimizacion-aplicaciones.md`) |
-| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. **Etapa 2 arrancada el 22/09/2026 con la carta del café bar (F-8)**: activas T-0036/T-0037. El roadmap de optimización (T-0034/T-0035) queda en pausa, sin perderse |
+| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. **Etapa 2 arrancada el 22/09/2026 con la carta del café bar (F-8)**: T-0036 y T-0037 completas (23/09/2026); T-0038 activa. El roadmap de optimización (T-0034/T-0035) queda en pausa, sin perderse |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
 | **Rama** | `main` |
 | **Producción** | `https://letiende.co` / `https://www.letiende.co` sirven de verdad el contenedor de este repositorio — CloudFront `ER22S2WADMM83`, cutover ejecutado el 04/09/2026 (T-0017), verificado en vivo el 07/09/2026 (`cloudfront ListDistributions` + `route53 ListResourceRecordSets` reales, y navegador real contra las 4 rutas propias). La distribución vieja (`E33QAN86FY24JZ`) sigue existiendo pero **sin ningún alias** — ya no sirve tráfico real |
 | **Staging** | `letiende-co-staging` despliega de verdad, con dominio propio real: `https://staging.letiende.co` (ACM `ISSUED`, CloudFront `EQW683KP4VXIV`, T-0011) — verificado en vivo por el humano y por `curl` |
-| **Última sesión** | 22/09/2026 — planeación de la carta del café bar (`/carta`, F-8): análisis del `menu.json` real de Comandante, ADR-023 a ADR-025, `tech-specs.md` §4.6, `DESIGN.md` §11 y tareas T-0036 a T-0040. Ver Contexto de la sesión actual |
+| **Última sesión** | 22–23/09/2026 — planeación e implementación de la carta del café bar (`/carta`, F-8): T-0036 y T-0037 completas, T-0038 activa. Ver Contexto de la sesión actual |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -1764,3 +1764,31 @@ El humano compartió la hoja real
 autorizó operarla por navegador (`claude-in-chrome`), con la sesión de Chrome que resultara estar
 abierta (se esperaba `ocastelblanco@gmail.com`). El humano se ausentó de su computador durante esta
 tarea — coordinación por Control remoto desde su celular.
+
+---
+
+**23/09/2026 — T-0036 completa: el humano terminó la autorización y el despliegue.**
+
+El humano autorizó el script en persona (el paso que quedó bloqueado la sesión anterior, fuera del
+alcance de la automatización de navegador) y desplegó la Web App. URL real:
+
+```
+https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec
+```
+
+Verificado con `curl -L` real (no asumido): `HTTP 200`, contrato exacto — 14 secciones, 32 claves de
+diccionario, `publicadoEn` con timestamp real de la primera publicación del humano.
+
+Con la autorización ya hecha, se pudo completar el resto del DoD de T-0036 por navegador sin
+tropezar con el bloqueo de la sesión anterior: se introdujo un ícono inválido (`"Coffee!"`) en
+`carta_secciones`, se ejecutó "Publicar carta" desde el menú real, y el diálogo de error identificó
+la fila y la causa exactas — verificado además que `publicadoEn` no cambió (la copia publicada quedó
+intacta). Restaurada la celda a su valor correcto (`coffee`) antes de terminar, sin dejar la hoja en
+un estado distinto al que el humano espera.
+
+Detalle completo de T-0036 en `docs/TODO.md`, Historial.
+
+**Próxima tarea sugerida:** T-0038 (ruta `/carta` + bloqueo de visibilidad), ya activa. Cuando se
+fusionen los PR #58 (T-0036) y #59 (T-0037), `environments/urlContenidoCartaWebApp` debe pasar de
+`''` a la URL real de arriba — pendiente, ningún PR abierto la tiene todavía escrita en
+`environments/`, solo documentada aquí y en `tech-specs.md` §4.6.

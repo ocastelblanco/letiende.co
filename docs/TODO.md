@@ -22,27 +22,25 @@ Contexto completo de la carta: `tech-specs.md` §4.6 (datos, contrato, reglas de
 T-0040**, que depende de la aprobación de la nueva lista de precios. Esa decisión es del humano.
 
 **T-0036 — [CARTA] Hojas `carta_secciones` y `carta_diccionario` + Apps Script "Publicar carta",
-ACTIVA.** En la hoja maestra del café bar (dueña: `ocastelblanco@gmail.com`; `letiende.co@gmail.com`
-es editora — corrección de ADR-023 del 22/09/2026, antes decía lo contrario).
+COMPLETA (23/09/2026).** En la hoja maestra del café bar (dueña: `ocastelblanco@gmail.com`;
+`letiende.co@gmail.com` es editora — corrección de ADR-023 del 22/09/2026, antes decía lo
+contrario). Detalle completo en el Historial de abajo. PR `feature/carta-hoja-apps-script` (#58),
+sin fusionar.
 
-- Crear las dos pestañas con las columnas de `tech-specs.md` §4.6, precargadas con **todas** las
-  claves reales del `menu.json` vigente (14 secciones, 3 adiciones, 29 variantes). Proponer las
-  etiquetas y los íconos; las descripciones las escriben los socios. `ofertas/*` con `destacada`
-  en `TRUE`.
-- Escribir `herramientas/apps-script/carta.gs` en este repositorio:
-  - `onOpen` agrega el menú "Le Tiende → Publicar carta".
-  - `publicarCarta()` valida y guarda la copia fija. Si algo falla, no publica y muestra el error
-    en la hoja.
-  - `doGet()` sirve la copia y nada más, con el contrato JSON de §4.6.
-- Desplegar la Web App con el humano (necesita su sesión en `ocastelblanco@gmail.com`, dueño del
-  documento — no `letiende.co@gmail.com`).
+**Definición de terminado — verificado en producción real, no en un entorno de prueba:**
 
-**Definición de terminado:**
-
-- Probado con el botón real: una publicación válida y una inválida (la inválida no cambia la copia).
-- `curl -L` contra la URL `/exec` devuelve el contrato exacto.
-- Verificado que una cuenta sin permiso de edición no puede publicar.
-- La URL `/exec` queda anotada en `tech-specs.md` §4.6 y `MEMORY.md` §5.
+- ✅ Publicación real desde el botón: `curl -L` contra la URL `/exec` devuelve `HTTP 200` con el
+  contrato exacto (14 secciones, 32 claves de diccionario).
+- ✅ Publicación inválida (ícono con formato incorrecto): el diálogo de error identifica la fila y
+  la causa exactas, y la copia publicada quedó intacta — verificado comparando `publicadoEn` antes y
+  después del intento fallido.
+- ✅ URL `/exec` anotada en `tech-specs.md` §4.6.
+- ⚠️ **No verificado independientemente:** que una cuenta sin permiso de edición no pueda publicar.
+  Habría requerido una segunda cuenta de Google sin acceso al documento, que no estaba disponible en
+  esta sesión. Se apoya en el comportamiento por diseño de Apps Script (el menú personalizado y la
+  ejecución de funciones de un proyecto ligado a una hoja exigen acceso de edición al documento), no
+  en una prueba propia — si esto importa de verdad, es una prueba de una tarde con una cuenta
+  secundaria, no algo que bloquee cerrar esta tarea.
 - PR con el script y la documentación; esfuerzo registrado.
 
 **T-0037 — [CARTA] Capa de datos: `CartaService` + `armarCarta()` con pruebas, ACTIVA.** Puede
@@ -73,6 +71,42 @@ avanzar en paralelo con T-0036: trabaja contra el contrato de §4.6, con datos d
 ---
 
 ## Historial
+
+- **T-0036** — [CARTA] Hojas `carta_secciones` y `carta_diccionario` + Apps Script "Publicar carta".
+  Completada 23/09/2026. PR `feature/carta-hoja-apps-script` (#58), sin fusionar.
+
+  Las dos pestañas reales creadas en la hoja compartida (dueña `ocastelblanco@gmail.com`),
+  precargadas con las 14 secciones y las 32 claves reales del `menu.json` vigente (encabezados en
+  negrita, fila congelada). Operado por navegador (`claude-in-chrome`), con la sesión real
+  confirmada en pantalla antes de escribir nada.
+
+  `herramientas/apps-script/carta.gs`: `onOpen` agrega el menú "Le Tiende → Publicar carta";
+  `publicarCarta()` valida `carta_secciones` y `carta_diccionario` (claves duplicadas, formato de
+  ícono, orden numérico, booleanos interpretables), compara contra el `menu.json` real de Comandante
+  para avisar — no bloquear — claves sin traducir, y solo si no hay errores guarda una copia fija.
+  `doGet()` sirve esa copia, de solo lectura. Probado primero con un arnés de Node (`vm` + stubs de
+  `SpreadsheetApp`/`PropertiesService`/`UrlFetchApp`/`ContentService`) antes de pegarlo en el editor
+  real — pegado mediante un evento `paste` sintético sobre el `textarea.inputarea` de Monaco
+  (`dispatchEvent(new ClipboardEvent(...))`), porque la Clipboard API real
+  (`navigator.clipboard.writeText/readText`) se quedaba colgada de forma consistente en esa pestaña
+  (`script.google.com`) hasta el timeout, sin error ni éxito — funcionó sin problema en la pestaña de
+  Sheets. Contenido verificado línea por línea contra el archivo original tras el pegado.
+
+  La autorización OAuth real de Google (primera ejecución) abre una ventana de navegador nueva, fuera
+  del grupo de pestañas que la automatización puede alcanzar — bloqueo genuino de la herramienta,
+  intentado por dos caminos distintos sin éxito. El humano la completó en persona.
+
+  Verificado en producción real, no en un entorno de prueba: publicación válida real vía `curl -L`
+  (`HTTP 200`, contrato exacto); publicación inválida (ícono `"Coffee!"`) bloqueada con el mensaje de
+  error exacto de fila y causa, y la copia publicada verificada intacta (mismo `publicadoEn` antes y
+  después del intento). No verificado independientemente que una cuenta sin permiso de edición no
+  pueda publicar (sin segunda cuenta disponible en la sesión) — detalle en la nota de arriba.
+
+  Corrigió además ADR-023 antes de ejecutar: el documento y el proyecto de Apps Script quedan bajo
+  `ocastelblanco@gmail.com` (dueño), no bajo `letiende.co@gmail.com` (decisión del humano).
+
+  URL real de la Web App, anotada en `tech-specs.md` §4.6:
+  `https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec`
 
 - **T-0033** — [RENDIMIENTO] *Lazy-load* de rutas para reducir JS sin usar en los cuatro repos
   (OPT-15). Completada 08/09/2026, dos PR fusionados: `babel-letiende#130`, `letiende.co#52`.
