@@ -23,6 +23,12 @@ export const serverRoutes: ServerRoute[] = [
     path: 'preguntas-frecuentes',
     renderMode: RenderMode.Prerender,
   },
+  // La carta depende de datos en vivo y de la cabecera de host de cada
+  // petición (404 fuera de staging, ADR-024): nunca Prerender.
+  {
+    path: 'carta',
+    renderMode: RenderMode.Server,
+  },
   // Cualquier ruta no listada arriba: NoEncontradaComponent, renderizado por
   // petición con HTTP 404 real — una "página en construcción" que responde
   // 200 hace que los buscadores indexen basura (CLAUDE.md §5, A05,
