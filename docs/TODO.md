@@ -9,73 +9,83 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-**22/09/2026 — Arranca la etapa 2: carta del café bar (F-8, `PRD.md` §5).** A pedido del humano, el
-motor JIT toma sus dos activas de la carta. Las dos que estaban activas del roadmap de optimización
-entre repositorios, **T-0034** (OPT-20, estáticos de Babel en S3 + CloudFront) y **T-0035** (OPT-16,
-rendimiento del dashboard de Comandante), quedan **en pausa**. No se pierden: su definición de
-terminado completa sigue en `docs/optimizacion-aplicaciones.md` §4 y §5, y vuelven a la cola de
-abajo. Las notas de cierre que traía esta zona (T-0015 a T-0033) ya estaban completas en el Historial
-y se retiraron de aquí.
+**23/09/2026 — Etapa 2 en curso: carta del café bar (F-8, `PRD.md` §5).** T-0036, T-0037 y T-0038
+están **completas** y en el Historial de abajo (PR #58, #59 y #60, los tres fusionados). El motor JIT
+toma como activas **T-0039** (interfaz completa de la carta) y **T-0034** (OPT-20, estáticos de Babel
+en S3 + CloudFront, del roadmap de optimización entre repositorios). **T-0040** no puede ser activa:
+espera la aprobación del humano de la nueva lista de precios. **T-0035** (OPT-16) sigue en la cola 2.
 
 Contexto completo de la carta: `tech-specs.md` §4.6 (datos, contrato, reglas de armado), `DESIGN.md`
 §11 (presentación) y `MEMORY.md`, ADR-023 a ADR-025. **La carta no se ve en `letiende.co` hasta
-T-0040**, que depende de la aprobación de la nueva lista de precios. Esa decisión es del humano.
+T-0040**: `/carta` responde 404 real fuera de staging/localhost (T-0038). Esa decisión es del humano.
 
-**T-0036 — [CARTA] Hojas `carta_secciones` y `carta_diccionario` + Apps Script "Publicar carta",
-COMPLETA (23/09/2026).** En la hoja maestra del café bar (dueña: `ocastelblanco@gmail.com`;
-`letiende.co@gmail.com` es editora — corrección de ADR-023 del 22/09/2026, antes decía lo
-contrario). Detalle completo en el Historial de abajo. PR `feature/carta-hoja-apps-script` (#58),
-fusionado.
-
-**Definición de terminado — verificado en producción real, no en un entorno de prueba:**
-
-- ✅ Publicación real desde el botón: `curl -L` contra la URL `/exec` devuelve `HTTP 200` con el
-  contrato exacto (14 secciones, 32 claves de diccionario).
-- ✅ Publicación inválida (ícono con formato incorrecto): el diálogo de error identifica la fila y
-  la causa exactas, y la copia publicada quedó intacta — verificado comparando `publicadoEn` antes y
-  después del intento fallido.
-- ✅ URL `/exec` anotada en `tech-specs.md` §4.6.
-- ⚠️ **No verificado independientemente:** que una cuenta sin permiso de edición no pueda publicar.
-  Habría requerido una segunda cuenta de Google sin acceso al documento, que no estaba disponible en
-  esta sesión. Se apoya en el comportamiento por diseño de Apps Script (el menú personalizado y la
-  ejecución de funciones de un proyecto ligado a una hoja exigen acceso de edición al documento), no
-  en una prueba propia — si esto importa de verdad, es una prueba de una tarde con una cuenta
-  secundaria, no algo que bloquee cerrar esta tarea.
-- PR con el script y la documentación; esfuerzo registrado.
-
-**T-0037 — [CARTA] Capa de datos: `CartaService` + `armarCarta()` con pruebas, COMPLETA
-(22/09/2026).** Avanzó en paralelo con T-0036, contra el contrato de §4.6, con datos de prueba
-sacados del `menu.json` real. Detalle completo en el Historial de abajo. PR
-`feature/carta-capa-de-datos`, sin fusionar.
-
-**T-0038 — [CARTA] Ruta `/carta` + bloqueo de visibilidad (ADR-024), ACTIVA.** Puede empezar ya:
-`CartaService` (T-0037) ya degrada correctamente sin la URL real de la Web App (T-0036) — una card
-por sección con etiquetas de respaldo es suficiente para probar la ruta y el bloqueo. Cuando T-0036
-entregue la URL real, se agrega como constante en `environments/` en un commit aparte, sin que eso
-bloquee esta tarea.
-
-- `cartaVisible(host)` en `src/app/core/` (mismo patrón que `AnalyticsService`, ADR-015): verdadero
-  solo en `staging.letiende.co`, `localhost`, `127.0.0.1`, o si la constante `CARTA_PUBLICADA` es
-  `true` (por defecto `false`). Host resuelto igual que en `robots.txt` (`x-le-tiende-host` o
-  `req.hostname`).
-- Ruta `/carta` en `app.routes.ts` y `app.routes.server.ts` (`RenderMode.Server`, como la portada —
-  depende de datos en vivo, T-0005). Fuera de los hosts permitidos, responde 404 real
-  (`NoEncontradaComponent`) — el `RESPONSE_INIT` que `CartaService` ya usa para el 503 sirve de
-  referencia directa para fijar el 404 aquí.
-- No agrega la ruta a `/sitemap.xml` todavía (eso es de T-0040, cuando se publique de verdad).
-- Página mínima (sin el diseño completo de `DESIGN.md` §11 todavía — eso es T-0039): que renderice
-  `CartaService.carta()` como una lista simple, suficiente para probar que los datos llegan.
+**T-0039 — [CARTA] Interfaz completa (`DESIGN.md` §11), ACTIVA.** Cards, notas al pie, variantes,
+cards destacadas, menú lateral de íconos con botón de expandir, desplazamiento a la card, sección
+activa, Material Symbols con `icon_names` (ADR-025), accesibilidad (§10). Reemplaza la lista simple
+de T-0038 sobre la misma ruta y el mismo bloqueo de visibilidad; no toca `cartaVisible()`.
 
 **Definición de terminado:**
 
-- `curl` real contra `staging.letiende.co/carta` responde 200 con contenido; contra
-  `letiende.co/carta` (o cualquier otro host) responde 404 real.
-- Prueba unitaria de `cartaVisible()` con los casos de host de `AnalyticsService` como referencia.
+- Revisión visual del humano en `staging.letiende.co/carta`, en celular y en escritorio.
+- **Verificación de hidratación en navegador real**, no solo `curl` ni pruebas unitarias: la carta
+  con sus 14 secciones y precios debe seguir en pantalla después de hidratar, sin el mensaje "La
+  carta no está disponible en este momento." y con la consola sin errores de hidratación desde la
+  carga inicial. Es la lección del defecto de T-0038 (Historial): el HTML del SSR estaba bien y la
+  hidratación lo borraba. La revisión del humano en staging no sustituye esta verificación.
 - Build, pruebas y lint en verde; PR; esfuerzo registrado.
+
+**T-0034 — [INFRA] Servir los estáticos de Babel desde S3 + CloudFront, no desde el Lambda `ssr`
+(OPT-20), ACTIVA:** hallazgo real del incidente de T-0026 (08/09/2026) — habilitar `sourceMap` en
+Babel causó un 500 real en producción porque el Lambda `ssr` sirve sus propios estáticos con
+`express.static`, y la respuesta síncrona de Lambda tiene un límite duro de 6 MB tras la codificación
+de API Gateway. No es exclusivo de los source maps: cualquier estático futuro que crezca lo suficiente
+tropieza con el mismo límite. Mismo patrón que `letiende-assets` de `letiende.co` (S3 + CloudFront,
+`docs/tech-specs.md` §7.2 de ese repo). Vuelve del estado "en pausa" del 22/09/2026
+(`docs/optimizacion-aplicaciones.md` §4 y §5). DoD: los estáticos de `dist/babel-letiende/browser/**`
+servidos desde un bucket S3 propio detrás de CloudFront, con el Lambda `ssr` limitado a renderizar
+HTML; sin romper `--base-href`/las rutas ya proxied desde `letiende.co`; verificado con `curl` real
+contra producción; oportunidad de reactivar `sourceMap` en Babel una vez esto exista (no en el
+alcance de esta tarea); `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
 
 ---
 
 ## Historial
+
+- **T-0038** — [CARTA] Ruta `/carta` + bloqueo de visibilidad (ADR-024). Completada 23/09/2026. PR
+  `feature/carta-ruta-visibilidad` (#60), fusionado; el defecto de hidratación de abajo se corrige
+  en `fix/carta-hidratacion-transferstate`.
+
+  `cartaVisible(host, publicada = CARTA_PUBLICADA)` y `resolverHostCarta(request)` en
+  `src/app/core/carta-visibilidad.ts`. `CartaComponent` en `/carta` con `RenderMode.Server`; fuera de
+  staging/localhost/127.0.0.1 fija `RESPONSE_INIT.status = 404` y renderiza `NoEncontradaComponent`.
+  89 pruebas en el PR.
+
+  Hallazgos: (a) `REQUEST` llega en el SSR real y `RESPONSE_INIT.status` llega a la respuesta HTTP
+  (verificado con `curl` local); (b) `resource()` es *eager*, así que `CartaService` se obtiene con
+  `Injector.get()` solo si la carta es visible — no lee Comandante para responder un 404 (hay
+  prueba); (c) `resolverHostCarta` en el navegador usa `location.hostname`, porque la hidratación
+  re-ejecuta el constructor.
+
+  Verificado en el despliegue real por el humano: `https://staging.letiende.co/carta` responde 200
+  con 14 secciones; `https://letiende.co/carta` responde 404.
+
+  **Defecto encontrado en staging después del despliegue.** El HTML del SSR traía las 14 secciones,
+  pero en pantalla se veía "La carta no está disponible en este momento.". Causa raíz: el *loader* de
+  `resource()` en `CartaService` devolvía `null` en el navegador, y al hidratar la plantilla
+  reemplazaba la carta del SSR por el mensaje. `tech-specs.md` §4.6 decía que el navegador la recibe
+  "por la transfer cache de Angular", pero `resource()` no usa la transfer cache HTTP (solo
+  `httpResource`/`HttpClient` la usan): la afirmación era falsa y nunca se verificó en navegador; la
+  prueba del PR #60 solo cubría el servidor. Corrección, rama `fix/carta-hidratacion-transferstate`
+  (PR aún sin abrir): `TransferState` con `CLAVE_CARTA_ARMADA`
+  (`makeStateKey<CartaArmada>('carta-armada')`); el servidor guarda la carta armada y el navegador la
+  lee sin hacer peticiones; con 503 no se guarda nada. 91 pruebas, lint y build en verde; verificado
+  en navegador real contra `serve:ssr` local (14 secciones con precios, sin el mensaje). Límite
+  honesto de esa verificación: la consola solo se leyó desde la primera llamada de la herramienta,
+  así que no se garantiza la ausencia de errores de hidratación en la carga inicial.
+
+  **Lección:** una prueba unitaria de servidor más `curl` no cubren la hidratación; todo cambio con
+  datos SSR necesita verificación en navegador, no solo con `curl`. La revisión del humano en
+  staging la habría dejado pasar (dijo "todo en orden" con el texto de error visible).
 
 - **T-0036** — [CARTA] Hojas `carta_secciones` y `carta_diccionario` + Apps Script "Publicar carta".
   Completada 23/09/2026. PR `feature/carta-hoja-apps-script` (#58), fusionado.
@@ -114,8 +124,7 @@ bloquee esta tarea.
   `https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec`
 
 - **T-0037** — [CARTA] Capa de datos: `CartaService` + `armarCarta()` con pruebas. Completada
-  22/09/2026, en paralelo con T-0036 (ese sigue activo, pendiente de un paso manual del humano).
-  PR `feature/carta-capa-de-datos`, sin fusionar.
+  22/09/2026, en paralelo con T-0036. PR `feature/carta-capa-de-datos` (#59), fusionado.
 
   Tipos de las dos fuentes (`MenuComandante`, `ContenidoCarta`) y de la carta armada (`CartaArmada`,
   `CardCarta`, `ProductoCartaArmado`) en `src/app/features/carta/armar-carta.ts`. `armarCarta()` es
@@ -978,12 +987,11 @@ bloquee esta tarea.
 
 | ID | Tarea | Depende de |
 |---|---|---|
-| T-0039 | **[CARTA] Interfaz completa (`DESIGN.md` §11).** Cards, notas al pie, variantes, cards destacadas, menú lateral de íconos con botón de expandir, desplazamiento a la card, sección activa, Material Symbols con `icon_names` (ADR-025), accesibilidad (§10). DoD: revisión visual del humano en `staging.letiende.co/carta`, en celular y en escritorio | T-0036, T-0038 |
-| T-0040 | **[CARTA] Publicación.** Solo cuando el humano confirme que la nueva lista de precios está aprobada y cargada en Comandante. `CARTA_PUBLICADA = true`, entrada en `/sitemap.xml`, JSON-LD `Menu` (§4.6) y el enlace "Carta" en la barra **de los tres repositorios a la vez** (`DESIGN.md` §8). DoD: `curl` real contra `letiende.co/carta` (200), sin salto visual de la barra al cruzar a `/cartelera` y `/libros` | T-0039 + aprobación del humano |
+| T-0040 | **[CARTA] Publicación.** Solo cuando el humano confirme que la nueva lista de precios está aprobada y cargada en Comandante. `CARTA_PUBLICADA = true`, entrada en `/sitemap.xml`, JSON-LD `Menu` (§4.6) y el enlace "Carta" en la barra **de los tres repositorios a la vez** (`DESIGN.md` §8). DoD: `curl` real contra `letiende.co/carta` (200), sin salto visual de la barra al cruzar a `/cartelera` y `/libros` | T-0039 (activa) + aprobación del humano |
 | — | *(Aplazada, repo Comandante, sin ID)* El botón de la hoja también carga los precios en Comandante, con validación en el servidor (ADR-023) | Decisión del humano |
 
-**Cola 2 — Roadmap de optimización entre repositorios, en pausa desde el 22/09/2026.** Retoma con
-**T-0034** (OPT-20) y **T-0035** (OPT-16), en ese orden. Su definición de terminado completa está en
+**Cola 2 — Roadmap de optimización entre repositorios, en pausa desde el 22/09/2026.** **T-0034**
+(OPT-20) volvió a las activas el 23/09/2026; sigue **T-0035** (OPT-16). Su definición de terminado completa está en
 `docs/optimizacion-aplicaciones.md` §4, y el seguimiento en §5 de ese documento.
 
 ---

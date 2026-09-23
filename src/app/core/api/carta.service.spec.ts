@@ -1,8 +1,8 @@
-import { ApplicationRef, PLATFORM_ID, RESPONSE_INIT } from '@angular/core';
+import { ApplicationRef, PLATFORM_ID, RESPONSE_INIT, TransferState } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '@environments/environment';
-import { MenuComandante } from '@features/carta/armar-carta';
-import { CartaService, _reiniciarCacheCartaParaPruebas } from './carta.service';
+import { CartaArmada, MenuComandante } from '@features/carta/armar-carta';
+import { CLAVE_CARTA_ARMADA, CartaService, _reiniciarCacheCartaParaPruebas } from './carta.service';
 
 const menuFalso: MenuComandante = {
   updatedAt: '2026-09-22T00:00:00.000Z',
@@ -50,13 +50,40 @@ describe('CartaService', () => {
     appRef = TestBed.inject(ApplicationRef);
   }
 
-  it('en el navegador, no hace ninguna petición: el HTML ya viene armado del SSR', async () => {
+  it('en el navegador, sin TransferState, no hace ninguna petición y no hay carta', async () => {
     configurar('browser');
-    TestBed.inject(CartaService);
+    const servicio = TestBed.inject(CartaService);
     TestBed.tick();
     await appRef.whenStable();
 
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(servicio.carta.hasValue() ? servicio.carta.value() : null).toBeNull();
+  });
+
+  it('en el navegador, con la carta en TransferState, la usa sin hacer ninguna petición', async () => {
+    configurar('browser');
+    const cartaFalsa: CartaArmada = { cards: [] };
+    TestBed.inject(TransferState).set(CLAVE_CARTA_ARMADA, cartaFalsa);
+    const servicio = TestBed.inject(CartaService);
+    TestBed.tick();
+    await appRef.whenStable();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(servicio.carta.value()).toEqual(cartaFalsa);
+  });
+
+  it('en el servidor, con carta armada, la deja en TransferState para el navegador', async () => {
+    environment.urlContenidoCartaWebApp = '';
+    fetchMock.mockResolvedValue(respuestaJson(menuFalso));
+
+    configurar('server');
+    const servicio = TestBed.inject(CartaService);
+    TestBed.tick();
+    await appRef.whenStable();
+
+    expect(TestBed.inject(TransferState).get(CLAVE_CARTA_ARMADA, null)).toEqual(
+      servicio.carta.value(),
+    );
   });
 
   it('en el servidor, con las dos fuentes disponibles, arma la carta', async () => {
@@ -142,6 +169,7 @@ describe('CartaService', () => {
     await appRef.whenStable();
 
     expect(respuestaInit.status).toBe(503);
+    expect(TestBed.inject(TransferState).get(CLAVE_CARTA_ARMADA, null)).toBeNull();
     expect(servicio.carta.hasValue() ? servicio.carta.value() : null).toBeNull();
   });
 

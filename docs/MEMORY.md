@@ -10,12 +10,12 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 | | |
 |---|---|
 | **Versión** | 1.0.0 — roadmap completo de etapa 1 (T-1 a T-15, `tech-specs.md` §11) cerrado y **en producción real desde el 04/09/2026**: contenedor completo, proxy a Ágora/Babel, cutover ejecutado. Hoy arranca el roadmap de mantenimiento (`docs/optimizacion-aplicaciones.md`) |
-| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. **Etapa 2 arrancada el 22/09/2026 con la carta del café bar (F-8)**: T-0036 y T-0037 completas (23/09/2026); T-0038 activa. El roadmap de optimización (T-0034/T-0035) queda en pausa, sin perderse |
+| **Fase** | Etapa 1 (OBJ-5, `PRD.md` §6) **cerrada** — T-0001 a T-0017 completadas, ver historial de `docs/TODO.md`. **Etapa 2 arrancada el 22/09/2026 con la carta del café bar (F-8)**: T-0036, T-0037 y T-0038 completas (23/09/2026); activas T-0039 (interfaz completa) y T-0034 (OPT-20, vuelve del roadmap de optimización). T-0035 sigue en cola |
 | **Repositorio** | <https://github.com/ocastelblanco/letiende.co> |
 | **Rama** | `main` |
 | **Producción** | `https://letiende.co` / `https://www.letiende.co` sirven de verdad el contenedor de este repositorio — CloudFront `ER22S2WADMM83`, cutover ejecutado el 04/09/2026 (T-0017), verificado en vivo el 07/09/2026 (`cloudfront ListDistributions` + `route53 ListResourceRecordSets` reales, y navegador real contra las 4 rutas propias). La distribución vieja (`E33QAN86FY24JZ`) sigue existiendo pero **sin ningún alias** — ya no sirve tráfico real |
 | **Staging** | `letiende-co-staging` despliega de verdad, con dominio propio real: `https://staging.letiende.co` (ACM `ISSUED`, CloudFront `EQW683KP4VXIV`, T-0011) — verificado en vivo por el humano y por `curl` |
-| **Última sesión** | 22–23/09/2026 — planeación e implementación de la carta del café bar (`/carta`, F-8): T-0036 y T-0037 completas, T-0038 activa. Ver Contexto de la sesión actual |
+| **Última sesión** | 22–23/09/2026 — planeación e implementación de la carta del café bar (`/carta`, F-8): T-0036, T-0037 y T-0038 completas; activas T-0039 y T-0034. Ver Contexto de la sesión actual |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -54,7 +54,10 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
 - [x] Cambios en Ágora y en Babel (base href, barra común, mapas del sitio, 301) — T-0013/T-0014
 - [x] Cutover de `letiende.co` (T-14/T-15), ejecutado el 04/09/2026 — T-0017
 - [ ] *Etapa 2:* carta del café bar (F-8) — planeada el 22/09/2026, T-0036 a T-0040 (`tech-specs.md` §4.6).
-      Oculta en producción hasta la aprobación de la nueva lista de precios (ADR-024)
+      Hechos: hojas y Apps Script (T-0036), capa de datos (T-0037) y ruta `/carta` con bloqueo por host
+      (T-0038, verificada en staging: 200 con 14 secciones; `letiende.co/carta`: 404). Faltan la
+      interfaz completa (T-0039) y la publicación (T-0040). Oculta en producción hasta la aprobación
+      de la nueva lista de precios (ADR-024)
 - [ ] *Etapa 2, aplazada:* botón de la hoja maestra que también carga los precios en Comandante (ADR-023)
 - [ ] *Etapa 2:* actualización de `letiende-api`
 
@@ -713,6 +716,9 @@ obligaría a pasar el valor del SSR al navegador sin ganar nada frente a una con
 un encabezado `x-le-tiende-host` falso vería antes una carta con precios que ya son públicos en
 `menu.json`. Es aceptable, y no debe presentarse nunca como control de acceso.
 
+*Verificado (T-0038, 23/09/2026):* `https://staging.letiende.co/carta` responde 200 con 14 secciones y
+`https://letiende.co/carta` responde 404 real, en el despliegue real. La decisión no cambia.
+
 ### ADR-025 — Material Symbols para los íconos de la carta, cargando solo los usados
 
 **Fecha:** 22/09/2026 · **Estado:** aceptada
@@ -942,6 +948,8 @@ Heredados de Ágora y Babel, **verificados en producción**, no teoría:
 
 | Situación | Solución |
 |---|---|
+| Los datos leídos en el SSR con `resource()` desaparecen al hidratar: el HTML del servidor trae la carta, pero en pantalla queda el estado vacío/de error (T-0038, `/carta` en staging) | `resource()` **no** usa la transfer cache HTTP (solo `httpResource`/`HttpClient` la usan). Hay que pasar el dato con `TransferState` explícito: el servidor hace `set(CLAVE, dato)` y el *loader* del navegador hace `get(CLAVE, null)` sin petición (`CLAVE_CARTA_ARMADA` en `carta.service.ts`). Con error del servidor (503) no se guarda nada |
+| Una prueba unitaria de servidor y un `curl` dieron "todo bien", y el navegador real mostraba otra cosa | No cubren la hidratación. Todo cambio con datos SSR se verifica en **navegador real** (contra `serve:ssr` o staging), leyendo la consola desde la carga inicial, no solo con `curl`. La revisión visual del humano tampoco lo sustituye: dijo "todo en orden" con el texto de error visible |
 | `${env:X, ''}` en `serverless.yml` sin el secreto en CI | Resuelve a cadena vacía **sin fallar**. Verificar por CLI tras cada despliegue con `aws lambda get-function-configuration` |
 | El resumen de `serverless deploy` no siempre sale por stdout en Serverless 4 | Leer el endpoint del Output de CloudFormation con `aws cloudformation describe-stacks`, no parsear la salida del comando |
 | Dos despliegues simultáneos sobre el mismo stack | Grupos de `concurrency` en GitHub Actions: `cancel-in-progress: true` en staging, `false` en producción |
@@ -1859,3 +1867,43 @@ específicamente), build de producción y lint sin hallazgos.
 
 **Próxima tarea sugerida:** T-0038 (ruta `/carta` + bloqueo de visibilidad) — ya no depende de nada
 pendiente de T-0036 ni de T-0037.
+
+---
+
+**23/09/2026 — T-0038 completa (PR #60, fusionado) y defecto de hidratación corregido en staging.**
+
+Qué se hizo:
+
+- **T-0038.** `cartaVisible(host, publicada = CARTA_PUBLICADA)` y `resolverHostCarta(request)` en
+  `src/app/core/carta-visibilidad.ts`; `CartaComponent` en `/carta` con `RenderMode.Server`. Fuera de
+  staging/localhost/127.0.0.1 fija `RESPONSE_INIT.status = 404` y renderiza `NoEncontradaComponent`.
+  89 pruebas en el PR. Verificado en el despliegue real por el humano: `staging.letiende.co/carta`
+  200 con 14 secciones; `letiende.co/carta` 404.
+- **Defecto hallado en staging tras el despliegue**, corregido en `fix/carta-hidratacion-transferstate`
+  (PR aún sin abrir): el HTML del SSR traía las 14 secciones pero en pantalla se veía "La carta no
+  está disponible en este momento.". El *loader* de `resource()` en `CartaService` devolvía `null` en
+  el navegador y la hidratación reemplazaba la carta. Corrección con `TransferState`
+  (`CLAVE_CARTA_ARMADA`). 91 pruebas, lint y build en verde; verificado en navegador real contra
+  `serve:ssr` local.
+
+Hallazgos:
+
+- `REQUEST` llega en el SSR real y `RESPONSE_INIT.status` llega a la respuesta HTTP (verificado con
+  `curl` local).
+- `resource()` es *eager*: `CartaService` se obtiene con `Injector.get()` solo si la carta es visible,
+  para no leer Comandante en un 404 (hay prueba).
+- `resolverHostCarta` en el navegador usa `location.hostname`: la hidratación re-ejecuta el
+  constructor.
+- **`tech-specs.md` §4.6 afirmaba que el navegador recibe la carta "por la transfer cache de Angular"**:
+  era falso para `resource()` y nunca se verificó en navegador; ya corregido. Gotchas nuevos en §7.
+- Límite honesto de la verificación local: la consola solo se leyó desde la primera llamada de la
+  herramienta, así que no se garantiza la ausencia de errores de hidratación en la carga inicial.
+- **Lección:** servidor + `curl` no cubren la hidratación; todo cambio con datos SSR necesita
+  navegador real. La revisión del humano en staging no lo habría detectado.
+
+**Motor JIT, estado final de la sesión:** T-0036, T-0037 y T-0038 completas. Activas **T-0039**
+(interfaz completa, `DESIGN.md` §11) y **T-0034** (OPT-20). T-0040 espera la aprobación del humano;
+T-0035 sigue en cola.
+
+**Próxima tarea sugerida:** T-0039. Su DoD incluye verificar la hidratación en navegador real, además
+de la revisión visual del humano en staging.

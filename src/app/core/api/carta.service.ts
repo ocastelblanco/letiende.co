@@ -1,4 +1,12 @@
-import { Injectable, PLATFORM_ID, RESPONSE_INIT, inject, resource } from '@angular/core';
+import {
+  Injectable,
+  PLATFORM_ID,
+  RESPONSE_INIT,
+  TransferState,
+  inject,
+  makeStateKey,
+  resource,
+} from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 import { environment } from '@environments/environment';
 import {
@@ -11,6 +19,9 @@ import { EntradaCache, leerConCache } from './carta-cache';
 
 /** 5 minutos — tech-specs.md §4.6: "la Web App de Google tarda 1 a 3 s en frío". */
 const TTL_CACHE_MS = 5 * 60 * 1000;
+
+/** Lleva la carta armada del SSR al navegador (objeto plano: sin Date ni Map). */
+export const CLAVE_CARTA_ARMADA = makeStateKey<CartaArmada>('carta-armada');
 
 // A nivel de módulo, no de la clase: tiene que sobrevivir entre peticiones
 // dentro de la misma Lambda caliente (mismo patrón que `peticionesPorIp` en
@@ -41,13 +52,17 @@ async function obtenerJson<T>(url: string): Promise<T> {
 export class CartaService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly respuestaInit = inject(RESPONSE_INIT, { optional: true });
+  private readonly estadoTransferido = inject(TransferState);
 
   readonly carta = resource<CartaArmada | null, void>({
     loader: async () => {
       // Se lee solo en el servidor (§4.6): el navegador recibe la carta ya
-      // armada en el HTML del SSR, y esta caché en memoria de proceso no
-      // tendría sentido repetida por cada visitante.
-      if (!isPlatformServer(this.platformId)) return null;
+      // armada por TransferState (`resource()` no usa la transfer cache de
+      // HttpClient), sin repetir la lectura por cada visitante. Si el
+      // servidor no la guardó (503), el navegador queda con null, igual que el SSR.
+      if (!isPlatformServer(this.platformId)) {
+        return this.estadoTransferido.get(CLAVE_CARTA_ARMADA, null);
+      }
 
       let menu: MenuComandante;
       try {
@@ -74,7 +89,9 @@ export class CartaService {
         }
       }
 
-      return armarCarta(menu, contenido);
+      const carta = armarCarta(menu, contenido);
+      this.estadoTransferido.set(CLAVE_CARTA_ARMADA, carta);
+      return carta;
     },
   });
 }
