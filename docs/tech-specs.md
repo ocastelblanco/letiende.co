@@ -386,15 +386,14 @@ equivocado al público):
 4. Dentro de cada card, ordena los productos por `basePrice` ascendente y luego por `name`
    (`menu.json` no trae un orden propio; si hace falta uno editorial, es una columna nueva en la hoja
    `datos` de Comandante, no algo que se invente aquí).
-5. **Notas al pie por par (adición, precio), no por adición.** El sobrecosto de una misma adición
-   puede variar dentro de una card porque depende de la cantidad (verificado en vivo el 22/09/2026:
-   `leche_vegetal` cuesta 3.500 en la Bomba de chocolate y 5.300 en el Chocolate, ~160 ml frente a
-   ~220 ml de leche). Cada par distinto de la card recibe una marca en orden de primera aparición:
-   `*`, `†`, `‡`, `§`, `¶`, `**`, `††`… El producto lleva sus marcas junto al nombre y la card cierra
-   con una línea por marca: `* Pídelo en leche vegetal por $3.500`.
-6. Las variantes se muestran como una línea bajo el producto, separadas por `·`, con su etiqueta del
-   diccionario ("Sweet Stout · Ámbar Ale · American Pale Ale · Indian Pale Ale"). No alteran el
-   precio (contrato de Comandante).
+5. **Adiciones bajo cada producto.** Cada producto lista sus propias adiciones, en el orden de
+   `additions`, con el sobrecosto de ese producto: `Pídelo en leche vegetal por $3.500`. El sobrecosto
+   de una misma adición puede variar dentro de una card porque depende de la cantidad (verificado en
+   vivo el 22/09/2026: `leche_vegetal` cuesta 3.500 en la Bomba de chocolate y 5.300 en el Chocolate),
+   así que el precio viaja con cada producto y no hay marcas ni notas al pie. El texto sale de
+   `diccionario.adiciones[clave]`, con respaldo humanizado.
+6. Las variantes (`variants`) **no se muestran**. `diccionario.variantes` se conserva en el contrato
+   de entrada de la Web App, pero el armado ya no lo usa.
 7. `description` del producto, si existe, va bajo el nombre.
 8. Precios en pesos colombianos sin decimales, con punto de miles: `$6.600`.
 

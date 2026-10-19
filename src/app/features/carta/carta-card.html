@@ -36,16 +36,7 @@
     @for (producto of card().productos; track producto.nombre) {
       <li>
         <div class="flex items-baseline justify-between gap-4">
-          <span class="text-base font-medium"
-            >{{ producto.nombre }}
-            @for (marca of producto.marcas; track marca) {
-              <sup
-                class="ml-0.5 font-semibold text-secondary"
-                [attr.aria-describedby]="idNotaDe(marca)"
-                >{{ marca }}</sup
-              >
-            }
-          </span>
+          <span class="text-base font-medium">{{ producto.nombre }}</span>
           <span
             class="shrink-0 text-right font-semibold tabular-nums"
             [class.text-primary]="!card().destacada"
@@ -62,30 +53,18 @@
             {{ producto.descripcion }}
           </p>
         }
-        @if (producto.variantes.length > 0) {
-          <p
+        @if (producto.adiciones.length > 0) {
+          <ul
             class="text-xs"
-            [class.text-primary/60]="!card().destacada"
-            [class.text-neutral/70]="card().destacada"
+            [class.text-primary/70]="!card().destacada"
+            [class.text-neutral/80]="card().destacada"
           >
-            {{ producto.variantes.join(' · ') }}
-          </p>
+            @for (adicion of producto.adiciones; track $index) {
+              <li>{{ adicion }}</li>
+            }
+          </ul>
         }
       </li>
     }
   </ul>
-
-  @if (card().notasAlPie.length > 0) {
-    <div
-      class="mt-4 space-y-1 border-t pt-3 text-xs"
-      [class.border-primary/10]="!card().destacada"
-      [class.text-primary/70]="!card().destacada"
-      [class.border-neutral/20]="card().destacada"
-      [class.text-neutral/80]="card().destacada"
-    >
-      @for (nota of card().notasAlPie; track nota.marca; let i = $index) {
-        <p [id]="idNota(i)">{{ nota.marca }} {{ nota.texto }}</p>
-      }
-    </div>
-  }
 </section>

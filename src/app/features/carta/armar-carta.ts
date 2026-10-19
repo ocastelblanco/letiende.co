@@ -62,21 +62,13 @@ export interface ContenidoCarta {
 // Salida: la carta ya armada, lista para la plantilla (`DESIGN.md` §11).
 // ---------------------------------------------------------------------------
 
-/** Una nota al pie de la card: `* Pídelo en leche vegetal por $3.500`. */
-export interface NotaAlPieCarta {
-  readonly marca: string;
-  readonly texto: string;
-}
-
 export interface ProductoCartaArmado {
   readonly nombre: string;
   readonly descripcion: string | null;
   readonly precio: number;
   readonly precioFormateado: string;
-  /** Marcas junto al nombre (`*`, `†`…), en el orden en que deben mostrarse. */
-  readonly marcas: readonly string[];
-  /** Etiquetas de variantes ya resueltas contra el diccionario, en el orden del producto. */
-  readonly variantes: readonly string[];
+  /** Adiciones ya resueltas (`Pídelo en leche vegetal por $3.500`), en el orden del producto. */
+  readonly adiciones: readonly string[];
 }
 
 export interface CardCarta {
@@ -88,7 +80,6 @@ export interface CardCarta {
   readonly icono: string;
   readonly destacada: boolean;
   readonly productos: readonly ProductoCartaArmado[];
-  readonly notasAlPie: readonly NotaAlPieCarta[];
 }
 
 export interface CartaArmada {
@@ -101,20 +92,6 @@ export interface CartaArmada {
 
 /** Ícono de respaldo cuando la sección no está en la hoja o no trae ícono. */
 const ICONO_RESPALDO = 'restaurant_menu';
-
-/**
- * Secuencia de marcas de nota al pie: `*, †, ‡, §, ¶, **, ††, ‡‡, §§, ¶¶, ***…`
- * (tech-specs.md §4.6, paso 5). Los 5 símbolos base se repiten duplicándose,
- * triplicándose, etc., una vez agotada la primera vuelta — no hay techo
- * realista de pares distintos por card, pero la secuencia no se corta nunca.
- */
-const SIMBOLOS_BASE = ['*', '†', '‡', '§', '¶'] as const;
-
-export function generarMarca(indice: number): string {
-  const nivel = Math.floor(indice / SIMBOLOS_BASE.length) + 1;
-  const simbolo = SIMBOLOS_BASE[indice % SIMBOLOS_BASE.length];
-  return simbolo.repeat(nivel);
-}
 
 /** `de_cafe` → `De cafe`. Respaldo cuando falta la traducción real (degradación, §4.6). */
 export function humanizarClave(clave: string): string {
@@ -136,17 +113,12 @@ function claveSeccion(categoria: string, subcategoria: string | null | undefined
   return `${categoria}/${subcategoria ?? ''}`;
 }
 
-/** `leche_vegetal|3500` — identifica un par (adición, precio) dentro de una card. */
-function clavePar(adicion: string, precio: number): string {
-  return `${adicion}|${precio}`;
-}
-
 // ---------------------------------------------------------------------------
 // armarCarta()
 // ---------------------------------------------------------------------------
 
 /**
- * Agrupa, ordena, resuelve etiquetas y asigna las notas al pie. Nunca lanza:
+ * Agrupa, ordena, resuelve etiquetas y adiciones. Nunca lanza:
  * ante datos incompletos, degrada con respaldos (§4.6) en vez de omitir un
  * producto con precio real.
  */
@@ -190,35 +162,16 @@ export function armarCarta(menu: MenuComandante, contenido: ContenidoCarta | nul
       (a, b) => a.basePrice - b.basePrice || a.name.localeCompare(b.name, 'es'),
     );
 
-    // 5. Notas al pie por par (adición, precio), en orden de primera
-    // aparición dentro de la card.
-    const marcaPorPar = new Map<string, string>();
-    const notasAlPie: NotaAlPieCarta[] = [];
-    for (const producto of productosOrdenados) {
-      for (const adicion of producto.additions) {
-        const par = clavePar(adicion.addition, adicion.additionPrice);
-        if (marcaPorPar.has(par)) continue;
-        const marca = generarMarca(marcaPorPar.size);
-        marcaPorPar.set(par, marca);
-        const textoBase =
-          diccionario.adiciones[adicion.addition] ?? humanizarClave(adicion.addition);
-        notasAlPie.push({
-          marca,
-          texto: `${textoBase} por ${formatoPrecio(adicion.additionPrice)}`,
-        });
-      }
-    }
-
+    // 5. Cada producto lleva sus adiciones, con el sobrecosto de ese producto.
     const productosArmados: ProductoCartaArmado[] = productosOrdenados.map((producto) => ({
       nombre: producto.name,
       descripcion: producto.description,
       precio: producto.basePrice,
       precioFormateado: formatoPrecio(producto.basePrice),
-      marcas: producto.additions.map(
-        (a) => marcaPorPar.get(clavePar(a.addition, a.additionPrice)) as string,
+      adiciones: producto.additions.map(
+        (a) =>
+          `${diccionario.adiciones[a.addition] ?? humanizarClave(a.addition)} por ${formatoPrecio(a.additionPrice)}`,
       ),
-      // 6. Las variantes no alteran el precio; solo se muestran resueltas.
-      variantes: producto.variants.map((v) => diccionario.variantes[v] ?? humanizarClave(v)),
     }));
 
     cards.push({
@@ -229,7 +182,6 @@ export function armarCarta(menu: MenuComandante, contenido: ContenidoCarta | nul
       icono: seccion?.icono || ICONO_RESPALDO,
       destacada: seccion?.destacada ?? false,
       productos: productosArmados,
-      notasAlPie,
       // `orden` no viaja en `CardCarta` — se resuelve en el paso de ordenar
       // de abajo y no hace falta que la plantilla lo conozca.
     });

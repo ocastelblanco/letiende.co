@@ -1,4 +1,4 @@
-import { idNota, idSeccion } from './carta-ids';
+import { idSeccion } from './carta-ids';
 
 describe('ids de la carta', () => {
   it('idSeccion con y sin subcategoría', () => {
@@ -12,10 +12,5 @@ describe('ids de la carta', () => {
     expect(idSeccion({ categoria: 'Bebidas Frías!', subcategoria: null })).toBe(
       'seccion-bebidas-fr-as-',
     );
-  });
-
-  it('idNota es único por card y por nota', () => {
-    expect(idNota('seccion-comida', 0)).toBe('seccion-comida-nota-0');
-    expect(idNota('seccion-comida', 1)).not.toBe(idNota('seccion-bebidas', 1));
   });
 });

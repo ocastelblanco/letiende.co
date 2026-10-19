@@ -15,21 +15,15 @@ const base: CardCarta = {
       descripcion: null,
       precio: 6600,
       precioFormateado: '$6.600',
-      marcas: [],
-      variantes: [],
+      adiciones: [],
     },
     {
       nombre: 'Latte',
       descripcion: 'Con leche',
       precio: 8400,
       precioFormateado: '$8.400',
-      marcas: ['*', '†'],
-      variantes: ['Grande', 'Pequeño'],
+      adiciones: ['Pídelo en leche vegetal por $3.500', 'Añade licor por $8.700'],
     },
-  ],
-  notasAlPie: [
-    { marca: '*', texto: 'Pídelo en leche vegetal por $3.500' },
-    { marca: '†', texto: 'Añade licor por $8.700' },
   ],
 };
 
@@ -47,7 +41,7 @@ describe('CartaCard', () => {
     expect(seccion.id).toBe('seccion-bebidas-de_cafe');
     expect(seccion.classList).toContain('scroll-mt-20');
     expect(seccion.getAttribute('aria-labelledby')).toBe(html.querySelector('h2')!.id);
-    expect(html.querySelectorAll('ul > li').length).toBe(2);
+    expect(html.querySelectorAll('section > ul > li').length).toBe(2);
     const precio = html.querySelector('li span.tabular-nums')!;
     expect(precio.textContent).toContain('$6.600');
     expect(precio.classList).toContain('text-primary');
@@ -55,22 +49,29 @@ describe('CartaCard', () => {
     expect(html.querySelector('[aria-hidden="true"]')!.textContent).toBe('coffee');
   });
 
-  it('enlaza cada marca (sup) con su nota mediante aria-describedby', () => {
+  it('muestra las adiciones bajo el producto, en una lista, y no hay sup ni notas al pie', () => {
     const html = pintar(base);
-    const sups = [...html.querySelectorAll('sup')];
-    expect(sups.map((s) => s.textContent)).toEqual(['*', '†']);
-    sups.forEach((sup, i) => {
-      const nota = html.querySelector(`#${sup.getAttribute('aria-describedby')}`)!;
-      expect(nota.textContent).toContain(base.notasAlPie[i].texto);
-      expect(sup.classList).toContain('text-secondary');
-    });
-    expect(html.querySelector('.border-t')).not.toBeNull();
+    const productos = html.querySelectorAll('section > ul > li');
+    expect(productos[0].querySelector('ul')).toBeNull();
+    const adiciones = [...productos[1].querySelectorAll('ul > li')];
+    expect(adiciones.map((a) => a.textContent?.trim())).toEqual(base.productos[1].adiciones);
+    expect(productos[1].querySelector('ul')!.classList).toContain('text-xs');
+    expect(productos[1].querySelector('ul')!.classList).toContain('text-primary/70');
+    expect(html.querySelector('sup')).toBeNull();
+    expect(html.querySelector('.border-t')).toBeNull();
   });
 
-  it('muestra descripción y variantes separadas por " · "', () => {
+  it('las adiciones de una card destacada usan los colores de texto invertidos', () => {
+    const html = pintar({ ...base, destacada: true });
+    const lista = html.querySelectorAll('section > ul > li')[1].querySelector('ul')!;
+    expect(lista.classList).toContain('text-neutral/80');
+    expect(lista.classList).not.toContain('text-primary/70');
+  });
+
+  it('muestra la descripción y ya no renderiza línea de variantes', () => {
     const html = pintar(base);
     expect(html.textContent).toContain('Con leche');
-    expect(html.textContent).toContain('Grande · Pequeño');
+    expect(html.textContent).not.toContain('·');
   });
 
   it('el ícono inválido cae a restaurant_menu', () => {

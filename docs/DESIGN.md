@@ -271,25 +271,21 @@ Una card por sección, con el patrón de §4 (`rounded-2xl bg-white p-4` + sombr
 │  chocolate, caramelo y madera                │
 │                                              │
 │  Espresso ·························· $6.600  │
-│  Cappuccino* †                       $9.900  │
-│  Latte* †                            $8.400  │
-│  Macchiato sencillo*                 $6.600  │
-│                                              │
-│  * Pídelo en leche vegetal por $3.500        │  ← notas al pie, text-xs text-primary/70
-│  † Añade licor por $8.700                    │
+│  Cappuccino ························· $9.900  │
+│    Pídelo en leche vegetal por $3.500        │  ← adiciones, text-xs text-primary/70
+│    Añade licor por $8.700                    │
+│  Latte ····························· $8.400  │
+│    Pídelo en leche vegetal por $3.500        │
 └──────────────────────────────────────────────┘
 ```
 
 - **Producto:** nombre a la izquierda (`text-base font-medium`), precio a la derecha
   (`font-semibold tabular-nums`, alineado a la derecha). Los precios van en `text-primary`, **no** en
   `secondary`: `secondary` sobre blanco no cumple contraste para texto de este tamaño (§10).
-- Las **marcas** de nota al pie (`*`, `†`, `‡`…) van pegadas al nombre, en `text-secondary`
-  `font-semibold`, dentro de un `<sup>`; cada marca lleva un `aria-describedby` a su nota, para que
-  el lector de pantalla lea la nota junto al producto.
 - **Descripción del producto** (cocteles, sobre todo): debajo del nombre, `text-sm text-primary/70`.
-- **Variantes:** una línea debajo del nombre, `text-xs text-primary/60`, separadas por ` · `.
-- **Notas al pie:** al final de la card, tras un separador `border-t border-primary/10`, una línea
-  por marca, en el orden de las marcas.
+- **Adiciones:** bajo la descripción, una `<ul>` con un `<li>` por adición, `text-xs text-primary/70`
+  (`text-neutral/80` en cards destacadas), por ejemplo `Pídelo en leche vegetal por $3.500`. No hay
+  marcas ni notas al pie; las variantes no se muestran.
 - La lista de productos es una `<ul>`; cada producto, un `<li>`. Nada de tablas para maquetar.
 
 ### 11.3 Cards destacadas (promociones)
@@ -298,7 +294,7 @@ Las secciones con `destacada: true` en la hoja (hoy `ofertas/promociones` y `ofe
 promociones que se quieren empujar, y se ven distintas **sin salirse de la paleta**:
 
 - Fondo `bg-primary` y texto `text-neutral` (la inversa de una card normal, contraste de sobra); los
-  precios en `text-neutral`, las marcas y el ícono en `text-secondary`.
+  precios en `text-neutral` y el ícono en `text-secondary`.
 - Borde `border-2 border-secondary` y una etiqueta pequeña **"Promoción"** sobre el título
   (`h-6 rounded-full bg-secondary px-2 text-xs font-semibold uppercase text-white`), con
   `text-white` sobre `secondary` en texto grande y en negrita solamente.
