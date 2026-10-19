@@ -1,12 +1,17 @@
-import { cartaVisible, resolverHostCarta } from './carta-visibilidad';
+import { CARTA_PUBLICADA, cartaVisible, resolverHostCarta } from './carta-visibilidad';
 
 describe('cartaVisible', () => {
   it.each(['staging.letiende.co', 'localhost', '127.0.0.1'])('%s ve la carta', (host) => {
     expect(cartaVisible(host)).toBe(true);
   });
 
-  it.each(['letiende.co', 'www.letiende.co', ''])('%j no ve la carta', (host) => {
-    expect(cartaVisible(host)).toBe(false);
+  it('la carta está publicada (T-0040)', () => {
+    expect(CARTA_PUBLICADA).toBe(true);
+    expect(cartaVisible('letiende.co')).toBe(true);
+  });
+
+  it.each(['letiende.co', 'www.letiende.co', ''])('sin publicar, %j no ve la carta', (host) => {
+    expect(cartaVisible(host, false)).toBe(false);
   });
 
   it('con la carta publicada, cualquier host la ve', () => {

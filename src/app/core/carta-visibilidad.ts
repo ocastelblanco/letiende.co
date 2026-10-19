@@ -1,9 +1,16 @@
+import { InjectionToken } from '@angular/core';
+
 /**
  * Bloqueo EDITORIAL de `/carta` hasta su publicación real (ADR-024,
  * tech-specs.md §4.6). NO es un control de seguridad (CLAUDE.md §5, A01): la
  * carta no tiene nada secreto, solo aún no está aprobada para el público.
  */
-export const CARTA_PUBLICADA = false;
+export const CARTA_PUBLICADA = true;
+
+/** Permite a las pruebas ejercer el camino oculto (ADR-024) sin tocar la constante. */
+export const CARTA_PUBLICADA_TOKEN = new InjectionToken<boolean>('CARTA_PUBLICADA', {
+  factory: () => CARTA_PUBLICADA,
+});
 
 const HOSTS_SIEMPRE_VISIBLES: readonly string[] = ['staging.letiende.co', 'localhost', '127.0.0.1'];
 

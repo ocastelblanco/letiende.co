@@ -1,6 +1,7 @@
 import { Component, REQUEST } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { CARTA_PUBLICADA_TOKEN } from '@core/carta-visibilidad';
 import { BarraNavegacion } from './barra-navegacion';
 
 @Component({ selector: 'app-vacio-de-prueba', template: '' })
@@ -126,7 +127,19 @@ describe('BarraNavegacion', () => {
       expect(enlace.classList).toContain('text-secondary');
     });
 
-    it('en letiende.co no hay enlace a /carta, ni en escritorio ni en móvil', () => {
+    it('con la carta publicada, letiende.co sí muestra el enlace', () => {
+      TestBed.overrideProvider(REQUEST, {
+        useValue: new Request('https://example.test/', {
+          headers: { 'x-le-tiende-host': 'letiende.co' },
+        }),
+      });
+      const fixture = TestBed.createComponent(BarraNavegacion);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('a[href="/carta"]')).toBeTruthy();
+    });
+
+    it('sin publicar, en letiende.co no hay enlace a /carta, ni en escritorio ni en móvil', () => {
+      TestBed.overrideProvider(CARTA_PUBLICADA_TOKEN, { useValue: false });
       TestBed.overrideProvider(REQUEST, {
         useValue: new Request('https://example.test/', {
           headers: { 'x-le-tiende-host': 'letiende.co' },
