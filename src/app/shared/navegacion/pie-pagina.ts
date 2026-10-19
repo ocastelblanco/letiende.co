@@ -7,7 +7,7 @@ import { DATOS_NEGOCIO } from '@core/negocio/datos-negocio';
   templateUrl: './pie-pagina.html',
   styles: [
     `
-      @media (width > 1280px) {
+      @media (width < 1280px) {
         .pie-pagina {
           position: absolute;
           width: 100%;
