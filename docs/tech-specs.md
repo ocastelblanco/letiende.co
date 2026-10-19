@@ -290,7 +290,7 @@ Planteada el 22/09/2026 (F-8, `PRD.md` §5). Tareas T-0036 a T-0040 en `TODO.md`
 
 | Fuente | Qué aporta | Cómo se publica |
 |---|---|---|
-| `https://comandante.letiende.co/menu.json` (Comandante, `functions/src/index.ts` → `publicMenu`) | Productos activos: `name`, `description`, `additions[]`, `variants[]`, `category`, `subcategory`, `basePrice` | Hoja `datos` → XLSX → importador de Comandante → Firestore (sin cambios, ADR-007 de Comandante) |
+| `https://comandante.letiende.co/menu.json` (Comandante, `functions/src/index.ts` → `publicMenu`) | Productos activos: `name`, `description`, `additions[]`, `variants[]`, `category`, `subcategory`, `basePrice`, `order` (posición de la fila en la hoja `datos`; puede ser `null` o faltar) | Hoja `datos` → XLSX → importador de Comandante → Firestore (sin cambios, ADR-007 de Comandante) |
 | Web App de Apps Script de la hoja maestra | Secciones (etiqueta, descripción, ícono, orden, visibilidad, destacado) y diccionario de adiciones y variantes | Hojas `carta_secciones` y `carta_diccionario` → botón **"Publicar carta"** → copia fija servida por `doGet` (ADR-023) |
 
 **Hoja maestra:** es la misma de Comandante (dueña: `ocastelblanco@gmail.com`; `letiende.co@gmail.com`
@@ -383,9 +383,11 @@ equivocado al público):
    (sin subcategoría) son una card cada una.
 2. Descarta los grupos cuya sección tenga `visible: false` y los grupos sin productos.
 3. Ordena las cards por `orden`; las que no estén en la hoja van al final, en orden alfabético.
-4. Dentro de cada card, ordena los productos por `basePrice` ascendente y luego por `name`
-   (`menu.json` no trae un orden propio; si hace falta uno editorial, es una columna nueva en la hoja
-   `datos` de Comandante, no algo que se invente aquí).
+4. Dentro de cada card, ordena los productos por `order` ascendente (posición de la fila en la hoja
+   `datos` de Comandante) **si todos los productos de la card lo traen** como número; el desempate es
+   `name` (`localeCompare` en `es`). Si a alguno le falta (`null` o ausente: Comandante aún no lo
+   publica o no se re-importó la hoja), toda la card usa el respaldo `basePrice` ascendente y luego
+   `name`. Es todo o nada para evitar comparadores intransitivos con datos mezclados.
 5. **Adiciones bajo cada producto.** Cada producto lista sus propias adiciones, en el orden de
    `additions`, con el sobrecosto de ese producto: `Pídelo en leche vegetal por $3.500`. El sobrecosto
    de una misma adición puede variar dentro de una card porque depende de la cantidad (verificado en

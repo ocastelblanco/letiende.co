@@ -25,6 +25,8 @@ export interface ProductoMenu {
   readonly category: string;
   readonly subcategory: string | null;
   readonly basePrice: number;
+  /** Posición de la fila en la hoja `datos` de Comandante. Puede faltar o ser `null`. */
+  readonly order?: number | null;
 }
 
 export interface MenuComandante {
@@ -118,7 +120,9 @@ function claveSeccion(categoria: string, subcategoria: string | null | undefined
 // ---------------------------------------------------------------------------
 
 /**
- * Agrupa, ordena, resuelve etiquetas y adiciones. Nunca lanza:
+ * Agrupa, ordena, resuelve etiquetas y adiciones. Los productos de cada card
+ * siguen el `order` de la hoja `datos` si todos lo traen; si no, precio y
+ * nombre. Nunca lanza:
  * ante datos incompletos, degrada con respaldos (§4.6) en vez de omitir un
  * producto con precio real.
  */
@@ -156,10 +160,15 @@ export function armarCarta(menu: MenuComandante, contenido: ContenidoCarta | nul
     const primerProducto = productos[0];
     const etiqueta = seccion?.etiqueta ?? humanizarClave(clave.replace('/', ' ').trim());
 
-    // 4. Dentro de cada card, ordena los productos por basePrice ascendente
-    // y luego por name.
-    const productosOrdenados = [...productos].sort(
-      (a, b) => a.basePrice - b.basePrice || a.name.localeCompare(b.name, 'es'),
+    // 4. Dentro de cada card, ordena los productos por `order` (posición en la
+    // hoja `datos`) si TODOS lo traen; si a alguno le falta, usa el respaldo
+    // basePrice ascendente y luego name. Todo o nada: mezclar los dos criterios
+    // daría un comparador intransitivo.
+    const todosConOrden = productos.every((p) => typeof p.order === 'number');
+    const productosOrdenados = [...productos].sort((a, b) =>
+      todosConOrden
+        ? (a.order as number) - (b.order as number) || a.name.localeCompare(b.name, 'es')
+        : a.basePrice - b.basePrice || a.name.localeCompare(b.name, 'es'),
     );
 
     // 5. Cada producto lleva sus adiciones, con el sobrecosto de ese producto.

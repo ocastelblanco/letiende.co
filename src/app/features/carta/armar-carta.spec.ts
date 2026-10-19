@@ -348,6 +348,170 @@ describe('armarCarta()', () => {
     expect(carta.cards[0].productos.map((p) => p.nombre)).toEqual(['Beta', 'Alfa', 'Zeta']);
   });
 
+  it('ordena los productos por order cuando todos lo traen, aunque el precio diga otra cosa', () => {
+    const menu: MenuComandante = {
+      updatedAt: '2026-09-22T00:00:00.000Z',
+      items: [
+        {
+          name: 'Zeta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 1000,
+          order: 1,
+        },
+        {
+          name: 'Alfa',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 9000,
+          order: 3,
+        },
+        {
+          name: 'Beta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: 2,
+        },
+      ],
+    };
+
+    const carta = armarCarta(menu, contenido());
+    expect(carta.cards[0].productos.map((p) => p.nombre)).toEqual(['Zeta', 'Beta', 'Alfa']);
+  });
+
+  it('si a algún producto le falta order, usa el respaldo por precio y nombre', () => {
+    const menu: MenuComandante = {
+      updatedAt: '2026-09-22T00:00:00.000Z',
+      items: [
+        {
+          name: 'Zeta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: 1,
+        },
+        {
+          name: 'Alfa',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: undefined,
+        },
+        {
+          name: 'Beta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 3000,
+          order: 3,
+        },
+      ],
+    };
+
+    const carta = armarCarta(menu, contenido());
+    expect(carta.cards[0].productos.map((p) => p.nombre)).toEqual(['Beta', 'Alfa', 'Zeta']);
+  });
+
+  it('si order es null en todos, usa el respaldo por precio y nombre', () => {
+    const menu: MenuComandante = {
+      updatedAt: '2026-09-22T00:00:00.000Z',
+      items: [
+        {
+          name: 'Zeta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: null,
+        },
+        {
+          name: 'Alfa',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: null,
+        },
+        {
+          name: 'Beta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 3000,
+          order: null,
+        },
+      ],
+    };
+
+    const carta = armarCarta(menu, contenido());
+    expect(carta.cards[0].productos.map((p) => p.nombre)).toEqual(['Beta', 'Alfa', 'Zeta']);
+  });
+
+  it('desempata por nombre cuando varios productos comparten order', () => {
+    const menu: MenuComandante = {
+      updatedAt: '2026-09-22T00:00:00.000Z',
+      items: [
+        {
+          name: 'Zeta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 1000,
+          order: 1,
+        },
+        {
+          name: 'Alfa',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 9000,
+          order: 1,
+        },
+        {
+          name: 'Beta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: 0,
+        },
+      ],
+    };
+
+    const carta = armarCarta(menu, contenido());
+    expect(carta.cards[0].productos.map((p) => p.nombre)).toEqual(['Beta', 'Alfa', 'Zeta']);
+  });
+
   it('sin contenido editorial (null), arma la carta igual, con respaldos en todo', () => {
     const menu: MenuComandante = {
       updatedAt: '2026-09-22T00:00:00.000Z',
