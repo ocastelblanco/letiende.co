@@ -73,9 +73,9 @@ describe('armarCarta()', () => {
     const card = carta.cards[0];
     // Chocolate va primero por precio (8.400 < 12.500).
     expect(card.productos[0].nombre).toBe('Chocolate');
-    expect(card.productos[0].adiciones).toEqual(['Pídelo en leche vegetal por $5.300']);
+    expect(card.productos[0].adiciones).toEqual(['Pídelo en leche vegetal por $5.300 adicionales']);
     expect(card.productos[1].nombre).toBe('Bomba de chocolate');
-    expect(card.productos[1].adiciones).toEqual(['Pídelo en leche vegetal por $3.500']);
+    expect(card.productos[1].adiciones).toEqual(['Pídelo en leche vegetal por $3.500 adicionales']);
   });
 
   it('un producto sin adiciones tiene adiciones: []', () => {
@@ -120,8 +120,8 @@ describe('armarCarta()', () => {
       diccionario: { adiciones: { leche_vegetal: 'Pídelo en leche vegetal' }, variantes: {} },
     });
     expect(armarCarta(menu, dic).cards[0].productos[0].adiciones).toEqual([
-      'Licor por $8.700',
-      'Pídelo en leche vegetal por $3.500',
+      'Licor por $8.700 adicionales',
+      'Pídelo en leche vegetal por $3.500 adicionales',
     ]);
   });
 
@@ -531,7 +531,7 @@ describe('armarCarta()', () => {
     const carta = armarCarta(menu, null);
     expect(carta.cards).toHaveLength(1);
     expect(carta.cards[0].productos[0].precioFormateado).toBe('$6.600');
-    expect(carta.cards[0].productos[0].adiciones).toEqual(['Licor por $8.700']);
+    expect(carta.cards[0].productos[0].adiciones).toEqual(['Licor por $8.700 adicionales']);
   });
 
   it('la descripción del producto viaja tal cual, cuando existe (cocteles)', () => {
