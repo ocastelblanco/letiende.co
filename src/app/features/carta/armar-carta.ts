@@ -179,7 +179,7 @@ export function armarCarta(menu: MenuComandante, contenido: ContenidoCarta | nul
       precioFormateado: formatoPrecio(producto.basePrice),
       adiciones: producto.additions.map(
         (a) =>
-          `${diccionario.adiciones[a.addition] ?? humanizarClave(a.addition)} por ${formatoPrecio(a.additionPrice)}`,
+          `${diccionario.adiciones[a.addition] ?? humanizarClave(a.addition)} por ${formatoPrecio(a.additionPrice)} adicionales`,
       ),
     }));
 
