@@ -2,10 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  REQUEST,
   effect,
+  inject,
   signal,
   viewChild,
 } from '@angular/core';
+import { cartaVisible, resolverHostCarta } from '@core/carta-visibilidad';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
@@ -15,6 +18,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './barra-navegacion.html',
 })
 export class BarraNavegacion {
+  // Mismo criterio que la ruta /carta (ADR-024): sin enlace a un 404.
+  protected readonly cartaVisible = cartaVisible(
+    resolverHostCarta(inject(REQUEST, { optional: true })),
+  );
   protected readonly menuAbierto = signal(false);
 
   private readonly botonMenu = viewChild<ElementRef<HTMLButtonElement>>('botonMenu');

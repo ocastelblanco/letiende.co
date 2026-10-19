@@ -410,12 +410,12 @@ es *eager* y de otro modo se leería Comandante para responder un 404. Cuando es
 seguridad** (A01: esconder no es proteger): los precios ya son públicos en `menu.json`, y quien llame
 al API Gateway directamente con un encabezado falso solo vería antes lo que igual se va a publicar.
 
-**El enlace "Carta" de la barra no depende del host: no existe hasta T-0040.** La barra vive tres
-veces — aquí, en Ágora y en Babel (`DESIGN.md` §8) —, y mostrar el enlace solo en el contenedor de
-staging rompería la costura al cruzar a `/cartelera` o `/libros`. Durante el desarrollo se entra por
-URL (`https://staging.letiende.co/carta`). Publicar (T-0040) es: `CARTA_PUBLICADA = true`, entrada en
-el sitemap y el enlace agregado **en los tres repositorios a la vez**, después de la aprobación de la
-nueva lista de precios.
+**El enlace "Carta" del menú sigue la misma visibilidad que la ruta:** `BarraNavegacion` calcula
+`cartaVisible(resolverHostCarta(request))` una vez (en el servidor y en el navegador da lo mismo, así
+la hidratación no se rompe) y solo pinta el enlace —entre "Librería" y "Nosotros", en escritorio y en
+el panel móvil— donde la carta es visible: staging y localhost hoy; en `letiende.co` no hay enlace a
+un 404. Al poner `CARTA_PUBLICADA = true` (T-0040) el enlace aparece solo. Ágora y Babel tienen su
+propia barra (`DESIGN.md` §8): agregar allí el enlace al publicar sigue siendo parte de T-0040.
 
 **Presentación:** `DESIGN.md` §11.
 

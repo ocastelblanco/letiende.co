@@ -16,6 +16,17 @@
     <ul class="hidden items-center gap-6 text-sm font-semibold tracking-wider uppercase md:flex">
       <li><a href="/cartelera" class="hover:text-secondary">Cartelera</a></li>
       <li><a href="/libros" class="hover:text-secondary">Librería</a></li>
+      @if (cartaVisible) {
+        <li>
+          <a
+            routerLink="/carta"
+            routerLinkActive="text-secondary"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="hover:text-secondary"
+            >Carta</a
+          >
+        </li>
+      }
       <li>
         <a
           routerLink="/nosotros"
@@ -99,6 +110,17 @@
       <ul class="flex flex-col items-center gap-6 text-lg font-semibold tracking-wider uppercase">
         <li><a href="/cartelera" (click)="cerrarMenu()">Cartelera</a></li>
         <li><a href="/libros" (click)="cerrarMenu()">Librería</a></li>
+        @if (cartaVisible) {
+          <li>
+            <a
+              routerLink="/carta"
+              routerLinkActive="text-secondary"
+              [routerLinkActiveOptions]="{ exact: true }"
+              (click)="cerrarMenu()"
+              >Carta</a
+            >
+          </li>
+        }
         <li>
           <a
             routerLink="/nosotros"

@@ -164,6 +164,8 @@ Reglas:
   completa, cierra con `Escape` y devuelve el foco al botón que lo abrió.
 - Los enlaces a `/cartelera` y `/libros` son **`<a href>` normales, no `routerLink`**. Apuntan a otra
   aplicación: un `routerLink` intentaría resolverlos en el router de este proyecto y fallaría.
+- El enlace **Carta** (`routerLink`, entre Librería y Nosotros) sigue la misma visibilidad que la ruta
+  `/carta` (ADR-024): solo se muestra donde la carta es visible; en producción no existe hasta publicarla.
 - El pie de página repite dirección, horarios y redes, y es donde vive el `LocalBusiness` visible que
   acompaña al JSON-LD.
 
