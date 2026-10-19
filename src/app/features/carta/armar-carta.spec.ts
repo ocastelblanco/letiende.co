@@ -3,7 +3,6 @@ import {
   MenuComandante,
   armarCarta,
   formatoPrecio,
-  generarMarca,
   humanizarClave,
 } from './armar-carta';
 
@@ -30,17 +29,6 @@ describe('formatoPrecio()', () => {
   });
 });
 
-describe('generarMarca()', () => {
-  it('los primeros cinco índices usan los símbolos base', () => {
-    expect([0, 1, 2, 3, 4].map(generarMarca)).toEqual(['*', '†', '‡', '§', '¶']);
-  });
-
-  it('más allá de 5, la secuencia dobla los símbolos en vez de cortarse', () => {
-    expect([5, 6, 7, 8, 9].map(generarMarca)).toEqual(['**', '††', '‡‡', '§§', '¶¶']);
-    expect(generarMarca(10)).toBe('***');
-  });
-});
-
 describe('humanizarClave()', () => {
   it('reemplaza guiones bajos por espacios y capitaliza la primera letra', () => {
     expect(humanizarClave('de_cafe')).toBe('De cafe');
@@ -49,10 +37,9 @@ describe('humanizarClave()', () => {
 });
 
 describe('armarCarta()', () => {
-  it('la misma adición con dos precios distintos en una card recibe dos marcas distintas', () => {
+  it('la misma adición con dos precios distintos se resuelve por producto, con su propio precio', () => {
     // Caso real verificado en vivo el 22/09/2026: leche_vegetal cuesta 3.500
-    // en la Bomba de chocolate y 5.300 en el Chocolate — mismo par
-    // (adición, precio) tiene que repetirse la marca, no el par distinto.
+    // en la Bomba de chocolate y 5.300 en el Chocolate.
     const menu: MenuComandante = {
       updatedAt: '2026-09-22T00:00:00.000Z',
       items: [
@@ -84,17 +71,58 @@ describe('armarCarta()', () => {
 
     expect(carta.cards).toHaveLength(1);
     const card = carta.cards[0];
-    // Chocolate va primero por precio (8.400 < 12.500), así que su par
-    // (leche_vegetal, 5300) es el que aparece primero — se lleva la marca
-    // `*`; Bomba de chocolate y su par (leche_vegetal, 3500) van segundo.
-    expect(card.notasAlPie).toEqual([
-      { marca: '*', texto: 'Pídelo en leche vegetal por $5.300' },
-      { marca: '†', texto: 'Pídelo en leche vegetal por $3.500' },
-    ]);
+    // Chocolate va primero por precio (8.400 < 12.500).
     expect(card.productos[0].nombre).toBe('Chocolate');
-    expect(card.productos[0].marcas).toEqual(['*']);
+    expect(card.productos[0].adiciones).toEqual(['Pídelo en leche vegetal por $5.300 adicionales']);
     expect(card.productos[1].nombre).toBe('Bomba de chocolate');
-    expect(card.productos[1].marcas).toEqual(['†']);
+    expect(card.productos[1].adiciones).toEqual(['Pídelo en leche vegetal por $3.500 adicionales']);
+  });
+
+  it('un producto sin adiciones tiene adiciones: []', () => {
+    const menu: MenuComandante = {
+      updatedAt: '2026-09-22T00:00:00.000Z',
+      items: [
+        {
+          name: 'Espresso',
+          description: null,
+          additions: [],
+          variants: ['sin_gas'],
+          category: 'bebidas',
+          subcategory: 'de_cafe',
+          basePrice: 6600,
+        },
+      ],
+    };
+    const producto = armarCarta(menu, contenido()).cards[0].productos[0];
+    expect(producto.adiciones).toEqual([]);
+    expect('variantes' in producto).toBe(false);
+  });
+
+  it('varias adiciones de un producto conservan el orden de producto.additions', () => {
+    const menu: MenuComandante = {
+      updatedAt: '2026-09-22T00:00:00.000Z',
+      items: [
+        {
+          name: 'Latte',
+          description: null,
+          additions: [
+            { addition: 'licor', additionPrice: 8700 },
+            { addition: 'leche_vegetal', additionPrice: 3500 },
+          ],
+          variants: [],
+          category: 'bebidas',
+          subcategory: 'de_cafe',
+          basePrice: 8400,
+        },
+      ],
+    };
+    const dic = contenido({
+      diccionario: { adiciones: { leche_vegetal: 'Pídelo en leche vegetal' }, variantes: {} },
+    });
+    expect(armarCarta(menu, dic).cards[0].productos[0].adiciones).toEqual([
+      'Licor por $8.700 adicionales',
+      'Pídelo en leche vegetal por $3.500 adicionales',
+    ]);
   });
 
   it('una sección con visible: false no aparece, aunque tenga productos', () => {
@@ -153,8 +181,6 @@ describe('armarCarta()', () => {
     expect(card.etiqueta).toBe('Comida');
     expect(card.icono).toBe('restaurant_menu');
     expect(card.productos[0].nombre).toBe('Empanada');
-    // Sin diccionario, las variantes también se humanizan.
-    expect(card.productos[0].variantes).toEqual(['Carne', 'Queso']);
   });
 
   it('las cards sin subcategoría (comida, repostería) se arman igual que las que sí tienen', () => {
@@ -322,6 +348,170 @@ describe('armarCarta()', () => {
     expect(carta.cards[0].productos.map((p) => p.nombre)).toEqual(['Beta', 'Alfa', 'Zeta']);
   });
 
+  it('ordena los productos por order cuando todos lo traen, aunque el precio diga otra cosa', () => {
+    const menu: MenuComandante = {
+      updatedAt: '2026-09-22T00:00:00.000Z',
+      items: [
+        {
+          name: 'Zeta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 1000,
+          order: 1,
+        },
+        {
+          name: 'Alfa',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 9000,
+          order: 3,
+        },
+        {
+          name: 'Beta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: 2,
+        },
+      ],
+    };
+
+    const carta = armarCarta(menu, contenido());
+    expect(carta.cards[0].productos.map((p) => p.nombre)).toEqual(['Zeta', 'Beta', 'Alfa']);
+  });
+
+  it('si a algún producto le falta order, usa el respaldo por precio y nombre', () => {
+    const menu: MenuComandante = {
+      updatedAt: '2026-09-22T00:00:00.000Z',
+      items: [
+        {
+          name: 'Zeta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: 1,
+        },
+        {
+          name: 'Alfa',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: undefined,
+        },
+        {
+          name: 'Beta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 3000,
+          order: 3,
+        },
+      ],
+    };
+
+    const carta = armarCarta(menu, contenido());
+    expect(carta.cards[0].productos.map((p) => p.nombre)).toEqual(['Beta', 'Alfa', 'Zeta']);
+  });
+
+  it('si order es null en todos, usa el respaldo por precio y nombre', () => {
+    const menu: MenuComandante = {
+      updatedAt: '2026-09-22T00:00:00.000Z',
+      items: [
+        {
+          name: 'Zeta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: null,
+        },
+        {
+          name: 'Alfa',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: null,
+        },
+        {
+          name: 'Beta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 3000,
+          order: null,
+        },
+      ],
+    };
+
+    const carta = armarCarta(menu, contenido());
+    expect(carta.cards[0].productos.map((p) => p.nombre)).toEqual(['Beta', 'Alfa', 'Zeta']);
+  });
+
+  it('desempata por nombre cuando varios productos comparten order', () => {
+    const menu: MenuComandante = {
+      updatedAt: '2026-09-22T00:00:00.000Z',
+      items: [
+        {
+          name: 'Zeta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 1000,
+          order: 1,
+        },
+        {
+          name: 'Alfa',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 9000,
+          order: 1,
+        },
+        {
+          name: 'Beta',
+          description: null,
+          additions: [],
+          variants: [],
+          category: 'comida',
+          subcategory: null,
+          basePrice: 5000,
+          order: 0,
+        },
+      ],
+    };
+
+    const carta = armarCarta(menu, contenido());
+    expect(carta.cards[0].productos.map((p) => p.nombre)).toEqual(['Beta', 'Alfa', 'Zeta']);
+  });
+
   it('sin contenido editorial (null), arma la carta igual, con respaldos en todo', () => {
     const menu: MenuComandante = {
       updatedAt: '2026-09-22T00:00:00.000Z',
@@ -341,7 +531,7 @@ describe('armarCarta()', () => {
     const carta = armarCarta(menu, null);
     expect(carta.cards).toHaveLength(1);
     expect(carta.cards[0].productos[0].precioFormateado).toBe('$6.600');
-    expect(carta.cards[0].notasAlPie).toEqual([{ marca: '*', texto: 'Licor por $8.700' }]);
+    expect(carta.cards[0].productos[0].adiciones).toEqual(['Licor por $8.700 adicionales']);
   });
 
   it('la descripción del producto viaja tal cual, cuando existe (cocteles)', () => {
@@ -366,7 +556,7 @@ describe('armarCarta()', () => {
     );
   });
 
-  it('secciones destacadas conservan la marca en la card armada', () => {
+  it('secciones destacadas conservan la bandera en la card armada', () => {
     const menu: MenuComandante = {
       updatedAt: '2026-09-22T00:00:00.000Z',
       items: [

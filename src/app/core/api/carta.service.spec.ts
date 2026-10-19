@@ -119,11 +119,9 @@ describe('CartaService', () => {
               descripcion: null,
               precio: 6600,
               precioFormateado: '$6.600',
-              marcas: [],
-              variantes: [],
+              adiciones: [],
             },
           ],
-          notasAlPie: [],
         },
       ],
     });

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, REQUEST } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { BarraNavegacion } from './barra-navegacion';
@@ -12,6 +12,7 @@ describe('BarraNavegacion', () => {
       imports: [BarraNavegacion],
       providers: [
         provideRouter([
+          { path: 'carta', component: ComponenteVacioDePrueba },
           { path: 'nosotros', component: ComponenteVacioDePrueba },
           { path: 'contacto', component: ComponenteVacioDePrueba },
         ]),
@@ -76,5 +77,68 @@ describe('BarraNavegacion', () => {
 
     expect(fixture.nativeElement.querySelector('#panel-menu-movil')).toBeNull();
     expect(document.activeElement).toBe(boton);
+  });
+
+  describe('enlace a la carta (ADR-024)', () => {
+    function abrirPanel(fixture: ReturnType<typeof TestBed.createComponent<BarraNavegacion>>) {
+      (
+        fixture.nativeElement.querySelector(
+          'button[aria-controls="panel-menu-movil"]',
+        ) as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+      return fixture.nativeElement.querySelector('#panel-menu-movil') as HTMLElement;
+    }
+
+    it('en un host visible aparece en escritorio y en el panel móvil', () => {
+      const fixture = TestBed.createComponent(BarraNavegacion);
+      fixture.detectChanges();
+      const escritorio = fixture.nativeElement.querySelector('ul a[href="/carta"]');
+      expect(escritorio).toBeTruthy();
+
+      const panel = abrirPanel(fixture);
+      expect(panel.querySelector('a[href="/carta"]')).toBeTruthy();
+    });
+
+    it('en escritorio va entre Librería y Nosotros', () => {
+      const fixture = TestBed.createComponent(BarraNavegacion);
+      fixture.detectChanges();
+      const textos = Array.from(
+        (fixture.nativeElement.querySelector('ul') as HTMLElement).querySelectorAll('a'),
+      ).map((a) => a.textContent?.trim());
+      expect(textos).toEqual([
+        'Cartelera',
+        'Librería',
+        'Carta',
+        'Nosotros',
+        'Contacto',
+        'Preguntas frecuentes',
+      ]);
+    });
+
+    it('se marca activo con text-secondary en /carta', async () => {
+      const router = TestBed.inject(Router);
+      const fixture = TestBed.createComponent(BarraNavegacion);
+      fixture.detectChanges();
+      await router.navigateByUrl('/carta');
+      fixture.detectChanges();
+      const enlace = fixture.nativeElement.querySelector('a[href="/carta"]') as HTMLAnchorElement;
+      expect(enlace.classList).toContain('text-secondary');
+    });
+
+    it('en letiende.co no hay enlace a /carta, ni en escritorio ni en móvil', () => {
+      TestBed.overrideProvider(REQUEST, {
+        useValue: new Request('https://example.test/', {
+          headers: { 'x-le-tiende-host': 'letiende.co' },
+        }),
+      });
+      const fixture = TestBed.createComponent(BarraNavegacion);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('a[href="/carta"]')).toBeNull();
+
+      const panel = abrirPanel(fixture);
+      expect(panel).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('a[href="/carta"]')).toBeNull();
+    });
   });
 });

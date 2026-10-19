@@ -16,3 +16,35 @@
 body {
   background-color: var(--color-surface);
 }
+
+/* Íconos de Material Symbols Outlined, solo en /carta (DESIGN.md §11.4, ADR-025).
+   El `<link>` de la fuente lo agrega MaterialSymbolsService; sin él, el
+   ancho fijo y `overflow: hidden` evitan que la ligadura se vea como texto. */
+@layer components {
+  .icono-material {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 1.5rem;
+    overflow: hidden;
+    font-family: 'Material Symbols Outlined';
+    font-size: 1.5rem;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+    direction: ltr;
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+}
+
+/* Desplazamiento suave hacia las anclas (menú de la carta), salvo que el
+   visitante pida reducir el movimiento. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

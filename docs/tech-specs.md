@@ -290,7 +290,7 @@ Planteada el 22/09/2026 (F-8, `PRD.md` §5). Tareas T-0036 a T-0040 en `TODO.md`
 
 | Fuente | Qué aporta | Cómo se publica |
 |---|---|---|
-| `https://comandante.letiende.co/menu.json` (Comandante, `functions/src/index.ts` → `publicMenu`) | Productos activos: `name`, `description`, `additions[]`, `variants[]`, `category`, `subcategory`, `basePrice` | Hoja `datos` → XLSX → importador de Comandante → Firestore (sin cambios, ADR-007 de Comandante) |
+| `https://comandante.letiende.co/menu.json` (Comandante, `functions/src/index.ts` → `publicMenu`) | Productos activos: `name`, `description`, `additions[]`, `variants[]`, `category`, `subcategory`, `basePrice`, `order` (posición de la fila en la hoja `datos`; puede ser `null` o faltar) | Hoja `datos` → XLSX → importador de Comandante → Firestore (sin cambios, ADR-007 de Comandante) |
 | Web App de Apps Script de la hoja maestra | Secciones (etiqueta, descripción, ícono, orden, visibilidad, destacado) y diccionario de adiciones y variantes | Hojas `carta_secciones` y `carta_diccionario` → botón **"Publicar carta"** → copia fija servida por `doGet` (ADR-023) |
 
 **Hoja maestra:** es la misma de Comandante (dueña: `ocastelblanco@gmail.com`; `letiende.co@gmail.com`
@@ -383,18 +383,19 @@ equivocado al público):
    (sin subcategoría) son una card cada una.
 2. Descarta los grupos cuya sección tenga `visible: false` y los grupos sin productos.
 3. Ordena las cards por `orden`; las que no estén en la hoja van al final, en orden alfabético.
-4. Dentro de cada card, ordena los productos por `basePrice` ascendente y luego por `name`
-   (`menu.json` no trae un orden propio; si hace falta uno editorial, es una columna nueva en la hoja
-   `datos` de Comandante, no algo que se invente aquí).
-5. **Notas al pie por par (adición, precio), no por adición.** El sobrecosto de una misma adición
-   puede variar dentro de una card porque depende de la cantidad (verificado en vivo el 22/09/2026:
-   `leche_vegetal` cuesta 3.500 en la Bomba de chocolate y 5.300 en el Chocolate, ~160 ml frente a
-   ~220 ml de leche). Cada par distinto de la card recibe una marca en orden de primera aparición:
-   `*`, `†`, `‡`, `§`, `¶`, `**`, `††`… El producto lleva sus marcas junto al nombre y la card cierra
-   con una línea por marca: `* Pídelo en leche vegetal por $3.500`.
-6. Las variantes se muestran como una línea bajo el producto, separadas por `·`, con su etiqueta del
-   diccionario ("Sweet Stout · Ámbar Ale · American Pale Ale · Indian Pale Ale"). No alteran el
-   precio (contrato de Comandante).
+4. Dentro de cada card, ordena los productos por `order` ascendente (posición de la fila en la hoja
+   `datos` de Comandante) **si todos los productos de la card lo traen** como número; el desempate es
+   `name` (`localeCompare` en `es`). Si a alguno le falta (`null` o ausente: Comandante aún no lo
+   publica o no se re-importó la hoja), toda la card usa el respaldo `basePrice` ascendente y luego
+   `name`. Es todo o nada para evitar comparadores intransitivos con datos mezclados.
+5. **Adiciones bajo cada producto.** Cada producto lista sus propias adiciones, en el orden de
+   `additions`, con el sobrecosto de ese producto: `Pídelo en leche vegetal por $3.500`. El sobrecosto
+   de una misma adición puede variar dentro de una card porque depende de la cantidad (verificado en
+   vivo el 22/09/2026: `leche_vegetal` cuesta 3.500 en la Bomba de chocolate y 5.300 en el Chocolate),
+   así que el precio viaja con cada producto y no hay marcas ni notas al pie. El texto sale de
+   `diccionario.adiciones[clave]`, con respaldo humanizado.
+6. Las variantes (`variants`) **no se muestran**. `diccionario.variantes` se conserva en el contrato
+   de entrada de la Web App, pero el armado ya no lo usa.
 7. `description` del producto, si existe, va bajo el nombre.
 8. Precios en pesos colombianos sin decimales, con punto de miles: `$6.600`.
 
@@ -409,12 +410,12 @@ es *eager* y de otro modo se leería Comandante para responder un 404. Cuando es
 seguridad** (A01: esconder no es proteger): los precios ya son públicos en `menu.json`, y quien llame
 al API Gateway directamente con un encabezado falso solo vería antes lo que igual se va a publicar.
 
-**El enlace "Carta" de la barra no depende del host: no existe hasta T-0040.** La barra vive tres
-veces — aquí, en Ágora y en Babel (`DESIGN.md` §8) —, y mostrar el enlace solo en el contenedor de
-staging rompería la costura al cruzar a `/cartelera` o `/libros`. Durante el desarrollo se entra por
-URL (`https://staging.letiende.co/carta`). Publicar (T-0040) es: `CARTA_PUBLICADA = true`, entrada en
-el sitemap y el enlace agregado **en los tres repositorios a la vez**, después de la aprobación de la
-nueva lista de precios.
+**El enlace "Carta" del menú sigue la misma visibilidad que la ruta:** `BarraNavegacion` calcula
+`cartaVisible(resolverHostCarta(request))` una vez (en el servidor y en el navegador da lo mismo, así
+la hidratación no se rompe) y solo pinta el enlace —entre "Librería" y "Nosotros", en escritorio y en
+el panel móvil— donde la carta es visible: staging y localhost hoy; en `letiende.co` no hay enlace a
+un 404. Al poner `CARTA_PUBLICADA = true` (T-0040) el enlace aparece solo. Ágora y Babel tienen su
+propia barra (`DESIGN.md` §8): agregar allí el enlace al publicar sigue siendo parte de T-0040.
 
 **Presentación:** `DESIGN.md` §11.
 

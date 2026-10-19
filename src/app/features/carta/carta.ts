@@ -1,19 +1,27 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   Injector,
   REQUEST,
   RESPONSE_INIT,
+  computed,
+  effect,
   inject,
 } from '@angular/core';
 import { CartaService } from '@core/api/carta.service';
 import { cartaVisible, resolverHostCarta } from '@core/carta-visibilidad';
 import { MetaService } from '@core/seo/meta.service';
 import { NoEncontradaComponent } from '@features/no-encontrada/no-encontrada';
+import { CartaArmada } from './armar-carta';
+import { CartaCard } from './carta-card';
+import { idSeccion } from './carta-ids';
+import { CartaMenuLateral, EntradaMenuCarta } from './carta-menu-lateral';
+import { MaterialSymbolsService, normalizarIcono } from './material-symbols';
 
 @Component({
   selector: 'app-carta',
-  imports: [NoEncontradaComponent],
+  imports: [NoEncontradaComponent, CartaCard, CartaMenuLateral],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './carta.html',
 })
@@ -22,6 +30,20 @@ export class CartaComponent {
   // `resource()` es eager: se inyecta CartaService solo si la carta es
   // visible, para no leer Comandante en una respuesta que será 404.
   protected readonly carta: CartaService['carta'] | null;
+
+  protected readonly cartaArmada = computed<CartaArmada | null>(() =>
+    this.carta?.hasValue() ? (this.carta.value() ?? null) : null,
+  );
+
+  protected readonly entradas = computed<readonly EntradaMenuCarta[]>(
+    () =>
+      this.cartaArmada()?.cards.map((card) => ({
+        id: idSeccion(card),
+        etiqueta: card.etiqueta,
+        icono: normalizarIcono(card.icono),
+        destacada: card.destacada,
+      })) ?? [],
+  );
 
   constructor() {
     const request = inject(REQUEST, { optional: true });
@@ -45,5 +67,14 @@ export class CartaComponent {
       descripcion: 'Carta del café bar de Le Tiende: bebidas, comidas y sus precios.',
       ruta: '/carta',
     });
+
+    // Material Symbols solo en /carta (ADR-025): el SSR arma el `<link>` con
+    // los íconos publicados y se quita al salir de la ruta.
+    const fuentes = inject(MaterialSymbolsService);
+    effect(() => {
+      const carta = this.cartaArmada();
+      if (carta) fuentes.establecer(carta.cards.map((c) => c.icono));
+    });
+    inject(DestroyRef).onDestroy(() => fuentes.quitar());
   }
 }
