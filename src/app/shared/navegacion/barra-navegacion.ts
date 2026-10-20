@@ -9,7 +9,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { CARTA_PUBLICADA_TOKEN, cartaVisible, resolverHostCarta } from '@core/carta-visibilidad';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { filter, map } from 'rxjs';
 
 @Component({
   selector: 'app-barra-navegacion',
@@ -22,6 +24,18 @@ export class BarraNavegacion {
   protected readonly cartaVisible = cartaVisible(
     resolverHostCarta(inject(REQUEST, { optional: true })),
     inject(CARTA_PUBLICADA_TOKEN),
+  );
+  // "Carta" es un enlace normal (carga completa), no `routerLink`: la carta
+  // solo la arma el servidor y llega al navegador por TransferState, así que una
+  // navegación interna la dejaba sin datos ("La carta no está disponible…").
+  // Por eso el resaltado de enlace activo lo calcula este componente.
+  private readonly router = inject(Router);
+  protected readonly enCarta = toSignal(
+    this.router.events.pipe(
+      filter((evento) => evento instanceof NavigationEnd),
+      map(() => this.router.url.split(/[?#]/)[0] === '/carta'),
+    ),
+    { initialValue: false },
   );
   protected readonly menuAbierto = signal(false);
 

@@ -18,13 +18,7 @@
       <li><a href="/libros" class="hover:text-secondary">Librería</a></li>
       @if (cartaVisible) {
         <li>
-          <a
-            routerLink="/carta"
-            routerLinkActive="text-secondary"
-            [routerLinkActiveOptions]="{ exact: true }"
-            class="hover:text-secondary"
-            >Carta</a
-          >
+          <a href="/carta" [class.text-secondary]="enCarta()" class="hover:text-secondary">Carta</a>
         </li>
       }
       <li>
@@ -112,13 +106,7 @@
         <li><a href="/libros" (click)="cerrarMenu()">Librería</a></li>
         @if (cartaVisible) {
           <li>
-            <a
-              routerLink="/carta"
-              routerLinkActive="text-secondary"
-              [routerLinkActiveOptions]="{ exact: true }"
-              (click)="cerrarMenu()"
-              >Carta</a
-            >
+            <a href="/carta" [class.text-secondary]="enCarta()" (click)="cerrarMenu()">Carta</a>
           </li>
         }
         <li>

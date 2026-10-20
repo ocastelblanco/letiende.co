@@ -117,6 +117,15 @@ describe('BarraNavegacion', () => {
       ]);
     });
 
+    it('"Carta" es un enlace de carga completa, no routerLink (la carta solo la arma el servidor)', () => {
+      const fixture = TestBed.createComponent(BarraNavegacion);
+      fixture.detectChanges();
+      const enlace = fixture.nativeElement.querySelector('a[href="/carta"]') as HTMLAnchorElement;
+      expect(enlace.hasAttribute('routerLink')).toBe(false);
+      const panel = abrirPanel(fixture);
+      expect(panel.querySelector('a[href="/carta"]')?.hasAttribute('routerLink')).toBe(false);
+    });
+
     it('se marca activo con text-secondary en /carta', async () => {
       const router = TestBed.inject(Router);
       const fixture = TestBed.createComponent(BarraNavegacion);
