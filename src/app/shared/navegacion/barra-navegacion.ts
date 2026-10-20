@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { cartaVisible, resolverHostCarta } from '@core/carta-visibilidad';
+import { CARTA_PUBLICADA_TOKEN, cartaVisible, resolverHostCarta } from '@core/carta-visibilidad';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
@@ -21,6 +21,7 @@ export class BarraNavegacion {
   // Mismo criterio que la ruta /carta (ADR-024): sin enlace a un 404.
   protected readonly cartaVisible = cartaVisible(
     resolverHostCarta(inject(REQUEST, { optional: true })),
+    inject(CARTA_PUBLICADA_TOKEN),
   );
   protected readonly menuAbierto = signal(false);
 

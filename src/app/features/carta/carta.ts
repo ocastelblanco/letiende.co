@@ -10,7 +10,9 @@ import {
   inject,
 } from '@angular/core';
 import { CartaService } from '@core/api/carta.service';
-import { cartaVisible, resolverHostCarta } from '@core/carta-visibilidad';
+import { CARTA_PUBLICADA_TOKEN, cartaVisible, resolverHostCarta } from '@core/carta-visibilidad';
+import { esquemaCarta, esquemaMigasDePan } from '@core/seo/esquemas';
+import { JsonLdService } from '@core/seo/json-ld.service';
 import { MetaService } from '@core/seo/meta.service';
 import { NoEncontradaComponent } from '@features/no-encontrada/no-encontrada';
 import { CartaArmada } from './armar-carta';
@@ -50,8 +52,9 @@ export class CartaComponent {
     const respuestaInit = inject(RESPONSE_INIT, { optional: true });
     const injector = inject(Injector);
     const meta = inject(MetaService);
+    const jsonLd = inject(JsonLdService);
 
-    this.visible = cartaVisible(resolverHostCarta(request));
+    this.visible = cartaVisible(resolverHostCarta(request), inject(CARTA_PUBLICADA_TOKEN));
 
     if (!this.visible) {
       // 404 condicional por petición: no sirve un `status` estático en
@@ -74,6 +77,19 @@ export class CartaComponent {
     effect(() => {
       const carta = this.cartaArmada();
       if (carta) fuentes.establecer(carta.cards.map((c) => c.icono));
+    });
+
+    effect(() => {
+      const carta = this.cartaArmada();
+      if (carta) {
+        jsonLd.establecer('ld-pagina', [
+          esquemaCarta(carta),
+          esquemaMigasDePan([
+            { nombre: 'Inicio', ruta: '/' },
+            { nombre: 'Carta', ruta: '/carta' },
+          ]),
+        ]);
+      }
     });
     inject(DestroyRef).onDestroy(() => fuentes.quitar());
   }

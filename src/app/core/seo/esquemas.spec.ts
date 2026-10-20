@@ -1,5 +1,6 @@
 import {
   esquemaAboutPage,
+  esquemaCarta,
   esquemaContactPage,
   esquemaFaqPage,
   esquemaListaEventos,
@@ -98,5 +99,38 @@ describe('esquemas JSON-LD', () => {
         item: 'https://letiende.co/nosotros',
       },
     ]);
+  });
+
+  it('esquemaCarta arma Menu > MenuSection > MenuItem con precio en COP, unido al teatro', () => {
+    const esquema = esquemaCarta({
+      cards: [
+        {
+          categoria: 'bebidas',
+          subcategoria: 'de_cafe',
+          etiqueta: 'De café',
+          descripcion: null,
+          icono: 'coffee',
+          destacada: false,
+          productos: [
+            {
+              nombre: 'Espresso sencillo',
+              descripcion: null,
+              precio: 6600,
+              precioFormateado: '$6.600',
+              adiciones: [],
+            },
+          ],
+        },
+      ],
+    });
+    expect(esquema['@type']).toBe('CafeOrCoffeeShop');
+    expect(esquema.containedInPlace['@type']).toBe('PerformingArtsTheater');
+    const seccion = esquema.hasMenu.hasMenuSection[0];
+    expect(seccion.name).toBe('De café');
+    expect(seccion.hasMenuItem[0]).toEqual({
+      '@type': 'MenuItem',
+      name: 'Espresso sencillo',
+      offers: { '@type': 'Offer', price: 6600, priceCurrency: 'COP' },
+    });
   });
 });

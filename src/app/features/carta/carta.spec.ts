@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { environment } from '@environments/environment';
 import { _reiniciarCacheCartaParaPruebas } from '@core/api/carta.service';
 import { MenuComandante } from './armar-carta';
+import { CARTA_PUBLICADA_TOKEN } from '@core/carta-visibilidad';
 import { CartaComponent } from './carta';
 
 const menuFalso: MenuComandante = {
@@ -39,7 +40,7 @@ describe('CartaComponent', () => {
     environment.urlContenidoCartaWebApp = urlContenidoOriginal;
   });
 
-  async function renderizar(host: string) {
+  async function renderizar(host: string, publicada = false) {
     const respuestaInit: { status?: number } = {};
     TestBed.configureTestingModule({
       providers: [
@@ -49,6 +50,8 @@ describe('CartaComponent', () => {
           useValue: new Request('https://x/carta', { headers: { 'x-le-tiende-host': host } }),
         },
         { provide: RESPONSE_INIT, useValue: respuestaInit },
+        // Por defecto la carta se prueba SIN publicar: es el camino de ADR-024.
+        { provide: CARTA_PUBLICADA_TOKEN, useValue: publicada },
       ],
     });
     const fixture = TestBed.createComponent(CartaComponent);
@@ -80,6 +83,13 @@ describe('CartaComponent', () => {
       expect(document.getElementById('carta-material-symbols')).toBeNull();
     },
   );
+
+  it('con la carta publicada, letiende.co la muestra y no fija 404', async () => {
+    const { html, respuestaInit } = await renderizar('letiende.co', true);
+    expect(respuestaInit.status).not.toBe(404);
+    expect(html.querySelector('app-no-encontrada')).toBeNull();
+    expect(html.textContent).toContain('$6.600');
+  });
 
   it('en staging muestra la card con su precio y no fija 404', async () => {
     const { html, respuestaInit } = await renderizar('staging.letiende.co');

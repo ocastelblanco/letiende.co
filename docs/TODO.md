@@ -987,7 +987,7 @@ alcance de esta tarea); `docs/optimizacion-aplicaciones.md` §5 actualizado; esf
 
 | ID | Tarea | Depende de |
 |---|---|---|
-| T-0040 | **[CARTA] Publicación.** Solo cuando el humano confirme que la nueva lista de precios está aprobada y cargada en Comandante. `CARTA_PUBLICADA = true`, entrada en `/sitemap.xml`, JSON-LD `Menu` (§4.6) y el enlace "Carta" en la barra **de los tres repositorios a la vez** (`DESIGN.md` §8). DoD: `curl` real contra `letiende.co/carta` (200), sin salto visual de la barra al cruzar a `/cartelera` y `/libros` | T-0039 (activa) + aprobación del humano |
+| T-0040 | **[CARTA] Publicación — HECHA 19/10/2026 (PR `feature/publicar-carta` en los tres repos; el humano aprobó los precios).** Solo cuando el humano confirme que la nueva lista de precios está aprobada y cargada en Comandante. `CARTA_PUBLICADA = true`, entrada en `/sitemap.xml`, JSON-LD `Menu` (§4.6) y el enlace "Carta" en la barra **de los tres repositorios a la vez** (`DESIGN.md` §8). DoD: `curl` real contra `letiende.co/carta` (200), sin salto visual de la barra al cruzar a `/cartelera` y `/libros` | T-0039 (activa) + aprobación del humano |
 | — | *(Aplazada, repo Comandante, sin ID)* El botón de la hoja también carga los precios en Comandante, con validación en el servidor (ADR-023) | Decisión del humano |
 
 **Cola 2 — Roadmap de optimización entre repositorios, en pausa desde el 22/09/2026.** **T-0034**

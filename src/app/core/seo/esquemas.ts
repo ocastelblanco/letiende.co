@@ -1,4 +1,5 @@
 import type { EventoEnCartelera } from '@core/api/eventos-publicos.service';
+import type { CartaArmada } from '@features/carta/armar-carta';
 import { DATOS_NEGOCIO } from '@core/negocio/datos-negocio';
 import { DOMINIO } from './dominio';
 
@@ -148,5 +149,42 @@ export function esquemaMigasDePan(migas: readonly MigaDePan[]) {
       name: miga.nombre,
       item: `${DOMINIO}${miga.ruta}`,
     })),
+  };
+}
+
+/**
+ * `/carta` — tech-specs.md §4.6. `hasMenu` solo aplica a `FoodEstablishment`,
+ * así que el café bar es un `CafeOrCoffeeShop` propio unido al teatro con
+ * `containedInPlace`. Los precios salen del mismo `CartaArmada` que pinta la
+ * página: el JSON-LD nunca declara un valor distinto del visible.
+ */
+export function esquemaCarta(carta: CartaArmada) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CafeOrCoffeeShop',
+    name: `Café bar de ${DATOS_NEGOCIO.nombre}`,
+    url: `${DOMINIO}/carta`,
+    address: direccionPostal(),
+    containedInPlace: {
+      '@type': 'PerformingArtsTheater',
+      name: DATOS_NEGOCIO.nombre,
+      url: DOMINIO,
+    },
+    hasMenu: {
+      '@type': 'Menu',
+      name: 'Carta',
+      url: `${DOMINIO}/carta`,
+      hasMenuSection: carta.cards.map((card) => ({
+        '@type': 'MenuSection',
+        name: card.etiqueta,
+        ...(card.descripcion ? { description: card.descripcion } : {}),
+        hasMenuItem: card.productos.map((producto) => ({
+          '@type': 'MenuItem',
+          name: producto.nombre,
+          ...(producto.descripcion ? { description: producto.descripcion } : {}),
+          offers: { '@type': 'Offer', price: producto.precio, priceCurrency: 'COP' },
+        })),
+      })),
+    },
   };
 }

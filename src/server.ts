@@ -29,7 +29,7 @@ const HOSTS_PRODUCCION = new Set(['letiende.co', 'www.letiende.co']);
 // Rutas propias del contenedor, en sincronía manual con app.routes.ts
 // (tech-specs.md §4.2) — son solo cuatro, no vale la pena un descubrimiento
 // automático todavía.
-const RUTAS_PROPIAS = ['/', '/nosotros', '/contacto', '/preguntas-frecuentes'];
+const RUTAS_PROPIAS = ['/', '/nosotros', '/contacto', '/preguntas-frecuentes', '/carta'];
 
 /**
  * ADR-002 (docs/MEMORY.md): staging necesita `Disallow: /`, para no competir

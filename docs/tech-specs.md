@@ -196,7 +196,7 @@ Todas públicas. **No hay guards en este proyecto** (PRD §9, D-4).
 | `/preguntas-frecuentes` | `PreguntasFrecuentesComponent` | Prerender | Base del `FAQPage` para AEO |
 | `/cartelera/**` | — | — | **No es ruta de Angular.** La resuelve CloudFront contra Ágora |
 | `/libros/**` | — | — | **No es ruta de Angular.** La resuelve CloudFront contra Babel |
-| `/carta` *(etapa 2)* | `CartaComponent` | SSR | Carta del café bar (§4.6). **Oculta en producción** hasta su publicación: responde 404 real en `letiende.co`/`www` (ADR-024) |
+| `/carta` *(etapa 2)* | `CartaComponent` | SSR | Carta del café bar (§4.6). **Publicada el 19/10/2026 (T-0040)**: `CARTA_PUBLICADA = true`. Antes respondía 404 real en `letiende.co`/`www` (ADR-024) |
 | `**` | `NoEncontradaComponent` | SSR, código 404 | Debe responder 404 real, no 200 |
 
 > **Trampa que ya costó tiempo en otros proyectos:** una página de "no encontrada" que responde
@@ -399,7 +399,7 @@ equivocado al público):
 7. `description` del producto, si existe, va bajo el nombre.
 8. Precios en pesos colombianos sin decimales, con punto de miles: `$6.600`.
 
-**Visibilidad antes de publicar** (ADR-024): `cartaVisible(host)` es verdadero solo en
+**Visibilidad antes de publicar** (ADR-024; desde T-0040 `CARTA_PUBLICADA` es `true` y el bloqueo queda como mecanismo de reserva, ejercido en pruebas con `CARTA_PUBLICADA_TOKEN`): `cartaVisible(host)` es verdadero solo en
 `staging.letiende.co`, `localhost` y `127.0.0.1`, **o** si la constante `CARTA_PUBLICADA` es `true`.
 El host lo resuelve `resolverHostCarta(request)` (`src/app/core/carta-visibilidad.ts`) igual que
 `robots.txt` (`src/server.ts`: `x-le-tiende-host`, que inyecta la función de CloudFront de §7.2, o
@@ -419,7 +419,7 @@ propia barra (`DESIGN.md` §8): agregar allí el enlace al publicar sigue siendo
 
 **Presentación:** `DESIGN.md` §11.
 
-**SEO/AEO al publicar** (T-0040): JSON-LD `Menu` → `hasMenuSection` (`MenuSection`) →
+**SEO/AEO** (T-0040, hecho: `esquemaCarta()` en `esquemas.ts`, `/carta` en `/sitemap.xml`): JSON-LD `Menu` → `hasMenuSection` (`MenuSection`) →
 `hasMenuItem` (`MenuItem` con `offers.price` y `priceCurrency: "COP"`), en un `CafeOrCoffeeShop` propio del
 café bar (`hasMenu`), unido al `PerformingArtsTheater` existente de `esquemas.ts` con
 `containedInPlace` — `hasMenu` solo aplica a `FoodEstablishment`, no se le puede colgar al teatro. Serializado con `JSON.stringify` y escape
