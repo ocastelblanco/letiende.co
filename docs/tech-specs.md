@@ -434,7 +434,7 @@ Superficie mínima a propósito. Todo lo demás llega por proxy o desde el API p
 | Método | Ruta | Quién la llama | Descripción | Cuerpo |
 |---|---|---|---|---|
 | `POST` | `/api/contacto` | Formulario de `/contacto` | Envía el mensaje al correo del equipo vía SES, tras verificar honeypot y reCAPTCHA v3 (T-0009, ADR-019/ADR-020) | `MensajeDeContacto` (§4.3) |
-| `GET` | `/api/salud` | CI, tras cada despliegue | Prueba de humo | — |
+| `GET` | `/api/salud` | CI, tras cada despliegue (staging y producción) | Prueba de humo del propio contenedor: `200 {"estado":"ok"}`, `Cache-Control: no-store`, sin consultar a Ágora/Babel/Comandante. La sirve `src/server.ts` (antes del SSR) vía `src/salud.ts` | — |
 | `GET` | `/sitemap.xml` | Buscadores | Índice de mapas del sitio | — |
 | `*` | `/**` | Visitantes | SSR de la aplicación Angular | — |
 
@@ -688,7 +688,7 @@ Las de código están en `CLAUDE.md` §4; las de git, en `CLAUDE.md` §6.
 | Unitarias backend | Vitest | Handlers y utilidades de `server/` | 80% de líneas |
 | Estático | ESLint + `angular-eslint` + `tsc --noEmit` | Todo el repositorio | 0 errores |
 | Secretos | `scripts/verificar-secretos.mjs`, en pre-commit | Archivos en stage | 0 hallazgos |
-| Humo | `curl` contra `/api/salud` | Tras cada despliegue | HTTP 200 |
+| Humo | `curl` contra `/api/salud` (staging: endpoint de API Gateway; producción: `letiende.co`, con reintentos) | Tras cada despliegue | HTTP 200 y `{"estado":"ok"}` |
 | Accesibilidad y SEO | Lighthouse CI | Portada y contacto | A11y ≥ 95, SEO = 100 |
 
 `isolate: true` en el builder de pruebas es obligatorio: sin él, un `vi.mock` de un archivo se filtra
