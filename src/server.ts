@@ -6,6 +6,7 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
+import { responderSalud } from './salud';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -89,6 +90,12 @@ const RUTAS_PROXIADAS = ['/cartelera', '/libros'];
 app.get(RUTAS_PROXIADAS, (req, res) => {
   res.redirect(301, `${req.originalUrl}/`);
 });
+
+/**
+ * Prueba de humo del CI tras cada despliegue (tech-specs.md §10). Va antes
+ * del SSR: sin esta ruta, `/api/salud` caía en Angular y respondía 404.
+ */
+app.get('/api/salud', responderSalud);
 
 /**
  * Serve static files from /browser

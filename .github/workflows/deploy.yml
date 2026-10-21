@@ -143,6 +143,10 @@ jobs:
           # No solo el código: confirma que es el HTML servido por SSR, no
           # una página de error de API Gateway/CloudFormation.
           grep -qi '<html' /tmp/index.html
+          # Prueba de humo propia del contenedor (tech-specs.md §10).
+          salud=$(curl -sS "${{ steps.deploy.outputs.endpoint }}/api/salud")
+          echo "GET /api/salud → $salud"
+          echo "$salud" | grep -q '"estado":"ok"'
 
       - name: Comentar la URL de staging en el PR
         run: |
@@ -200,3 +204,16 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           SES_REMITENTE: ${{ secrets.SES_REMITENTE }}
           RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+
+      - name: Smoke test contra producción recién desplegada
+        run: |
+          # Contra el dominio real (pasa por CloudFront): un despliegue que
+          # "terminó bien" pero no sirve el sitio se detecta aquí. Reintenta
+          # porque CloudFront puede tardar unos segundos en tomar el cambio.
+          for intento in 1 2 3 4 5 6; do
+            salud=$(curl -sS -m 10 "https://letiende.co/api/salud" || true)
+            echo "intento $intento: GET /api/salud → $salud"
+            if echo "$salud" | grep -q '"estado":"ok"'; then exit 0; fi
+            sleep 10
+          done
+          exit 1
