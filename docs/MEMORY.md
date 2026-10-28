@@ -15,7 +15,7 @@ Se actualiza al cerrar cada sesión de trabajo relevante.
 | **Rama** | `main` |
 | **Producción** | `https://letiende.co` / `https://www.letiende.co` sirven de verdad el contenedor de este repositorio — CloudFront `ER22S2WADMM83`, cutover ejecutado el 04/09/2026 (T-0017), verificado en vivo el 07/09/2026 (`cloudfront ListDistributions` + `route53 ListResourceRecordSets` reales, y navegador real contra las 4 rutas propias). La distribución vieja (`E33QAN86FY24JZ`) sigue existiendo pero **sin ningún alias** — ya no sirve tráfico real |
 | **Staging** | `letiende-co-staging` despliega de verdad, con dominio propio real: `https://staging.letiende.co` (ACM `ISSUED`, CloudFront `EQW683KP4VXIV`, T-0011) — verificado en vivo por el humano y por `curl` |
-| **Última sesión** | 22–23/09/2026 — planeación e implementación de la carta del café bar (`/carta`, F-8): T-0036, T-0037 y T-0038 completas; activas T-0039 y T-0034. Ver Contexto de la sesión actual |
+| **Última sesión** | 27/10/2026 — planeación (solo documentación) de la página de enlaces `/enlaces` para Instagram (F-10): activas T-0041 y T-0042; T-0034 pasa a la cola. Ver Contexto de la sesión actual |
 
 La rama `2025` sigue en el remoto con el intento anterior, abandonado.
 No se toma nada de ella: el proyecto arranca desde cero por decisión explícita.
@@ -58,6 +58,9 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
       (T-0038, verificada en staging: 200 con 14 secciones; `letiende.co/carta`: 404). Faltan la
       interfaz completa (T-0039) y la publicación (T-0040). Oculta en producción hasta la aprobación
       de la nueva lista de precios (ADR-024)
+- [ ] *Etapa 2:* página de enlaces `/enlaces` para Instagram (F-10) — planeada y aprobada el 27/10/2026,
+      T-0041 a T-0043 (`tech-specs.md` §4.7, `DESIGN.md` §12, ADR-026 y ADR-027). Sin código todavía.
+      El humano pidió hacerla antes de T-0034. La validación de GA4 es la tarea final (T-0043)
 - [ ] *Etapa 2, aplazada:* botón de la hoja maestra que también carga los precios en Comandante (ADR-023)
 - [ ] *Etapa 2:* actualización de `letiende-api`
 
@@ -737,6 +740,62 @@ nuevo. Con `icon_names`, el peso se limita a los ~15 íconos reales, no a los mi
 **Consecuencias.** Un nombre de ícono inexistente se ve como texto de la ligadura. El script de
 publicación valida el formato del nombre, pero no puede comprobar que exista: la revisión en staging
 es la red de seguridad. Si algún día hace falta un ícono de marca propio, esto se replantea.
+
+### ADR-026 — Fuente de `/enlaces`: hoja de Google + Apps Script `doGet`, no un JSON escrito a S3
+
+**Fecha:** 27/10/2026 · **Estado:** aceptada · **Deriva de:** ADR-023
+
+**Contexto.** `/enlaces` (F-10) agrupa los enlaces del Pódbar para la biografía de Instagram y crecerá
+con más temporadas y productos, administrados por los socios en una hoja de Google. El humano propuso
+que un botón de la hoja exportara un JSON alojado como asset en S3 (bucket `letiende-assets`,
+`assets.letiende.co`). Al momento de decidir no existía ningún script.
+
+**Decisión.** Se reutiliza el mecanismo de la carta: un Apps Script ligado a la hoja con el menú
+"Le Tiende → Publicar enlaces" que valida y guarda una copia fija; una Web App (`doGet`, "ejecutar como
+yo" = `ocastelblanco@gmail.com`, acceso "cualquiera") sirve esa copia como JSON; el SSR la lee con caché
+de 5 min y la última copia buena como respaldo. El script se versiona en
+`herramientas/apps-script/enlaces.gs`. El humano aceptó la recomendación el 27/10/2026.
+
+**Alternativa descartada: Apps Script escribe el JSON en S3.**
+1. Exige guardar en las propiedades del script una credencial de AWS con `s3:PutObject` (o un endpoint
+   propio con un secreto compartido), justo la superficie de escritura que ADR-023 evitó a propósito
+   ("este contenedor no guarda nada").
+2. `/assets/*` se sirve con `CachingOptimized` (`tech-specs.md` §7.2): tras pulsar "Publicar", el JSON
+   viejo podría seguir en CloudFront hasta 24 h, salvo que cada publicación dispare una invalidación (más
+   permisos, más piezas).
+3. Duplica trabajo ya hecho y probado en la carta (validación, `TransferState`, caché, degradación).
+
+**Consecuencias.** Mismas que ADR-023: la Web App tarda 1 a 3 s en frío (la absorbe la caché), y
+cambiar el script exige volver a desplegar **con la misma implementación** para no cambiar la URL
+`/exec`, que el SSR tiene como constante. A diferencia de la carta, una fuente caída sí deja la página
+en 503 si no hay ninguna copia en memoria: es aceptable porque la Lambda caliente conserva la última
+copia buena, pero es un riesgo menor conocido de que la biografía de Instagram apunte a una página
+caída. Si llegara a molestar, el respaldo sería un JSON mínimo versionado, no S3.
+
+### ADR-027 — `/enlaces` sin barra ni pie, y fuera de los buscadores
+
+**Fecha:** 27/10/2026 · **Estado:** aceptada · **Excepción acotada a:** F-2 (`PRD.md`), ADR-003
+
+**Contexto.** F-2 manda el menú común "en todas las páginas". `/enlaces` es una página de aterrizaje de
+una sola acción para quien viene de Instagram; el estándar del género (Linktree, Taplink) es no ofrecer
+ninguna salida más que los enlaces. El humano pidió "sin toolbar ni pie; manejar como excepción
+documentada" y que la página no esté en el menú.
+
+**Decisión.**
+1. La ruta declara `data: { sinMarco: true }` y `App` no pinta `BarraNavegacion` ni `PiePagina` cuando
+   la ruta activa lo declara. Es el único mecanismo; no se agregan excepciones sin un ADR.
+2. `robots: noindex,follow`, fuera de `/sitemap.xml`, sin enlace desde ninguna parte del sitio.
+3. Visible en todos los hosts desde su primer despliegue: no usa el bloqueo por host de ADR-024 (no hay
+   contenido que esperar aprobación).
+
+**Razón.** Una página de enlaces no aporta a SEO y, indexada, competiría con la portada por la marca.
+La excepción se declara en la ruta, no en un `if` por URL dentro de la barra, para que sea explícita y
+fácil de encontrar.
+
+**Consecuencias.** `app.html` pasa a depender de un dato de la ruta activa (se resuelve con una
+señal derivada de `Router`/`ActivatedRoute`; cuidado con la hidratación: el valor debe ser el mismo en
+servidor y navegador). El HTML de `/enlaces` no tiene `<header>` ni `<footer>` globales; el
+`<main>` sigue siendo el punto de referencia semántico (`DESIGN.md` §10).
 
 ---
 
@@ -1907,3 +1966,39 @@ T-0035 sigue en cola.
 
 **Próxima tarea sugerida:** T-0039. Su DoD incluye verificar la hidratación en navegador real, además
 de la revisión visual del humano en staging.
+
+**27/10/2026 — Planeación de la página de enlaces `/enlaces` (F-10). Solo documentación, sin código.**
+
+Qué se pidió: una página al estilo Linktree para la biografía de Instagram `@letiende_parkway`, con los
+enlaces del podcast **Pódbar**: T3 (YouTube, Spotify, Apple Podcasts) y T1 y T2 (Mixcloud y
+`bar23.co/podbar`), con más temporadas y productos en el futuro. Primero celular; fuera del menú.
+
+Decisiones del humano (en respuesta al plan, todas con la recomendación del agente):
+
+1. Fuente: Web App de Apps Script con botón de publicación, no S3 (ADR-026). No existía ningún script.
+2. Sin barra ni pie, como excepción documentada (ADR-027).
+3. `noindex` y fuera del sitemap (ADR-027).
+4. Columnas opcionales `Etiqueta` y `Visible`.
+5. GA4: sin tabla ni evento propio; verificar las mediciones mejoradas es la **tarea final** (T-0043).
+6. Prioridad: esto primero (T-0041 y T-0042 activas); T-0034 (OPT-20) pasa a la cola y se retoma después.
+
+Agregado por el humano al aprobar: el Pódbar tiene **logo** y va en el encabezado de su panel; el logo
+de **bar23** es el ícono del enlace a `bar23.co`. Entregados en `~/Downloads/logo-podbar.svg` (magenta,
+viewBox 1377×816) y `~/Downloads/logo-bar23.svg` (viewBox 800×800); se revisó que no tengan
+`<script>`, `<image>`, `onload` ni `data:`. Aún **no** están copiados al repositorio: se copian en
+T-0042 a `public/enlaces/` (nombres en `tech-specs.md` §4.7).
+
+Decisión del agente al incorporar el logo, **a confirmar por el humano en T-0041**: el logo del panel
+se modela como columna opcional `Logo` de la hoja (clave `podbar`; vale el primer valor no vacío de la
+categoría). Alternativa descartada por exceso de piezas: una segunda pestaña `paneles`.
+
+Hallazgo de proceso: al empezar, el encabezado de `docs/TODO.md` seguía marcando T-0039 y T-0034 como
+activas aunque T-0039 ya estaba fusionada (PR #62 y #64) y la carta publicada (T-0040, PR #63); se
+reconcilió en esta sesión. El historial de T-0039 en `TODO.md` quedó con una entrada mínima basada solo
+en `git log`: conviene que el humano la complete si quiere conservar el detalle.
+
+**Motor JIT, estado final de la sesión:** activas **T-0041** (datos) y **T-0042** (interfaz). Cola:
+**T-0043** (GA4, final), luego **T-0034** y **T-0035**.
+
+**Próxima tarea sugerida:** T-0041. Tiene un paso del humano: desplegar a mano el Apps Script
+(`herramientas/apps-script/README.md`) y entregar la URL `/exec`.

@@ -94,6 +94,7 @@ El sitio **no tiene área privada**: el personal de Le Tiende sigue trabajando d
 |---|---|---|
 | F-8 | **Carta del café bar** con precios vigentes, en `/carta`: una card por sección con su texto descriptivo, menú lateral de navegación, notas al pie para las adiciones con sobrecosto y promociones destacadas | Precios: Comandante (`menu.json`). Textos, íconos y diccionario: hoja maestra del café bar, editable por los socios |
 | F-9 | Actualización de seguridad y estilo de la interfaz de datos heredada | Propio |
+| F-10 | **Página de enlaces** (`/enlaces`), al estilo Linktree, para la biografía de Instagram (`@letiende_parkway`): paneles por producto (hoy solo **Pódbar**), cada uno con barras de íconos que llevan a las plataformas donde se escucha cada temporada. Sin barra de navegación ni pie (excepción a F-2), fuera del menú y de los buscadores | Hoja de Google Sheets con botón "Publicar enlaces" (Apps Script, `tech-specs.md` §4.7) |
 
 ### Flujo principal — el visitante que llega a comprar
 
@@ -142,6 +143,7 @@ El visitante entra a Le Tiende y se queda en Le Tiende, aunque por debajo esté 
 | **Media** | Preguntas frecuentes (F-7) | 1 |
 | **Media** | Carta del café bar (F-8) | 2 |
 | **Media** | Actualización de la interfaz de datos heredada (F-9) | 2 |
+| **Media** | Página de enlaces para Instagram (F-10) — planeada el 27/10/2026, T-0041 a T-0043; va antes de T-0034 por decisión del humano | 2 |
 | **Baja** | Agenda unificada: eventos, novedades de la librería y del café en un solo lugar | 3 |
 | **Baja** | Boletín de correo y suscripción desde la portada | 3 |
 | **Baja** | Versión en inglés del sitio | 3 |
@@ -155,6 +157,13 @@ permiso de edición publican con un botón. Detalle en `tech-specs.md` §4.6 y `
 **Condición de publicación de F-8:** la carta se desarrolla y se prueba en staging, pero **no es
 visible en `letiende.co` hasta que se apruebe la nueva lista de precios** con la que se alimenta
 Comandante (ADR-024). Publicarla es una decisión del humano, no un paso automático del desarrollo.
+
+**F-10, decisiones del 27/10/2026 (`MEMORY.md`, ADR-026 y ADR-027):** el contenido se administra en
+una hoja de Google con un botón de publicación, igual que la carta; la página no tiene barra ni pie
+(es una excepción puntual a F-2, no un cambio de la regla); no se indexa; la medición de visitas y
+clics queda en Google Analytics 4 para todo el sitio, sin tabla propia (si luego hace falta, sería
+DynamoDB, trabajo aparte). Se espera que sume más temporadas del Pódbar y otros productos sin tocar
+código, salvo el logo de una plataforma nueva.
 
 **Fuera del alcance de F-8, aplazado:** que el botón de la hoja también cargue los precios en
 Comandante (hoy se exporta un XLSX y se importa a mano). Es trabajo del repositorio de Comandante y

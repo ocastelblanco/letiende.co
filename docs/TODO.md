@@ -9,47 +9,65 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-**23/09/2026 — Etapa 2 en curso: carta del café bar (F-8, `PRD.md` §5).** T-0036, T-0037 y T-0038
-están **completas** y en el Historial de abajo (PR #58, #59 y #60, los tres fusionados). El motor JIT
-toma como activas **T-0039** (interfaz completa de la carta) y **T-0034** (OPT-20, estáticos de Babel
-en S3 + CloudFront, del roadmap de optimización entre repositorios). **T-0040** no puede ser activa:
-espera la aprobación del humano de la nueva lista de precios. **T-0035** (OPT-16) sigue en la cola 2.
+**27/10/2026 — Etapa 2 en curso: página de enlaces para Instagram (F-10, `PRD.md` §5).** La carta
+(T-0036 a T-0040) está completa y publicada; T-0039 se cerró con los PR #62 y #64 (ver Historial). El
+motor JIT toma como activas **T-0041** y **T-0042**, que parten F-10. Por decisión del humano
+(27/10/2026) **T-0034** (OPT-20) pasa a la cola y se retoma al terminar F-10. **T-0043** (validar GA4)
+es la tarea final de F-10 y no puede ser activa hasta que T-0041 y T-0042 estén cerradas.
 
-Contexto completo de la carta: `tech-specs.md` §4.6 (datos, contrato, reglas de armado), `DESIGN.md`
-§11 (presentación) y `MEMORY.md`, ADR-023 a ADR-025. **La carta no se ve en `letiende.co` hasta
-T-0040**: `/carta` responde 404 real fuera de staging/localhost (T-0038). Esa decisión es del humano.
+Contexto completo: `tech-specs.md` §4.7 (fuente, contrato, armado, seguridad), `DESIGN.md` §12
+(presentación), `MEMORY.md` ADR-026 y ADR-027 y la sesión del 27/10/2026. Reglas que no se discuten
+de nuevo: la fuente es una Web App de Apps Script, **no S3**; la página no lleva barra ni pie; no se
+indexa; sin tabla propia de visitas.
 
-**T-0039 — [CARTA] Interfaz completa (`DESIGN.md` §11), ACTIVA.** Cards, notas al pie, variantes,
-cards destacadas, menú lateral de íconos con botón de expandir, desplazamiento a la card, sección
-activa, Material Symbols con `icon_names` (ADR-025), accesibilidad (§10). Reemplaza la lista simple
-de T-0038 sobre la misma ruta y el mismo bloqueo de visibilidad; no toca `cartaVisible()`.
+**T-0041 — [ENLACES] Fuente de datos: hoja, Apps Script, servicio SSR y armado, ACTIVA.**
 
-**Definición de terminado:**
+- `herramientas/apps-script/enlaces.gs` (menú "Le Tiende → Publicar enlaces", validación, copia fija,
+  `doGet`) y su sección en `herramientas/apps-script/README.md`. Encabezados leídos sin importar
+  mayúsculas ni tildes; columnas opcionales `Etiqueta`, `Visible` y `Logo` (`tech-specs.md` §4.7).
+- `armarEnlaces()` en `src/app/features/enlaces/armar-enlaces.ts`, función pura con pruebas unitarias
+  (URL no `https:`, filas ocultas, barras y paneles vacíos, etiqueta de respaldo, ícono desconocido,
+  orden de aparición).
+- `EnlacesService` en `src/app/core/api/enlaces.service.ts`: constante `urlContenidoEnlacesWebApp` en
+  `environments/`, caché de 5 min, última copia buena, `TransferState` explícito, 503 real sin fuente.
+  Copia de los patrones de `carta.service.ts`, con sus pruebas.
+- **Paso del humano:** desplegar el Apps Script a mano con `ocastelblanco@gmail.com` (Implementar →
+  Aplicación web → ejecutar como yo → acceso cualquiera), cargar las 5 filas actuales, pulsar
+  "Publicar enlaces" y entregar la URL `/exec`; se verifica con `curl -L`. Confirmar de paso el nombre
+  real de la pestaña y que `Logo` como columna opcional les sirve (decisión del agente, `MEMORY.md`).
+- Definición de terminado: Web App verificada en vivo con `curl -L` y con el contrato de §4.7; build,
+  pruebas y lint en verde; PR (rama `feature/enlaces-datos`); esfuerzo registrado (T-0041).
 
-- Revisión visual del humano en `staging.letiende.co/carta`, en celular y en escritorio.
-- **Verificación de hidratación en navegador real**, no solo `curl` ni pruebas unitarias: la carta
-  con sus 14 secciones y precios debe seguir en pantalla después de hidratar, sin el mensaje "La
-  carta no está disponible en este momento." y con la consola sin errores de hidratación desde la
-  carga inicial. Es la lección del defecto de T-0038 (Historial): el HTML del SSR estaba bien y la
-  hidratación lo borraba. La revisión del humano en staging no sustituye esta verificación.
-- Build, pruebas y lint en verde; PR; esfuerzo registrado.
+**T-0042 — [ENLACES] Ruta `/enlaces` e interfaz, ACTIVA.** Depende del contrato de T-0041 (puede
+empezar con datos de prueba, pero no se cierra sin la URL real).
 
-**T-0034 — [INFRA] Servir los estáticos de Babel desde S3 + CloudFront, no desde el Lambda `ssr`
-(OPT-20), ACTIVA:** hallazgo real del incidente de T-0026 (08/09/2026) — habilitar `sourceMap` en
-Babel causó un 500 real en producción porque el Lambda `ssr` sirve sus propios estáticos con
-`express.static`, y la respuesta síncrona de Lambda tiene un límite duro de 6 MB tras la codificación
-de API Gateway. No es exclusivo de los source maps: cualquier estático futuro que crezca lo suficiente
-tropieza con el mismo límite. Mismo patrón que `letiende-assets` de `letiende.co` (S3 + CloudFront,
-`docs/tech-specs.md` §7.2 de ese repo). Vuelve del estado "en pausa" del 22/09/2026
-(`docs/optimizacion-aplicaciones.md` §4 y §5). DoD: los estáticos de `dist/babel-letiende/browser/**`
-servidos desde un bucket S3 propio detrás de CloudFront, con el Lambda `ssr` limitado a renderizar
-HTML; sin romper `--base-href`/las rutas ya proxied desde `letiende.co`; verificado con `curl` real
-contra producción; oportunidad de reactivar `sourceMap` en Babel una vez esto exista (no en el
-alcance de esta tarea); `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
+- Ruta `/enlaces` con `RenderMode.Server` en `app.routes.server.ts` y `data: { sinMarco: true }`;
+  `App` no pinta `BarraNavegacion` ni `PiePagina` cuando la ruta lo declara, con el mismo valor en
+  servidor y navegador (cuidado con la hidratación, ADR-027).
+- `EnlacesComponent` según `DESIGN.md` §12: encabezado con logo, panel desplegable con logo del Pódbar,
+  barras con íconos circulares de 56 px, `aria-label` en cada enlace, foco visible, 503 con mensaje.
+- Copiar a `public/enlaces/` los SVG entregados (`~/Downloads/logo-podbar.svg` → `logo-podbar.svg`,
+  `~/Downloads/logo-bar23.svg` → `icono-bar23.svg`) y agregar `icono-youtube`, `icono-spotify`,
+  `icono-apple`, `icono-mixcloud` (Simple Icons, CC0; **verificar la licencia y las guías de marca de
+  cada plataforma antes de incluirlos**) e `icono-enlace`. Revisar de nuevo que ningún SVG tenga
+  `<script>`, `<image>`, `on*` ni `data:`.
+- `noindex,follow` (verificar si `MetaService` ya lo soporta), fuera de `/sitemap.xml`, sin JSON-LD
+  propio, sin enlace desde el menú.
+- Definición de terminado: **verificación de hidratación en navegador real** (la página sigue en
+  pantalla tras hidratar y la consola no muestra errores desde la carga inicial; es la lección de
+  T-0038); `curl` confirma `noindex` y que `/sitemap.xml` no la lista; revisión del humano en
+  `staging.letiende.co/enlaces` **en celular y dentro del navegador interno de Instagram**; build,
+  pruebas y lint en verde; PR (rama `feature/enlaces-interfaz`); verificación del despliegue por CLI
+  tras la fusión; esfuerzo registrado (T-0042).
 
 ---
 
 ## Historial
+
+- **T-0039** — [CARTA] Interfaz completa (`DESIGN.md` §11). Completada (PR `feature/carta-interfaz-completa`
+  #62 y `fix/carta-navegacion-interna` #64, fusionados; luego la publicó T-0040, PR #63). Entrada
+  reconstruida el 27/10/2026 solo a partir de `git log`, porque el `TODO.md` no se actualizó entonces:
+  el detalle (pruebas, verificación de hidratación) está en `metrics/events/` y en el historial de git.
 
 - **T-0038** — [CARTA] Ruta `/carta` + bloqueo de visibilidad (ADR-024). Completada 23/09/2026. PR
   `feature/carta-ruta-visibilidad` (#60), fusionado; el defecto de hidratación de abajo se corrige
@@ -990,9 +1008,29 @@ alcance de esta tarea); `docs/optimizacion-aplicaciones.md` §5 actualizado; esf
 | T-0040 | **[CARTA] Publicación — HECHA 19/10/2026 (PR `feature/publicar-carta` en los tres repos; el humano aprobó los precios).** Solo cuando el humano confirme que la nueva lista de precios está aprobada y cargada en Comandante. `CARTA_PUBLICADA = true`, entrada en `/sitemap.xml`, JSON-LD `Menu` (§4.6) y el enlace "Carta" en la barra **de los tres repositorios a la vez** (`DESIGN.md` §8). DoD: `curl` real contra `letiende.co/carta` (200), sin salto visual de la barra al cruzar a `/cartelera` y `/libros` | T-0039 (activa) + aprobación del humano |
 | — | *(Aplazada, repo Comandante, sin ID)* El botón de la hoja también carga los precios en Comandante, con validación en el servidor (ADR-023) | Decisión del humano |
 
-**Cola 2 — Roadmap de optimización entre repositorios, en pausa desde el 22/09/2026.** **T-0034**
-(OPT-20) volvió a las activas el 23/09/2026; sigue **T-0035** (OPT-16). Su definición de terminado completa está en
-`docs/optimizacion-aplicaciones.md` §4, y el seguimiento en §5 de ese documento.
+**Cola 0 — Página de enlaces (F-10), cierra la funcionalidad.**
+
+| ID | Tarea | Depende de |
+|---|---|---|
+| T-0043 | **[ENLACES] Validar GA4 — tarea final.** Comprobar en la propiedad de GA4 que las "mediciones mejoradas" tengan activos los **clics salientes**; verificar con DebugView que un clic desde `/enlaces?utm_source=instagram&utm_medium=bio` llega con la fuente `instagram`; anotar en `MEMORY.md` lo que se confirme y lo que no se pudo confirmar desde aquí (la consola de GA4 es del humano). Si hiciera falta un evento propio o una tabla en DynamoDB, se abre una tarea aparte. | T-0041, T-0042 en producción |
+
+**Cola 2 — Roadmap de optimización entre repositorios.** **T-0034** (OPT-20) vuelve a ser la siguiente
+tras F-10 (decisión del humano, 27/10/2026); sigue **T-0035** (OPT-16). Definición de terminado
+completa en `docs/optimizacion-aplicaciones.md` §4 y seguimiento en §5 de ese documento. Texto de
+T-0034 conservado de cuando era activa:
+
+**T-0034 — [INFRA] Servir los estáticos de Babel desde S3 + CloudFront, no desde el Lambda `ssr`
+(OPT-20), EN COLA tras F-10:** hallazgo real del incidente de T-0026 (08/09/2026) — habilitar `sourceMap` en
+Babel causó un 500 real en producción porque el Lambda `ssr` sirve sus propios estáticos con
+`express.static`, y la respuesta síncrona de Lambda tiene un límite duro de 6 MB tras la codificación
+de API Gateway. No es exclusivo de los source maps: cualquier estático futuro que crezca lo suficiente
+tropieza con el mismo límite. Mismo patrón que `letiende-assets` de `letiende.co` (S3 + CloudFront,
+`docs/tech-specs.md` §7.2 de ese repo). Vuelve del estado "en pausa" del 22/09/2026
+(`docs/optimizacion-aplicaciones.md` §4 y §5). DoD: los estáticos de `dist/babel-letiende/browser/**`
+servidos desde un bucket S3 propio detrás de CloudFront, con el Lambda `ssr` limitado a renderizar
+HTML; sin romper `--base-href`/las rutas ya proxied desde `letiende.co`; verificado con `curl` real
+contra producción; oportunidad de reactivar `sourceMap` en Babel una vez esto exista (no en el
+alcance de esta tarea); `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
 
 ---
 
