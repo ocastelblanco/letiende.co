@@ -140,6 +140,10 @@ un `placeholder` no es una etiqueta.
 La barra superior es **el elemento que define el proyecto**: es lo único que el visitante ve
 constante mientras se mueve entre tres aplicaciones distintas.
 
+**Única excepción:** `/enlaces` no lleva barra ni pie (§12, ADR-027). Es una página de aterrizaje para
+la biografía de Instagram, no una página de navegación del sitio. La excepción la declara la ruta
+(`data: { sinMarco: true }`); no se agregan otras sin un ADR.
+
 ```html
 <header class="sticky top-0 z-50 bg-primary text-neutral">
   <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4"
@@ -311,3 +315,77 @@ Outlined** desde Google Fonts (`fonts.googleapis.com`, ya permitido en la CSP), 
 más los fijos de la interfaz (`chevron_left`, `chevron_right`, `restaurant_menu`). El enlace a la
 hoja de estilos lo arma el SSR a partir de los datos publicados, y solo en `/carta` — el resto del
 sitio no descarga esa fuente. Siempre con `aria-hidden="true"`: el significado lo lleva la etiqueta.
+
+---
+
+## 12. Página de enlaces (`/enlaces`)
+
+Datos y reglas de armado en `tech-specs.md` §4.7. Esta sección manda solo sobre la presentación. Se
+diseña **primero para celular** (llega desde la biografía de Instagram, casi siempre dentro de su
+navegador interno) y se deja crecer sin rediseñar en escritorio.
+
+**Sin barra ni pie** (ADR-027): lo único fijo es el encabezado propio de la página. Ninguna otra
+página del sitio se salta §7.
+
+### 12.1 Estructura
+
+```
+┌───────────────────────┐   fondo bg-surface, min-h-dvh
+│   [logo Le Tiende]    │   logo_negro_sin_fondo.svg, alt="Le Tiende", h-14
+│  Centro cultural ·    │   text-sm text-primary
+│       Bogotá          │
+│ ┌───────────────────┐ │   panel: tarjeta de §4
+│ │ [logo Pódbar]   ⌃ │ │   encabezado = botón; el ⌃ es decorativo
+│ │ T3                │ │   título de la barra
+│ │ (▶) (♫) ()        │ │   YouTube · Spotify · Apple Podcasts
+│ │ T1 Y T2           │ │
+│ │ (☁) (◎)           │ │   Mixcloud · bar23
+│ └───────────────────┘ │
+└───────────────────────┘
+```
+
+- Contenedor: `mx-auto max-w-md px-4 py-8`. Una sola columna también en escritorio: es una página de
+  lectura rápida, no una rejilla.
+- Un solo `<h1>` visualmente oculto (`sr-only`): "Enlaces de Le Tiende". El logo es una `<img>` con
+  `alt="Le Tiende"`. **No es un enlace** (el visitante llegó para elegir una plataforma; no se le ofrece
+  una salida hacia el resto del sitio, a propósito).
+- Texto de apoyo bajo el logo: "Centro cultural en Bogotá" (fijo en la plantilla, no en la hoja).
+- Si falla la fuente (503): una tarjeta con el mensaje "Los enlaces no están disponibles en este
+  momento." y nada más.
+
+### 12.2 Panel
+
+- Tarjeta de §4 (`rounded-2xl bg-white p-4` con la sombra de marca). Varios paneles: `space-y-4`.
+- **Encabezado = `<button type="button">`** de ancho completo, con `aria-expanded` y `aria-controls`
+  apuntando al cuerpo. Si el panel trae `logo` (hoy `podbar`), el encabezado muestra esa imagen
+  (`h-10`, `alt` = título del panel) y **no** repite el título en texto; sin logo, muestra el título
+  como `<h2>` `text-lg font-semibold text-primary`. A la derecha, un chevron decorativo
+  (`aria-hidden="true"`, SVG propio; no se usa Material Symbols fuera de `/carta`, ADR-025).
+- **Estado inicial: todos los paneles desplegados**, y por ahora no hay lógica que los pliegue sola. El
+  botón ya funciona (cierra y abre) para que sumar paneles no exija rehacer nada. El estado vive en un
+  `signal`; sin animación (evita el problema de `prefers-reduced-motion` y el parpadeo en hidratación).
+- Foco visible con la misma regla de §5.
+
+### 12.3 Barra de enlaces
+
+- Título de la barra (`Subcategoría`): `text-xs font-semibold tracking-wider text-primary uppercase`,
+  tal cual está en la hoja ("T3", "T1 y T2"). Los socios deciden el texto; si prefieren "Temporada 3",
+  se cambia en la hoja.
+- Los enlaces van en un `<ul>` (`flex flex-wrap gap-3`). **No** se usa `role="toolbar"`: ese rol obliga
+  a manejar el foco con flechas, y aquí cada enlace es un destino independiente que se recorre con Tab.
+- Cada enlace es un círculo `size-14` (56 px, por encima del mínimo de 44 de §10) con
+  `rounded-full border border-primary/20 bg-surface`, la imagen del ícono (`size-8`) centrada y, en
+  `hover`, `bg-neutral`. Es **solo ícono**: el nombre va en `aria-label` y en `title` (la etiqueta de la
+  hoja o su respaldo, "Escuchar en Spotify"). La `<img>` interior lleva `alt=""`.
+- Los íconos conservan sus **colores de marca** tal como vienen en el SVG (YouTube, Spotify, Apple
+  Podcasts, Mixcloud, bar23): no se recolorean con la paleta. La regla de §1 ("nunca un hex suelto")
+  aplica a las plantillas y al CSS, no al interior de un logo ajeno. El logo del Pódbar se usa tal como
+  lo entregó el humano, también sin recolorear.
+- Abren en una pestaña nueva: `target="_blank" rel="noopener noreferrer"`.
+- Foco visible (§5). Orden de tabulación = orden de lectura.
+
+### 12.4 Íconos y logos
+
+Archivos SVG propios en `public/enlaces/`, listados en `tech-specs.md` §4.7. Conjunto cerrado de
+claves en el código; una clave desconocida cae a `icono-enlace.svg` (un eslabón genérico en
+`text-primary`). Ningún SVG puede traer `<script>`, `<image>`, manejadores `on*` ni `data:`.

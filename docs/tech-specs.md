@@ -197,6 +197,7 @@ Todas públicas. **No hay guards en este proyecto** (PRD §9, D-4).
 | `/cartelera/**` | — | — | **No es ruta de Angular.** La resuelve CloudFront contra Ágora |
 | `/libros/**` | — | — | **No es ruta de Angular.** La resuelve CloudFront contra Babel |
 | `/carta` *(etapa 2)* | `CartaComponent` | SSR | Carta del café bar (§4.6). **Publicada el 19/10/2026 (T-0040)**: `CARTA_PUBLICADA = true`. Antes respondía 404 real en `letiende.co`/`www` (ADR-024) |
+| `/enlaces` *(etapa 2)* | `EnlacesComponent` | SSR | Página de enlaces para la biografía de Instagram (§4.7). **Sin barra ni pie** (`data: { sinMarco: true }`, ADR-027), `noindex`, fuera del sitemap y del menú. Visible en todos los hosts desde el primer despliegue |
 | `**` | `NoEncontradaComponent` | SSR, código 404 | Debe responder 404 real, no 200 |
 
 > **Trampa que ya costó tiempo en otros proyectos:** una página de "no encontrada" que responde
@@ -424,6 +425,111 @@ propia barra (`DESIGN.md` §8): agregar allí el enlace al publicar sigue siendo
 café bar (`hasMenu`), unido al `PerformingArtsTheater` existente de `esquemas.ts` con
 `containedInPlace` — `hasMenu` solo aplica a `FoodEstablishment`, no se le puede colgar al teatro. Serializado con `JSON.stringify` y escape
 de `<` (A03) — jamás por concatenación.
+
+### 4.7 Página de enlaces (`/enlaces`, etapa 2)
+
+Planeada el 27/10/2026 (F-10, `PRD.md` §5). Tareas T-0041 a T-0043 en `TODO.md`; decisiones en
+`MEMORY.md`, ADR-026 y ADR-027. Es una página al estilo Linktree para la biografía de Instagram
+(`https://www.instagram.com/letiende_parkway/`). Hoy tiene un solo panel (**Pódbar**) con dos barras:
+`T3` (YouTube, Spotify, Apple Podcasts) y `T1 y T2` (Mixcloud y bar23.co). Habrá más temporadas y,
+probablemente, más productos: el diseño es **dirigido por datos**.
+
+**Fuente única: una hoja de Google Sheets con botón de publicación, el mismo mecanismo de la carta
+(ADR-023, ADR-026).** Dueño del documento y del proyecto de Apps Script: `ocastelblanco@gmail.com`.
+El script se versiona en `herramientas/apps-script/enlaces.gs` y se despliega a mano (T-0041). El botón
+**"Le Tiende → Publicar enlaces"** valida y guarda una copia fija en las propiedades del documento; la
+Web App (`doGet`, "ejecutar como: yo", acceso "cualquiera") sirve **solo esa copia** como JSON. No se
+escribe nada hacia AWS ni se guarda ninguna credencial (ADR-026 explica por qué se descartó S3).
+
+Pestaña **`enlaces`** (nombre por confirmar contra la hoja real en T-0041) — una fila por enlace:
+
+| Columna | Obligatoria | Notas |
+|---|---|---|
+| `Categoría` | sí | Un **panel** por categoría ("Pódbar"). Se muestra tal cual |
+| `Subcategoría` | sí | Una **barra** por subcategoría dentro del panel ("T3", "T1 y T2"). Se muestra tal cual |
+| `Icono` | sí | Clave de la plataforma: `youtube`, `spotify`, `apple`, `mixcloud`, `bar23`. Validada con `^[a-z0-9_]+$` |
+| `Link` | sí | URL **`https:`** absoluta. Cualquier otro esquema bloquea la publicación |
+| `Etiqueta` | no | Nombre accesible del enlace ("Escuchar en Spotify"). Si falta, sale de `ETIQUETAS_ICONO` en el código |
+| `Visible` | no | `FALSE` oculta la fila sin borrarla. Por defecto `TRUE` |
+| `Logo` | no | Clave del logo del **panel** (`podbar`). Se toma el primer valor no vacío de las filas de la categoría; basta escribirlo en la primera |
+
+El orden de paneles, barras y enlaces es el **orden de aparición en la hoja**: no hay columna `orden`.
+Los encabezados se leen sin importar mayúsculas ni tildes (`Categoría` = `categoria`).
+
+**Contrato de la Web App** (`GET`, JSON, sin autenticación):
+
+```json
+{
+  "publicadoEn": "2026-10-27T21:00:00.000Z",
+  "paneles": [
+    {
+      "titulo": "Pódbar", "logo": "podbar",
+      "barras": [
+        { "titulo": "T3", "enlaces": [
+          { "icono": "youtube", "url": "https://www.youtube.com/@P%C3%B3dbar-bar23", "etiqueta": "" }
+        ] }
+      ]
+    }
+  ]
+}
+```
+
+`etiqueta: ""` significa "usa el respaldo". El botón **valida antes de publicar** y, si algo falla, no
+publica y muestra el error en la hoja: campo obligatorio vacío, URL que no sea `https:`, ícono o logo con
+formato inválido, booleano no interpretable. Un `Icono` o `Logo` desconocido para el código **no**
+bloquea la publicación (se resuelve con respaldo abajo); se lista como aviso.
+
+**Lectura en el SSR** (`src/app/core/api/enlaces.service.ts`, T-0041) — mismo patrón que
+`carta.service.ts`, incluidas sus lecciones:
+
+- `urlContenidoEnlacesWebApp` es una **constante** en `environments/` (dirección pública, A02) y nunca
+  se arma con datos del `Request` (A10). Se lee con el `fetch()` nativo, que sigue la redirección a
+  `script.googleusercontent.com`.
+- Solo en el servidor. El navegador recibe el resultado por `TransferState` explícito
+  (`CLAVE_ENLACES`): `resource()` no usa la transfer cache de `HttpClient`, y sin esto la hidratación
+  borraría la página (defecto real de T-0038). El navegador no hace peticiones propias, así que la CSP
+  no necesita orígenes nuevos en `connect-src`.
+- Caché en memoria de 5 minutos y última copia buena como respaldo. Sin copia y sin respuesta: **503**
+  real con un mensaje de "enlaces no disponibles", no una página vacía con 200 (ADR-013).
+- Sin variables de entorno nuevas en la Lambda ni secretos nuevos.
+
+**Armado** — función pura `armarEnlaces(contenido)` en `src/app/features/enlaces/armar-enlaces.ts`,
+con pruebas unitarias. Revalida lo que el script ya validó (defensa en profundidad: la fuente es un
+JSON de un tercero para el SSR):
+
+1. Descarta enlaces cuya `url` no sea `https:` válida, y los que traigan `visible: false`.
+2. Descarta barras sin enlaces y paneles sin barras.
+3. `etiqueta` vacía → `ETIQUETAS_ICONO[icono]`; ícono desconocido → ícono genérico `enlace` y etiqueta
+   "Abrir enlace".
+4. Conserva el orden de la fuente.
+
+**Presentación:** `DESIGN.md` §12. **Íconos y logos:** archivos SVG en `public/enlaces/` (no en línea,
+no de CDN): `icono-youtube.svg`, `icono-spotify.svg`, `icono-apple.svg`, `icono-mixcloud.svg`,
+`icono-bar23.svg`, `icono-enlace.svg` y `logo-podbar.svg`. El conjunto de claves conocidas es **cerrado
+en el código**; así, una clave que llegue desde la hoja nunca se convierte en una ruta de archivo
+(nada de `src` armado con texto libre). Agregar una plataforma nueva es un PR pequeño: un SVG y una
+línea en `ETIQUETAS_ICONO`. `logo-podbar.svg` y `icono-bar23.svg` los entregó el humano el 27/10/2026
+(`~/Downloads/`); se revisó que no contengan `<script>`, `<image>`, `onload` ni `data:`. Los de
+YouTube, Spotify, Apple Podcasts y Mixcloud se toman de Simple Icons (CC0); T-0042 verifica la licencia
+y las guías de marca de cada plataforma antes de incluirlos.
+
+**Sin marco y fuera de los buscadores (ADR-027):** la ruta lleva `data: { sinMarco: true }`; `App`
+no pinta `BarraNavegacion` ni `PiePagina` cuando la ruta activa lo declara. `MetaService` fija
+`robots: noindex,follow` (T-0042 verifica que ya soporte la directiva o la agrega), `/enlaces` **no**
+entra en `/sitemap.xml`, y la página no tiene JSON-LD propio (el de `Organization`/`WebSite` global se
+conserva). Al no estar indexada, tampoco hace falta `canonical` distinto del habitual.
+
+**Seguridad (CLAUDE.md §5):** A10 — la URL de la Web App es constante. A03 — nada de `[innerHTML]` ni
+`bypassSecurityTrust*`; solo se enlazan URL `https:` validadas dos veces; `target="_blank"` siempre con
+`rel="noopener noreferrer"`. A05 — sin orígenes nuevos en la CSP (los enlaces externos son navegación, no
+carga de recursos; los SVG salen del propio origen). A01 — la página no protege ni esconde nada.
+
+**Medición:** Google Analytics 4 para todo el sitio (ADR-015); no hay registro propio de clics (si algún
+día hace falta, sería una tabla de DynamoDB, trabajo aparte). GA4 mide los clics salientes con las
+"mediciones mejoradas", que hay que **verificar que estén activas** en la propiedad (T-0043, tarea final).
+El enlace que va en la biografía de Instagram debe llevar parámetros de campaña, porque el navegador
+interno de Instagram a veces omite el `Referer`:
+`https://letiende.co/enlaces?utm_source=instagram&utm_medium=bio`.
 
 ---
 
@@ -726,6 +832,7 @@ disponible, y es del humano decidirla, no de un agente.
 | T-14 | Redirecciones 301 de los subdominios antiguos | Ágora y Babel | T-13 |
 | T-15 | Cutover: verificación completa del proxy en `staging.letiende.co` y cambio del registro de producción en Route 53 | Route 53 | T-13, T-14 |
 | T-16 | *Etapa 2:* publicación de la carta del café bar — desglosada en T-0036 a T-0040 (§4.6, `TODO.md`) | Hoja maestra + `src/app/features/carta/` | T-15 |
+| T-18 | *Etapa 2:* página de enlaces `/enlaces` (F-10) — desglosada en T-0041 a T-0043 (§4.7, `TODO.md`) | Hoja maestra de enlaces + `src/app/features/enlaces/` | T-15 |
 | T-17 | *Etapa 2:* actualización de `letiende-api` (runtime, IaC, revisión de seguridad) | repo por definir | — |
 
 **Sobre T-17.** `letiende-api` es una función Lambda con `nodejs22.x`, 128 MB, desplegada a mano, con
