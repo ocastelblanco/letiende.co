@@ -2021,7 +2021,8 @@ barras `T3` (youtube, spotify, apple) y `T1 y T2` (mixcloud, bar23), todas con U
 como `urlContenidoEnlacesWebApp` en ambos `environment*.ts`. La hoja ya trae la columna `Logo`, así que
 la decisión del agente sobre el logo del panel quedó confirmada por los hechos.
 
-Observación para T-0042: la hoja publica `etiqueta` con el nombre de la plataforma (`YouTube`,
-`Spotify`, `MixCloud`…), que **gana** sobre las etiquetas accesibles por defecto del código ("Ver en
-YouTube"). Para el `aria-label` conviene más la forma con verbo; decidir en T-0042 si se deja la hoja
-como está (`aria-label` = nombre de la plataforma) o se vacía la columna `Etiqueta`.
+Etiquetas (resuelto el mismo día): el humano editó la columna `Etiqueta` con verbo ("Ver en YouTube",
+"Ver en Spotify", "Oir en Apple Podcasts", "Oir en MixCloud", "Oir en bar23.co") y republicó
+(`publicadoEn` 2026-10-28T17:04:38Z). Esa etiqueta gana sobre las de respaldo del código y es el
+`aria-label` de cada ícono; no hay nada que decidir en T-0042. Pendiente menor: "Oir" va sin tilde
+("Oír") en la hoja.
