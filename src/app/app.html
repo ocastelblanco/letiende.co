@@ -1,7 +1,11 @@
-<app-barra-navegacion />
+@if (!sinMarco()) {
+  <app-barra-navegacion />
+}
 
 <main>
   <router-outlet />
 </main>
 
-<app-pie-pagina />
+@if (!sinMarco()) {
+  <app-pie-pagina />
+}

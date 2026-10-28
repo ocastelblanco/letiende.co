@@ -1,0 +1,100 @@
+<div class="min-h-dvh bg-surface">
+  <div class="mx-auto max-w-md px-4 py-8">
+    <h1 class="sr-only">Enlaces de Le Tiende</h1>
+
+    <header class="mb-6 text-center">
+      <img
+        src="/logo_negro_sin_fondo.svg"
+        alt="Le Tiende"
+        width="128"
+        height="56"
+        class="mx-auto h-14 w-auto"
+      />
+      <p class="mt-2 text-sm text-primary">Centro cultural en Bogotá</p>
+    </header>
+
+    @if (enlaces(); as armados) {
+      @if (armados.paneles.length > 0) {
+        <div class="space-y-4">
+          @for (panel of armados.paneles; track $index; let i = $index) {
+            <section class="rounded-2xl bg-white p-4 shadow-[0_4px_16px_rgba(35,12,0,0.08)]">
+              <button
+                type="button"
+                class="flex w-full items-center justify-between gap-3 rounded-xl text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                [attr.aria-expanded]="desplegado(i)"
+                [attr.aria-controls]="'cuerpo-panel-' + i"
+                (click)="alternar(i)"
+              >
+                @if (panel.logo; as logo) {
+                  <img
+                    [src]="rutaLogo(logo)"
+                    [alt]="panel.titulo"
+                    height="40"
+                    class="h-10 w-auto"
+                  />
+                } @else {
+                  <h2 class="text-lg font-semibold text-primary">{{ panel.titulo }}</h2>
+                }
+                <svg
+                  class="size-6 shrink-0 text-primary"
+                  [class.rotate-180]="!desplegado(i)"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 15 6-6 6 6" />
+                </svg>
+              </button>
+
+              <div [id]="'cuerpo-panel-' + i" [hidden]="!desplegado(i)" class="mt-4 space-y-4">
+                @for (barra of panel.barras; track $index) {
+                  <div>
+                    <h3 class="mb-2 text-xs font-semibold tracking-wider text-primary uppercase">
+                      {{ barra.titulo }}
+                    </h3>
+                    <ul class="flex flex-wrap gap-3">
+                      @for (enlace of barra.enlaces; track $index) {
+                        <li>
+                          <a
+                            [href]="enlace.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            [attr.aria-label]="enlace.etiqueta"
+                            [title]="enlace.etiqueta"
+                            class="flex size-14 items-center justify-center rounded-full border border-primary/20 bg-surface hover:bg-neutral focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                          >
+                            <img
+                              [src]="rutaIcono(enlace.icono)"
+                              alt=""
+                              width="32"
+                              height="32"
+                              class="size-8"
+                            />
+                          </a>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+        </div>
+      } @else {
+        <div class="rounded-2xl bg-white p-4 shadow-[0_4px_16px_rgba(35,12,0,0.08)]">
+          <p class="text-base text-primary" role="status">Aún no hay enlaces para mostrar.</p>
+        </div>
+      }
+    } @else {
+      <div class="rounded-2xl bg-white p-4 shadow-[0_4px_16px_rgba(35,12,0,0.08)]">
+        <p class="text-base text-primary" role="status">
+          Los enlaces no están disponibles en este momento.
+        </p>
+      </div>
+    }
+  </div>
+</div>

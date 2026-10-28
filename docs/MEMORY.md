@@ -2026,3 +2026,24 @@ Etiquetas (resuelto el mismo día): el humano editó la columna `Etiqueta` con v
 (`publicadoEn` 2026-10-28T17:04:38Z). Esa etiqueta gana sobre las de respaldo del código y es el
 `aria-label` de cada ícono; no hay nada que decidir en T-0042. Pendiente menor: "Oir" va sin tilde
 ("Oír") en la hoja.
+
+---
+
+**28/10/2026 — T-0042: ruta `/enlaces` e interfaz (rama `feature/enlaces-interfaz`).**
+
+Hecho: `EnlacesComponent` según `DESIGN.md` §12, ruta con `data: { sinMarco: true }` y `RenderMode.Server`,
+`App` sin barra ni pie en esas rutas, `MetaService` con `robots` opcional (`noindex,follow`; sin él quita la
+etiqueta), y los SVG en `public/enlaces/` (YouTube, Spotify, Apple Podcasts y Mixcloud de Simple Icons
+13.21.0, CC0, con el color de marca en el `fill`; bar23 y Pódbar, los del humano; y un eslabón genérico).
+Ningún SVG trae `<script>`, `<image>`, `on*` ni `data:`. `/sitemap.xml` no la lista (`RUTAS_PROPIAS`).
+
+Gotcha de hidratación: `App` decide barra y pie con los datos de la ruta, y en el navegador la navegación
+inicial no es bloqueante por defecto, así que el primer render no sabría si la ruta es `sinMarco` y
+diferiría del HTML del servidor. Por eso `provideRouter(routes, withEnabledBlockingInitialNavigation())`
+y el valor inicial de `sinMarco` sale de `router.routerState.snapshot`, no de `false`.
+
+Verificado en Chrome real contra `serve:ssr` local: la página sigue en pantalla tras hidratar, sin
+mensajes en consola desde la carga, el botón pliega y abre el panel, 5 enlaces `https:` con `aria-label`.
+Pendiente de T-0042: revisión del humano en `staging.letiende.co/enlaces` en celular y dentro del
+navegador interno de Instagram.
+

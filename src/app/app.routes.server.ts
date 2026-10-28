@@ -29,6 +29,12 @@ export const serverRoutes: ServerRoute[] = [
     path: 'carta',
     renderMode: RenderMode.Server,
   },
+  // Los enlaces dependen de datos en vivo de la hoja (tech-specs.md §4.7):
+  // nunca Prerender, que los congelaría hasta el próximo despliegue.
+  {
+    path: 'enlaces',
+    renderMode: RenderMode.Server,
+  },
   // Cualquier ruta no listada arriba: NoEncontradaComponent, renderizado por
   // petición con HTTP 404 real — una "página en construcción" que responde
   // 200 hace que los buscadores indexen basura (CLAUDE.md §5, A05,
