@@ -18,6 +18,13 @@ export const environment = {
   urlMenuComandante: 'https://comandante.letiende.co/menu.json',
   urlContenidoCartaWebApp:
     'https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec',
+  // Página de enlaces (tech-specs.md §4.7, F-10). URL pública de la Web App de
+  // Apps Script de la hoja de enlaces — no es un secreto (A02). Si quedara
+  // vacía, `/enlaces` responde 503 en vez de romperse. Cambiar de
+  // implementación en Apps Script cambia esta URL: para cambiar el código,
+  // siempre "Nueva versión".
+  urlContenidoEnlacesWebApp:
+    'https://script.google.com/macros/s/AKfycbxfn13eULz7omPFAzsNC-bE6ENeS43ENKBQCgXNVcn6FO487S9QQljSvMXa_IT-geEVXA/exec',
   // Marcadores, no las llaves reales — CLAUDE.md §5, A02 prohíbe cualquier
   // llave en environments/, incluso una pública restringida por dominio como
   // esta. scripts/inyectar-llaves-publicas.mjs los sustituye sobre el

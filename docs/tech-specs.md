@@ -450,7 +450,7 @@ Pestaña **`enlaces`** (nombre por confirmar contra la hoja real en T-0041) — 
 | `Icono` | sí | Clave de la plataforma: `youtube`, `spotify`, `apple`, `mixcloud`, `bar23`. Validada con `^[a-z0-9_]+$` |
 | `Link` | sí | URL **`https:`** absoluta. Cualquier otro esquema bloquea la publicación |
 | `Etiqueta` | no | Nombre accesible del enlace ("Escuchar en Spotify"). Si falta, sale de `ETIQUETAS_ICONO` en el código |
-| `Visible` | no | `FALSE` oculta la fila sin borrarla. Por defecto `TRUE` |
+| `Visible` | no | `FALSE` oculta la fila sin borrarla: **el script no la publica** (no sale en el JSON). Por defecto `TRUE` |
 | `Logo` | no | Clave del logo del **panel** (`podbar`). Se toma el primer valor no vacío de las filas de la categoría; basta escribirlo en la primera |
 
 El orden de paneles, barras y enlaces es el **orden de aparición en la hoja**: no hay columna `orden`.
@@ -483,7 +483,9 @@ bloquea la publicación (se resuelve con respaldo abajo); se lista como aviso.
 `carta.service.ts`, incluidas sus lecciones:
 
 - `urlContenidoEnlacesWebApp` es una **constante** en `environments/` (dirección pública, A02) y nunca
-  se arma con datos del `Request` (A10). Se lee con el `fetch()` nativo, que sigue la redirección a
+  se arma con datos del `Request` (A10). URL real, desplegada el 28/10/2026 y verificada con `curl -L` (HTTP 200,
+  un panel, dos barras, 3 + 2 enlaces):
+  `https://script.google.com/macros/s/AKfycbxfn13eULz7omPFAzsNC-bE6ENeS43ENKBQCgXNVcn6FO487S9QQljSvMXa_IT-geEVXA/exec`. Se lee con el `fetch()` nativo, que sigue la redirección a
   `script.googleusercontent.com`.
 - Solo en el servidor. El navegador recibe el resultado por `TransferState` explícito
   (`CLAVE_ENLACES`): `resource()` no usa la transfer cache de `HttpClient`, y sin esto la hidratación
@@ -497,7 +499,7 @@ bloquea la publicación (se resuelve con respaldo abajo); se lista como aviso.
 con pruebas unitarias. Revalida lo que el script ya validó (defensa en profundidad: la fuente es un
 JSON de un tercero para el SSR):
 
-1. Descarta enlaces cuya `url` no sea `https:` válida, y los que traigan `visible: false`.
+1. Descarta enlaces cuya `url` no sea `https:` válida (sin credenciales incrustadas), y los que traigan `visible: false` (el script ya no los publica; esto es solo defensa en profundidad).
 2. Descarta barras sin enlaces y paneles sin barras.
 3. `etiqueta` vacía → `ETIQUETAS_ICONO[icono]`; ícono desconocido → ícono genérico `enlace` y etiqueta
    "Abrir enlace".
