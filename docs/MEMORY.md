@@ -59,7 +59,8 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
       interfaz completa (T-0039) y la publicación (T-0040). Oculta en producción hasta la aprobación
       de la nueva lista de precios (ADR-024)
 - [ ] *Etapa 2:* página de enlaces `/enlaces` para Instagram (F-10) — planeada y aprobada el 27/10/2026,
-      T-0041 a T-0043 (`tech-specs.md` §4.7, `DESIGN.md` §12, ADR-026 y ADR-027). Sin código todavía.
+      T-0041 a T-0043 (`tech-specs.md` §4.7, `DESIGN.md` §12, ADR-026 y ADR-027). Hecha la fuente de datos
+      (T-0041: Apps Script desplegado, servicio SSR y armado); falta la interfaz (T-0042).
       El humano pidió hacerla antes de T-0034. La validación de GA4 es la tarea final (T-0043)
 - [ ] *Etapa 2, aplazada:* botón de la hoja maestra que también carga los precios en Comandante (ADR-023)
 - [ ] *Etapa 2:* actualización de `letiende-api`
@@ -2002,3 +2003,25 @@ en `git log`: conviene que el humano la complete si quiere conservar el detalle.
 
 **Próxima tarea sugerida:** T-0041. Tiene un paso del humano: desplegar a mano el Apps Script
 (`herramientas/apps-script/README.md`) y entregar la URL `/exec`.
+
+---
+
+**28/10/2026 — T-0041: el humano desplegó el Apps Script de enlaces.**
+
+El humano pegó `herramientas/apps-script/enlaces.gs` en el proyecto de Apps Script de la hoja de
+enlaces (no en el de la carta: `onOpen` y `doGet` habrían chocado), lo desplegó como Aplicación web
+("ejecutar como yo", acceso "cualquiera") y pulsó "Publicar enlaces". URL real:
+
+```
+https://script.google.com/macros/s/AKfycbxfn13eULz7omPFAzsNC-bE6ENeS43ENKBQCgXNVcn6FO487S9QQljSvMXa_IT-geEVXA/exec
+```
+
+Verificado con `curl -L` real: `HTTP 200`, `application/json`, un panel (`Pódbar`, `logo: podbar`) con las
+barras `T3` (youtube, spotify, apple) y `T1 y T2` (mixcloud, bar23), todas con URL `https:`. Es la que va
+como `urlContenidoEnlacesWebApp` en ambos `environment*.ts`. La hoja ya trae la columna `Logo`, así que
+la decisión del agente sobre el logo del panel quedó confirmada por los hechos.
+
+Observación para T-0042: la hoja publica `etiqueta` con el nombre de la plataforma (`YouTube`,
+`Spotify`, `MixCloud`…), que **gana** sobre las etiquetas accesibles por defecto del código ("Ver en
+YouTube"). Para el `aria-label` conviene más la forma con verbo; decidir en T-0042 si se deja la hoja
+como está (`aria-label` = nombre de la plataforma) o se vacía la columna `Etiqueta`.

@@ -483,7 +483,9 @@ bloquea la publicación (se resuelve con respaldo abajo); se lista como aviso.
 `carta.service.ts`, incluidas sus lecciones:
 
 - `urlContenidoEnlacesWebApp` es una **constante** en `environments/` (dirección pública, A02) y nunca
-  se arma con datos del `Request` (A10). Se lee con el `fetch()` nativo, que sigue la redirección a
+  se arma con datos del `Request` (A10). URL real, desplegada el 28/10/2026 y verificada con `curl -L` (HTTP 200,
+  un panel, dos barras, 3 + 2 enlaces):
+  `https://script.google.com/macros/s/AKfycbxfn13eULz7omPFAzsNC-bE6ENeS43ENKBQCgXNVcn6FO487S9QQljSvMXa_IT-geEVXA/exec`. Se lee con el `fetch()` nativo, que sigue la redirección a
   `script.googleusercontent.com`.
 - Solo en el servidor. El navegador recibe el resultado por `TransferState` explícito
   (`CLAVE_ENLACES`): `resource()` no usa la transfer cache de `HttpClient`, y sin esto la hidratación
