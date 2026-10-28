@@ -22,6 +22,12 @@ export const environment = {
   urlMenuComandante: 'https://comandante.letiende.co/menu.json',
   urlContenidoCartaWebApp:
     'https://script.google.com/macros/s/AKfycbzEcwJgUxX5Aepy2wC8YYH-qe2hlsYm8-IUVSjsevNU8ew6Myi54xAaXomhblVEbH4O/exec',
+  // Página de enlaces (tech-specs.md §4.7, F-10). URL pública de la Web App de
+  // Apps Script de la hoja de enlaces — no es un secreto (A02). Vacía hasta
+  // que el humano despliegue el script (T-0041): vacía, `/enlaces` responde
+  // 503 en vez de romperse. Cambiar de implementación en Apps Script cambia
+  // esta URL: para cambiar el código, siempre "Nueva versión".
+  urlContenidoEnlacesWebApp: '',
   googleAnalyticsId: '__GOOGLE_ANALYTICS_ID__',
   googleMapsApiKey: '__GOOGLE_MAPS_API_KEY__',
   // Site key de reCAPTCHA v3 (pública por diseño, pero de todas formas sin

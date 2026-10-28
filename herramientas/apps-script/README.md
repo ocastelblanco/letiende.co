@@ -48,3 +48,45 @@ tiene la URL actual como constante. Un cambio de URL sin coordinar rompe `/carta
 - Confirmar que una cuenta con acceso de solo lectura al documento (o sin ningún acceso) no ve el
   menú "Le Tiende" — Apps Script ya lo hace por defecto porque `onOpen` no expone nada a quien no
   puede abrir el editor de scripts, pero conviene verificarlo una vez en vivo.
+
+---
+
+# Apps Script de la página de enlaces (`/enlaces`)
+
+T-0041 (`docs/TODO.md`), contrato en `docs/tech-specs.md` §4.7, decisión en `docs/MEMORY.md` ADR-026.
+
+`enlaces.gs` es el código fuente versionado del script ligado a la **hoja de enlaces** (no a la hoja
+maestra de la carta: los dos definen `onOpen` y `doGet`, y en un mismo proyecto uno pisaría al otro).
+No usa ningún secreto ni escribe hacia AWS; el procedimiento es el mismo de la carta.
+
+## Antes de desplegar
+
+- Dueño del documento y del proyecto de Apps Script: `ocastelblanco@gmail.com`.
+- La pestaña se llama **`enlaces`** (constante `HOJA_ENLACES` al inicio del script). Columnas, en
+  cualquier orden y sin importar mayúsculas ni tildes: `Categoría`, `Subcategoría`, `Icono`, `Link`
+  (obligatorias) y `Etiqueta`, `Visible`, `Logo` (opcionales). El logo del Pódbar se activa escribiendo
+  `podbar` en la columna `Logo` de **una** de sus filas.
+
+## Procedimiento
+
+1. Abrir la hoja de enlaces con `ocastelblanco@gmail.com` → **Extensiones → Apps Script**.
+2. Pegar el contenido de `enlaces.gs` en `Code.gs`. Guardar.
+3. **Implementar → Nueva implementación** → tipo **Aplicación web** → ejecutar como **Yo** → acceso
+   **Cualquier usuario**.
+4. Google pide autorizar el script. Solo necesita acceso a la hoja (no hace peticiones salientes).
+5. Recargar la hoja: aparece el menú **Le Tiende → Publicar enlaces**. Oprimirlo.
+6. Copiar la URL `.../exec` y probarla con `curl -L <url>`: debe responder el JSON del contrato.
+   Esa URL va en `urlContenidoEnlacesWebApp` de `src/environments/environment*.ts`.
+
+## Volver a desplegar tras un cambio en `enlaces.gs`
+
+**Gestionar implementaciones → lápiz de la implementación activa → Nueva versión.** Nunca "Nueva
+implementación": cambiaría la URL `.../exec`, que el SSR tiene como constante.
+
+## Probar
+
+- Publicar con las filas válidas: el diálogo cuenta paneles, barras y enlaces.
+- Publicar con un error deliberado (un Link `http://…`, un Icono con espacios, una fila sin
+  Categoría): no publica, y `curl -L` sigue devolviendo la copia anterior.
+- Una fila con `Visible = FALSE` no aparece en el JSON.
+- La publicación admite unos 8.500 caracteres de JSON (límite de ~9 KB por propiedad de Apps Script).
