@@ -449,6 +449,7 @@ Pestaña **`enlaces`** (nombre por confirmar contra la hoja real en T-0041) — 
 | `Subcategoría` | sí | Una **barra** por subcategoría dentro del panel ("T3", "T1 y T2"). Se muestra tal cual |
 | `Icono` | sí | Clave de la plataforma: `youtube`, `spotify`, `apple`, `mixcloud`, `bar23`. Validada con `^[a-z0-9_]+$` |
 | `Link` | sí | URL **`https:`** absoluta. Cualquier otro esquema bloquea la publicación |
+| `Descripción` | no | Texto corto del **panel** (hasta ~12 palabras, máximo 160 caracteres), debajo del logo. Se toma el primer valor no vacío de las filas de la categoría; basta escribirlo en la primera |
 | `Etiqueta` | no | Nombre accesible del enlace ("Escuchar en Spotify"). Si falta, sale de `ETIQUETAS_ICONO` en el código |
 | `Visible` | no | `FALSE` oculta la fila sin borrarla: **el script no la publica** (no sale en el JSON). Por defecto `TRUE` |
 | `Logo` | no | Clave del logo del **panel** (`podbar`). Se toma el primer valor no vacío de las filas de la categoría; basta escribirlo en la primera |
@@ -463,7 +464,7 @@ Los encabezados se leen sin importar mayúsculas ni tildes (`Categoría` = `cate
   "publicadoEn": "2026-10-27T21:00:00.000Z",
   "paneles": [
     {
-      "titulo": "Pódbar", "logo": "podbar",
+      "titulo": "Pódbar", "descripcion": "…", "logo": "podbar",
       "barras": [
         { "titulo": "T3", "enlaces": [
           { "icono": "youtube", "url": "https://www.youtube.com/@P%C3%B3dbar-bar23", "etiqueta": "" }

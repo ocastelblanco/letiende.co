@@ -64,8 +64,9 @@ No usa ningún secreto ni escribe hacia AWS; el procedimiento es el mismo de la 
 - Dueño del documento y del proyecto de Apps Script: `ocastelblanco@gmail.com`.
 - La pestaña se llama **`enlaces`** (constante `HOJA_ENLACES` al inicio del script). Columnas, en
   cualquier orden y sin importar mayúsculas ni tildes: `Categoría`, `Subcategoría`, `Icono`, `Link`
-  (obligatorias) y `Etiqueta`, `Visible`, `Logo` (opcionales). El logo del Pódbar se activa escribiendo
-  `podbar` en la columna `Logo` de **una** de sus filas.
+  (obligatorias) y `Descripción`, `Etiqueta`, `Visible`, `Logo` (opcionales). El logo del Pódbar se activa escribiendo
+  `podbar` en la columna `Logo` de **una** de sus filas. La `Descripción` del panel (hasta ~12 palabras,
+  máximo 160 caracteres) también se escribe en **una** de sus filas.
 
 ## Procedimiento
 

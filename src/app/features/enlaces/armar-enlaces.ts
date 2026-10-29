@@ -32,6 +32,8 @@ export const ETIQUETAS_ICONO: Record<IconoConocido, string> = {
 export const ETIQUETA_GENERICA = 'Abrir enlace';
 
 const MAXIMO_TEXTO = 80;
+// Descripción del panel: hasta ~12 palabras, en dos líneas.
+const MAXIMO_DESCRIPCION = 160;
 
 export interface EnlaceArmado {
   readonly icono: IconoEnlace;
@@ -46,6 +48,8 @@ export interface BarraArmada {
 
 export interface PanelArmado {
   readonly titulo: string;
+  /** Texto corto bajo el logo del panel; `''` si la hoja no trae descripción. */
+  readonly descripcion: string;
   readonly logo: LogoConocido | null;
   readonly barras: readonly BarraArmada[];
 }
@@ -59,8 +63,8 @@ function esObjeto(valor: unknown): valor is Record<string, unknown> {
   return typeof valor === 'object' && valor !== null && !Array.isArray(valor);
 }
 
-function texto(valor: unknown): string {
-  return typeof valor === 'string' ? valor.trim().slice(0, MAXIMO_TEXTO) : '';
+function texto(valor: unknown, maximo = MAXIMO_TEXTO): string {
+  return typeof valor === 'string' ? valor.trim().slice(0, maximo) : '';
 }
 
 /** `https:` con host y sin credenciales incrustadas; cualquier otra cosa, `null`. */
@@ -115,7 +119,12 @@ function armarPanel(crudo: unknown): PanelArmado | null {
   if (!titulo || barras.length === 0) return null;
 
   const clave = texto(crudo['logo']).toLowerCase();
-  return { titulo, logo: esLogoConocido(clave) ? clave : null, barras };
+  return {
+    titulo,
+    descripcion: texto(crudo['descripcion'], MAXIMO_DESCRIPCION),
+    logo: esLogoConocido(clave) ? clave : null,
+    barras,
+  };
 }
 
 /**

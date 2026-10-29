@@ -8,6 +8,7 @@ const armados: EnlacesArmados = {
   paneles: [
     {
       titulo: 'Pódbar',
+      descripcion: 'Conversaciones de barra sobre música y cultura',
       logo: 'podbar',
       barras: [
         {
@@ -25,6 +26,7 @@ const armados: EnlacesArmados = {
     },
     {
       titulo: 'Otro panel',
+      descripcion: '',
       logo: null,
       barras: [
         {
@@ -110,6 +112,21 @@ describe('EnlacesComponent', () => {
     TestBed.tick();
     expect(boton?.getAttribute('aria-expanded')).toBe('true');
     expect(cuerpo?.hidden).toBe(false);
+  });
+
+  it('muestra la descripción del panel entre el logo y el chevron, y no un hueco si falta', () => {
+    const el = crear(armados);
+    const botones = el.querySelectorAll('section button');
+
+    expect(botones[0].textContent).toContain('Conversaciones de barra sobre música y cultura');
+    expect(botones[0].querySelector('span')?.classList.contains('text-neutral')).toBe(true);
+    expect(botones[1].querySelector('span')).toBeNull();
+  });
+
+  it('el texto bajo el logo de Le Tiende es solo "Centro Cultural"', () => {
+    const el = crear(armados);
+
+    expect(el.querySelector('header p')?.textContent?.trim()).toBe('Centro Cultural');
   });
 
   it('sin fuente (503) muestra el mensaje y ningún enlace', () => {
