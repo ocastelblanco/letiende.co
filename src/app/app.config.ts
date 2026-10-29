@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeEsCO from '@angular/common/locales/es-CO';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 import { provideClientHydration } from '@angular/platform-browser';
 
 import { routes } from './app.routes';
@@ -21,7 +21,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideRouter(routes),
+    // Bloqueante también en el navegador: `App` decide si pinta barra y pie
+    // según los datos de la ruta (`sinMarco`), y sin esperar la navegación
+    // inicial el primer render difiere del HTML del servidor (hidratación).
+    provideRouter(routes, withEnabledBlockingInitialNavigation()),
     provideClientHydration(),
     { provide: LOCALE_ID, useValue: 'es-CO' },
   ],

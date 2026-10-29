@@ -30,6 +30,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/carta/carta').then((m) => m.CartaComponent),
   },
   {
+    // Sin barra ni pie: la página se enlaza solo desde la biografía de
+    // Instagram (ADR-027). `App` lee `sinMarco` de la ruta activa.
+    path: 'enlaces',
+    data: { sinMarco: true },
+    loadComponent: () => import('./features/enlaces/enlaces').then((m) => m.EnlacesComponent),
+  },
+  {
     path: '**',
     loadComponent: () =>
       import('./features/no-encontrada/no-encontrada').then((m) => m.NoEncontradaComponent),

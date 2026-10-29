@@ -143,7 +143,7 @@ El visitante entra a Le Tiende y se queda en Le Tiende, aunque por debajo esté 
 | **Media** | Preguntas frecuentes (F-7) | 1 |
 | **Media** | Carta del café bar (F-8) | 2 |
 | **Media** | Actualización de la interfaz de datos heredada (F-9) | 2 |
-| **Media** | Página de enlaces para Instagram (F-10) — planeada el 27/10/2026, T-0041 a T-0043; va antes de T-0034 por decisión del humano | 2 |
+| **Media** | Página de enlaces para Instagram (F-10) — T-0041 y T-0042 completas el 28/10/2026; falta T-0043 (validar GA4) | 2 |
 | **Baja** | Agenda unificada: eventos, novedades de la librería y del café en un solo lugar | 3 |
 | **Baja** | Boletín de correo y suscripción desde la portada | 3 |
 | **Baja** | Versión en inglés del sitio | 3 |

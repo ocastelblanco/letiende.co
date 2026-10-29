@@ -6,6 +6,7 @@ const contenidoReal = {
   paneles: [
     {
       titulo: 'Pódbar',
+      descripcion: 'Conversaciones de barra sobre música y cultura',
       logo: 'podbar',
       barras: [
         {
@@ -53,6 +54,7 @@ describe('armarEnlaces', () => {
     expect(paneles).toHaveLength(1);
     expect(paneles[0].titulo).toBe('Pódbar');
     expect(paneles[0].logo).toBe('podbar');
+    expect(paneles[0].descripcion).toBe('Conversaciones de barra sobre música y cultura');
     expect(paneles[0].barras.map((b) => b.titulo)).toEqual(['T3', 'T1 y T2']);
     expect(paneles[0].barras[0].enlaces.map((e) => e.icono)).toEqual([
       'youtube',
@@ -166,6 +168,15 @@ describe('armarEnlaces', () => {
     expect(armarEnlaces(panelConEnlace(base, { logo: '../x' })).paneles[0].logo).toBeNull();
     expect(armarEnlaces(panelConEnlace(base, { logo: null })).paneles[0].logo).toBeNull();
     expect(armarEnlaces(panelConEnlace(base, { logo: 'PODBAR' })).paneles[0].logo).toBe('podbar');
+  });
+
+  it('la descripción del panel falta, no es texto o se recorta a 160 caracteres', () => {
+    const base = { icono: 'bar23', url: 'https://bar23.co' };
+    expect(armarEnlaces(panelConEnlace(base)).paneles[0].descripcion).toBe('');
+    expect(armarEnlaces(panelConEnlace(base, { descripcion: 42 })).paneles[0].descripcion).toBe('');
+    expect(
+      armarEnlaces(panelConEnlace(base, { descripcion: 'x'.repeat(500) })).paneles[0].descripcion,
+    ).toHaveLength(160);
   });
 
   it('recorta los textos largos', () => {

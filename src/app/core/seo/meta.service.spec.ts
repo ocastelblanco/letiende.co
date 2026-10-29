@@ -55,4 +55,19 @@ describe('MetaService', () => {
       'Dos',
     );
   });
+
+  it('fija la directiva robots si se da, y la quita en la siguiente llamada sin ella', () => {
+    servicio.actualizar({
+      titulo: 'Enlaces - Le Tiende',
+      descripcion: 'Enlaces.',
+      ruta: '/enlaces',
+      robots: 'noindex,follow',
+    });
+    expect(documento.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe(
+      'noindex,follow',
+    );
+
+    servicio.actualizar({ titulo: 'Le Tiende', descripcion: 'Centro cultural.', ruta: '/' });
+    expect(documento.querySelector('meta[name="robots"]')).toBeNull();
+  });
 });

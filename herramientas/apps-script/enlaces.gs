@@ -37,6 +37,8 @@ var LOGOS_CONOCIDOS = ['podbar'];
 
 var MAX_URL = 2048;
 var MAX_TEXTO = 80;
+// La descripción del panel son hasta ~12 palabras en dos líneas.
+var MAX_DESCRIPCION = 160;
 // Cada propiedad de Apps Script admite ~9 KB: se deja margen.
 var MAX_BYTES_JSON = 8500;
 
@@ -105,7 +107,7 @@ function publicarEnlaces() {
  * Lee `enlaces`, valida cada fila y devuelve `{ paneles, errores, avisos }`.
  * Columnas (tech-specs.md §4.7), en cualquier orden y sin importar mayúsculas
  * ni tildes: Categoría | Subcategoría | Icono | Link, y opcionales
- * Etiqueta | Visible | Logo. Paneles, barras y enlaces conservan el orden de
+ * Descripción | Etiqueta | Visible | Logo. Paneles, barras y enlaces conservan el orden de
  * aparición en la hoja.
  */
 function leerYValidarEnlaces(ss) {
@@ -141,11 +143,12 @@ function leerYValidarEnlaces(ss) {
     var subcategoria = texto(fila, col.subcategoria);
     var icono = texto(fila, col.icono).toLowerCase();
     var url = texto(fila, col.link);
+    var descripcion = texto(fila, col.descripcion);
     var etiqueta = texto(fila, col.etiqueta);
     var logo = texto(fila, col.logo).toLowerCase();
     var visibleCrudo = col.visible === -1 ? '' : fila[col.visible];
 
-    if (!categoria && !subcategoria && !icono && !url && !etiqueta && !logo) return; // fila vacía
+    if (!categoria && !subcategoria && !icono && !url && !etiqueta && !logo && !descripcion) return; // fila vacía
 
     var donde = 'Fila ' + numeroFila + ': ';
     var valida = true;
@@ -170,6 +173,10 @@ function leerYValidarEnlaces(ss) {
       errores.push(donde + 'Categoría, Subcategoría y Etiqueta admiten máximo ' + MAX_TEXTO + ' caracteres.');
       valida = false;
     }
+    if (descripcion.length > MAX_DESCRIPCION) {
+      errores.push(donde + 'la Descripción admite máximo ' + MAX_DESCRIPCION + ' caracteres (hoy tiene ' + descripcion.length + ').');
+      valida = false;
+    }
     if (logo && !patronClave.test(logo)) {
       errores.push(donde + 'el Logo "' + logo + '" solo admite letras minúsculas, números y guion bajo.');
       valida = false;
@@ -188,9 +195,16 @@ function leerYValidarEnlaces(ss) {
 
     var panel = panelesPorTitulo[categoria];
     if (!panel) {
-      panel = { titulo: categoria, logo: null, barras: [] };
+      panel = { titulo: categoria, descripcion: '', logo: null, barras: [] };
       panelesPorTitulo[categoria] = panel;
       paneles.push(panel);
+    }
+    if (descripcion) {
+      if (!panel.descripcion) {
+        panel.descripcion = descripcion;
+      } else if (panel.descripcion !== descripcion) {
+        avisos.push('Fila ' + numeroFila + ': el panel "' + categoria + '" ya tiene descripción; se ignora la de esta fila.');
+      }
     }
     if (logo) {
       if (!panel.logo) {
@@ -262,7 +276,7 @@ function normalizar(nombre) {
 function indiceColumnas(encabezado) {
   var normalizados = encabezado.map(normalizar);
   var col = {};
-  ['categoria', 'subcategoria', 'icono', 'link', 'etiqueta', 'visible', 'logo'].forEach(function (nombre) {
+  ['categoria', 'subcategoria', 'icono', 'link', 'descripcion', 'etiqueta', 'visible', 'logo'].forEach(function (nombre) {
     col[nombre] = normalizados.indexOf(nombre);
   });
   return col;

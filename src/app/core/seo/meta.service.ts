@@ -10,6 +10,8 @@ export interface DatosMeta {
   readonly ruta: string;
   /** Ruta relativa a una imagen en public/. Por defecto, el ícono de marca. */
   readonly imagen?: string;
+  /** Directiva de `<meta name="robots">`, p.ej. 'noindex,follow'. Sin ella se quita la etiqueta. */
+  readonly robots?: string;
 }
 
 // No hay imágenes propias por sección todavía (fotos del espacio, del
@@ -37,6 +39,14 @@ export class MetaService {
     this.title.setTitle(datos.titulo);
     this.meta.updateTag({ name: 'description', content: datos.descripcion });
     this.establecerCanonica(urlCanonica);
+
+    // Sin `robots` se quita la etiqueta: así una página `noindex` no deja su
+    // directiva puesta al navegar a otra ruta dentro de la misma sesión.
+    if (datos.robots) {
+      this.meta.updateTag({ name: 'robots', content: datos.robots });
+    } else {
+      this.meta.removeTag('name="robots"');
+    }
 
     this.meta.updateTag({ property: 'og:title', content: datos.titulo });
     this.meta.updateTag({ property: 'og:description', content: datos.descripcion });
