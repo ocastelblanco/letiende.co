@@ -332,8 +332,8 @@ página del sitio se salta §7.
 ```
 ┌───────────────────────┐   fondo bg-surface, min-h-dvh
 │   [logo Le Tiende]    │   logo_negro_sin_fondo.svg, alt="Le Tiende", h-14
-│  Centro cultural ·    │   text-sm text-primary
-│       Bogotá          │
+│   Centro Cultural     │   text-sm text-primary
+│                       │
 │ ┌───────────────────┐ │   panel: tarjeta de §4
 │ │ [logo Pódbar]   ⌃ │ │   encabezado = botón; el ⌃ es decorativo
 │ │ T3                │ │   título de la barra
@@ -349,17 +349,20 @@ página del sitio se salta §7.
 - Un solo `<h1>` visualmente oculto (`sr-only`): "Enlaces de Le Tiende". El logo es una `<img>` con
   `alt="Le Tiende"`. **No es un enlace** (el visitante llegó para elegir una plataforma; no se le ofrece
   una salida hacia el resto del sitio, a propósito).
-- Texto de apoyo bajo el logo: "Centro cultural en Bogotá" (fijo en la plantilla, no en la hoja).
+- Texto de apoyo bajo el logo: "Centro Cultural" (fijo en la plantilla, no en la hoja).
 - Si falla la fuente (503): una tarjeta con el mensaje "Los enlaces no están disponibles en este
   momento." y nada más.
 
 ### 12.2 Panel
 
-- Tarjeta de §4 (`rounded-2xl bg-white p-4` con la sombra de marca). Varios paneles: `space-y-4`.
+- Tarjeta de §4, pero **oscura** (`rounded-2xl bg-primary p-4` con la sombra de marca); todos sus
+  textos y el chevron van en `text-neutral`. Varios paneles: `space-y-4`.
 - **Encabezado = `<button type="button">`** de ancho completo, con `aria-expanded` y `aria-controls`
   apuntando al cuerpo. Si el panel trae `logo` (hoy `podbar`), el encabezado muestra esa imagen
   (`h-10`, `alt` = título del panel) y **no** repite el título en texto; sin logo, muestra el título
-  como `<h2>` `text-lg font-semibold text-primary`. A la derecha, un chevron decorativo
+  como `<h2>` `text-lg font-semibold text-neutral`. Entre el logo y el chevron va la **descripción** del
+  panel (`Descripción` de la hoja, opcional; ~12 palabras en dos líneas): `text-xs leading-snug
+  text-neutral`, sin `uppercase`; si falta, no se pinta nada. A la derecha, un chevron decorativo
   (`aria-hidden="true"`, SVG propio; no se usa Material Symbols fuera de `/carta`, ADR-025).
 - **Estado inicial: todos los paneles desplegados**, y por ahora no hay lógica que los pliegue sola. El
   botón ya funciona (cierra y abre) para que sumar paneles no exija rehacer nada. El estado vive en un
@@ -368,9 +371,11 @@ página del sitio se salta §7.
 
 ### 12.3 Barra de enlaces
 
-- Título de la barra (`Subcategoría`): `text-xs font-semibold tracking-wider text-primary uppercase`,
+- Título de la barra (`Subcategoría`): `text-xs font-semibold tracking-wider text-neutral uppercase`,
   tal cual está en la hoja ("T3", "T1 y T2"). Los socios deciden el texto; si prefieren "Temporada 3",
   se cambia en la hoja.
+- Cada barra va separada de lo anterior por una línea superior (`border-t border-neutral pt-4`),
+  incluida la primera.
 - Los enlaces van en un `<ul>` (`flex flex-wrap gap-3`). **No** se usa `role="toolbar"`: ese rol obliga
   a manejar el foco con flechas, y aquí cada enlace es un destino independiente que se recorre con Tab.
 - Cada enlace es un círculo `size-14` (56 px, por encima del mínimo de 44 de §10) con

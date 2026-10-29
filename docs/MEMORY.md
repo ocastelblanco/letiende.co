@@ -60,7 +60,7 @@ No se toma nada de ella: el proyecto arranca desde cero por decisión explícita
       de la nueva lista de precios (ADR-024)
 - [ ] *Etapa 2:* página de enlaces `/enlaces` para Instagram (F-10) — planeada y aprobada el 27/10/2026,
       T-0041 a T-0043 (`tech-specs.md` §4.7, `DESIGN.md` §12, ADR-026 y ADR-027). Hecha la fuente de datos
-      (T-0041: Apps Script desplegado, servicio SSR y armado); falta la interfaz (T-0042).
+      (T-0041) e interfaz (T-0042) hechas y aprobadas en staging el 28/10/2026; falta T-0043 (validar GA4).
       El humano pidió hacerla antes de T-0034. La validación de GA4 es la tarea final (T-0043)
 - [ ] *Etapa 2, aplazada:* botón de la hoja maestra que también carga los precios en Comandante (ADR-023)
 - [ ] *Etapa 2:* actualización de `letiende-api`
@@ -2046,4 +2046,21 @@ Verificado en Chrome real contra `serve:ssr` local: la página sigue en pantalla
 mensajes en consola desde la carga, el botón pliega y abre el panel, 5 enlaces `https:` con `aria-label`.
 Pendiente de T-0042: revisión del humano en `staging.letiende.co/enlaces` en celular y dentro del
 navegador interno de Instagram.
+
+**28/10/2026 (más tarde) — T-0042 aprobada en staging; ajustes de diseño y descripción del panel.**
+
+El humano pidió ajustes tras ver la página y los aprobó en `staging.letiende.co/enlaces`: texto bajo el
+logo "Centro Cultural"; panel `bg-primary` con textos `text-neutral` y chevron `neutral`; línea superior
+`border-neutral` en cada barra; y una **descripción por panel** (columna opcional `Descripción` de la
+hoja, entre `Categoría` y `Subcategoría`; hasta ~12 palabras, máximo 160 caracteres; vale el primer valor
+no vacío de la categoría; sale entre el logo y el chevron, `text-xs text-neutral`). `DESIGN.md` §12,
+`tech-specs.md` §4.7 y `herramientas/apps-script/enlaces.gs` quedaron al día. El humano debe republicar el
+script (Nueva versión; la URL `/exec` no cambia).
+
+**Motor JIT, estado final de la sesión:** T-0041 y T-0042 pasan al Historial. Activas: **T-0043** (validar
+GA4; empieza cuando el PR #68 esté fusionado y desplegado a producción) y **T-0034** (OPT-20, repo de
+Babel/infra). Cola: T-0035.
+
+**Próxima tarea sugerida:** T-0043. Pasos del humano: poner `https://letiende.co/enlaces?utm_source=instagram&utm_medium=bio`
+en la biografía de Instagram y abrir DebugView de GA4.
 
