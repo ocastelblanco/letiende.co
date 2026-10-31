@@ -2064,3 +2064,14 @@ Babel/infra). Cola: T-0035.
 **Próxima tarea sugerida:** T-0043. Pasos del humano: poner `https://letiende.co/enlaces?utm_source=instagram&utm_medium=bio`
 en la biografía de Instagram y abrir DebugView de GA4.
 
+
+**31/10/2026 — T-0043 (en curso): GA4 nunca había reportado.** El humano vio en la consola de GA que
+`letiende.co` no estaba etiquetado. En Chrome real, producción cargaba `gtag.js` con el ID correcto, pero
+no salía ninguna petición `g/collect`: el `dataLayer` traía `js` y `config` como `Array`. `gtag.js` solo
+procesa objetos `arguments`; un `Array` lo ignora sin error ni aviso. Origen: el stub `(...args) =>
+push(args)` de `AnalyticsService` (T-0006, 02/09/2026), así que el sitio entero llevaba sin medir desde
+entonces. Corregido con `encolarConfiguracion()` (empuja `arguments`) y una prueba que verifica el tipo
+`[object Arguments]`. Gotcha: **el stub de `gtag` debe ser una `function` que empuje `arguments`, nunca
+una flecha con rest params.** Falta, ya desplegado el arreglo: confirmar `g/collect` en producción y,
+con el humano, DebugView (clic saliente desde `/enlaces` con `utm_source=instagram`). T-0043 sigue
+abierta; su registro de esfuerzo se hará al cerrarla.

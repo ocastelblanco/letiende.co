@@ -1,6 +1,20 @@
 import { TestBed } from '@angular/core/testing';
 import { ApplicationRef } from '@angular/core';
-import { AnalyticsService, debeCargarAnalytics } from './analytics.service';
+import { AnalyticsService, debeCargarAnalytics, encolarConfiguracion } from './analytics.service';
+
+describe('encolarConfiguracion', () => {
+  it('empuja js y config como objetos arguments, que es lo único que gtag.js procesa', () => {
+    const dataLayer: unknown[] = [];
+    encolarConfiguracion(dataLayer, 'G-PRUEBA');
+
+    expect(dataLayer.map((e) => Object.prototype.toString.call(e))).toEqual([
+      '[object Arguments]',
+      '[object Arguments]',
+    ]);
+    expect((dataLayer[0] as unknown[])[0]).toBe('js');
+    expect(Array.from(dataLayer[1] as unknown[])).toEqual(['config', 'G-PRUEBA']);
+  });
+});
 
 describe('debeCargarAnalytics', () => {
   it('carga solo en el host de producción', () => {

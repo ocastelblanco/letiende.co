@@ -47,8 +47,21 @@ export class AnalyticsService {
     document.head.appendChild(script);
 
     window.dataLayer = window.dataLayer ?? [];
-    const gtag = (...args: unknown[]) => window.dataLayer?.push(args);
-    gtag('js', new Date());
-    gtag('config', id);
+    encolarConfiguracion(window.dataLayer, id);
   }
+}
+
+/**
+ * gtag.js solo procesa del `dataLayer` los objetos `arguments`; un `Array`
+ * (lo que empujaría `(...args) => push(args)`) lo ignora en silencio: el
+ * script carga, pero no se envía ni `page_view`. Por eso es `arguments`.
+ */
+export function encolarConfiguracion(dataLayer: unknown[], id: string): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function gtag(..._args: unknown[]): void {
+    // eslint-disable-next-line prefer-rest-params
+    dataLayer.push(arguments);
+  }
+  gtag('js', new Date());
+  gtag('config', id);
 }
