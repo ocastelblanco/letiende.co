@@ -9,18 +9,10 @@ Criterio de prioridad: (1) seguridad activa en producción, (2) roadmap de prior
 
 ---
 
-**28/10/2026 — F-10 (página de enlaces) construida y aprobada en staging; falta validar GA4.** T-0041
-y T-0042 están completas (ver Historial). El motor JIT toma como activas **T-0043** (validar GA4, cierra
-F-10) y **T-0034** (OPT-20, que el humano había pasado a la cola el 27/10/2026 para hacer F-10 primero).
-T-0043 solo puede empezar cuando el PR de T-0042 esté fusionado y desplegado en producción.
-
-**T-0043 — [ENLACES] Validar GA4 — tarea final de F-10, ACTIVA.** Comprobar en la propiedad de GA4 que
-las "mediciones mejoradas" tengan activos los **clics salientes**; verificar con DebugView que un clic
-desde `/enlaces?utm_source=instagram&utm_medium=bio` llega con la fuente `instagram`; anotar en
-`MEMORY.md` lo que se confirme y lo que no se pudo confirmar desde aquí (la consola de GA4 es del
-humano). Si hiciera falta un evento propio o una tabla en DynamoDB, se abre una tarea aparte. Contexto:
-`tech-specs.md` §4.7 (Medición), ADR-015. Pasos del humano: poner el enlace con parámetros en la
-biografía de Instagram y abrir DebugView.
+**02/11/2026 — F-10 (página de enlaces) completa.** T-0041, T-0042 y T-0043 están cerradas (ver
+Historial). El motor JIT toma como activas **T-0034** (OPT-20, repo de Babel/infra) y **T-0035** (OPT-16,
+pase de rendimiento del dashboard de Comandante, que estaba en pausa desde el 22/09/2026 y ya no tiene
+bloqueos).
 
 **T-0034 — [INFRA] Servir los estáticos de Babel desde S3 + CloudFront, no desde el Lambda `ssr`
 (OPT-20), ACTIVA:** hallazgo real del incidente de T-0026 (08/09/2026) — habilitar `sourceMap` en
@@ -35,9 +27,23 @@ contra producción; oportunidad de reactivar `sourceMap` en Babel una vez esto e
 alcance de esta tarea); `docs/optimizacion-aplicaciones.md` §5 actualizado; esfuerzo registrado.
 Definición de terminado completa en `docs/optimizacion-aplicaciones.md` §4.
 
+**T-0035 — [OPTIMIZACIÓN] Pase completo de rendimiento en el dashboard de Comandante (OPT-16),
+ACTIVA:** repo Comandante. LCP 5,5 s y Speed Index 5,0 s en `/admin/dashboard`: no hay un solo
+culpable, es la suma de varios hallazgos M aplicados juntos a esa vista. OPT-7/12/13/15 ya están
+completas. Primer paso: **volver a medir Lighthouse** antes de asumir qué hallazgos siguen vigentes.
+Definición de terminado en `docs/optimizacion-aplicaciones.md` §4 y §5.
+
 ---
 
 ## Historial
+
+- **T-0043** — [ENLACES] Validar GA4. Completada 02/11/2026. PR `fix/ga4-gtag-arguments` (#69) y
+  `docs/cerrar-t0043`. Hallazgo: GA4 nunca había reportado desde T-0006, porque el stub de `gtag`
+  empujaba un `Array` y `gtag.js` solo procesa `arguments`; corregido y verificado en producción
+  (`g/collect`). Confirmado con el MCP de Google Analytics (propiedad `403931427`): llegan `page_view`,
+  `session_start`, `first_visit` y `scroll`; la fuente `instagram / bio` llega íntegra; el evento `click`
+  (clics salientes) aparece en tiempo real tras 5 clics reales. Sin evento propio ni tabla. Pendiente
+  menor: ver el desglose de `click` por `linkDomain` y fuente en el informe estándar.
 
 - **T-0042** — [ENLACES] Ruta `/enlaces` e interfaz (`DESIGN.md` §12). Completada 28/10/2026. PR
   `feature/enlaces-interfaz` (#68). Ruta sin marco con `data: { sinMarco: true }`, navegación inicial
@@ -993,10 +999,10 @@ Definición de terminado completa en `docs/optimizacion-aplicaciones.md` §4.
 | T-0040 | **[CARTA] Publicación — HECHA 19/10/2026 (PR `feature/publicar-carta` en los tres repos; el humano aprobó los precios).** Solo cuando el humano confirme que la nueva lista de precios está aprobada y cargada en Comandante. `CARTA_PUBLICADA = true`, entrada en `/sitemap.xml`, JSON-LD `Menu` (§4.6) y el enlace "Carta" en la barra **de los tres repositorios a la vez** (`DESIGN.md` §8). DoD: `curl` real contra `letiende.co/carta` (200), sin salto visual de la barra al cruzar a `/cartelera` y `/libros` | T-0039 (activa) + aprobación del humano |
 | — | *(Aplazada, repo Comandante, sin ID)* El botón de la hoja también carga los precios en Comandante, con validación en el servidor (ADR-023) | Decisión del humano |
 
-**Cola 0 — Página de enlaces (F-10).** T-0041 y T-0042 completas; T-0043 (validar GA4) es activa.
+**Cola 0 — Página de enlaces (F-10).** Completa: T-0041, T-0042 y T-0043 están en el Historial.
 
-**Cola 2 — Roadmap de optimización entre repositorios.** **T-0034** (OPT-20) es activa; sigue
-**T-0035** (OPT-16). Definición de terminado completa en `docs/optimizacion-aplicaciones.md` §4 y
+**Cola 2 — Roadmap de optimización entre repositorios.** **T-0034** (OPT-20) y **T-0035** (OPT-16)
+son activas. Definición de terminado completa en `docs/optimizacion-aplicaciones.md` §4 y
 seguimiento en §5 de ese documento.
 
 ---

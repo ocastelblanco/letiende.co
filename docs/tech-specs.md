@@ -529,7 +529,8 @@ carga de recursos; los SVG salen del propio origen). A01 — la página no prote
 
 **Medición:** Google Analytics 4 para todo el sitio (ADR-015); no hay registro propio de clics (si algún
 día hace falta, sería una tabla de DynamoDB, trabajo aparte). GA4 mide los clics salientes con las
-"mediciones mejoradas", que hay que **verificar que estén activas** en la propiedad (T-0043, tarea final).
+"mediciones mejoradas", **verificadas activas el 02/11/2026** (T-0043): el evento `click` llega a GA4 al
+tocar un enlace saliente. El stub de `gtag` debe empujar `arguments`, no un `Array` (ver `MEMORY.md`).
 El enlace que va en la biografía de Instagram debe llevar parámetros de campaña, porque el navegador
 interno de Instagram a veces omite el `Referer`:
 `https://letiende.co/enlaces?utm_source=instagram&utm_medium=bio`.

@@ -2075,3 +2075,36 @@ entonces. Corregido con `encolarConfiguracion()` (empuja `arguments`) y una prue
 una flecha con rest params.** Falta, ya desplegado el arreglo: confirmar `g/collect` en producción y,
 con el humano, DebugView (clic saliente desde `/enlaces` con `utm_source=instagram`). T-0043 sigue
 abierta; su registro de esfuerzo se hará al cerrarla.
+
+**02/11/2026 — T-0043 cerrada: GA4 validado, F-10 completa.** El PR #69 (`fix/ga4-gtag-arguments`)
+corrigió el stub de `gtag` y quedó fusionado y desplegado; en Chrome real producción envía `g/collect`.
+Con el MCP de Google Analytics se confirmó, en la propiedad `403931427`: `page_view`, `session_start`,
+`first_visit` y `scroll` desde el 31/10; la fuente `instagram / bio` llega íntegra (Instagram también
+entra como `ig / social`, el navegador interno de la app sin UTM: sumar ambas al leer los informes); y
+el evento `click` (clics salientes) aparece en tiempo real tras 5 clics reales del humano, con lo que las
+mediciones mejoradas tienen activos los clics salientes. Un clic sintético por JavaScript **no** se
+registró: para probar clics salientes hace falta un clic real. No hizo falta evento propio ni tabla.
+**No confirmado:** el desglose de `click` por `linkDomain` y fuente (el informe estándar tarda horas en
+procesar el día).
+
+**MCP de Google Analytics (configuración vigente, 02/11/2026).** `analytics-mcp` (solo lectura) en
+la configuración de usuario de Claude Code, lanzado con `uvx analytics-mcp`. Credenciales: ADC
+`impersonated_service_account` sobre la cuenta de servicio
+`analytics-mcp-lector@le-tiende-37d7a.iam.gserviceaccount.com` (rol Lector en la propiedad GA4; el
+usuario tiene `serviceAccountTokenCreator`; **sin llave descargada**). Proyecto de cuota/APIs:
+`le-tiende-37d7a` (Analytics Admin y Data habilitadas). Gotchas: el login ADC directo con el alcance
+`analytics.readonly` lo bloquea Google para el cliente OAuth por defecto de `gcloud` ("Se bloqueó esta
+app"), por eso se suplanta una cuenta de servicio; `40636103` es el ID de la **cuenta** GA4, la
+**propiedad** es `403931427` (con la cuenta da 403); `run_realtime_report` no combina `eventName` con
+`unifiedScreenName`.
+
+**Inventario de proyectos de Google Cloud (02/11/2026):** `comandante-letiende` = Firebase Auth/Firestore
+compartidos por Ágora, Babel y Comandante (no tocar); `le-tiende-37d7a` = Maps de este repo y APIs de
+Analytics (el sitio de 2025, rama `2025`, también lo usaba); `www-olivercastelblanco-com` = contiene la
+llave de reCAPTCHA v3 de `letiende.co` (no borrar mientras se use). Las propiedades de GA4 sobrantes
+se enviaron a la papelera (35 días) y quedó solo la de `G-TQTGGTM26R`. La llave local
+`comandante/scripts/firestore-admin/serviceAccount.json` está ignorada por git, pero es una llave
+privada de `comandante-letiende`: borrarla y revocarla si ya no se usa.
+
+**Motor JIT, estado final:** T-0043 pasa al Historial; activas **T-0034** (OPT-20) y **T-0035** (OPT-16,
+reactivada: volver a medir Lighthouse antes de asumir qué hallazgos siguen vigentes).
